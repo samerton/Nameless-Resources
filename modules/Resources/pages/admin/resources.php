@@ -94,7 +94,7 @@ $admin_page = 'resources';
 					?>
 					<div class="row">
 					  <div class="col-md-9">
-						<?php echo '<a href="' . URL::build('/admin/resources/', 'category=' . $category->id) . '">' . Output::getPurified(htmlspecialchars_decode($category->name)) . '</a><br />' . Output::getPurified(htmlspecialchars_decode($forum->forum_description)); ?>
+						<?php echo '<a href="' . URL::build('/admin/resources/', 'category=' . $category->id) . '">' . Output::getPurified(htmlspecialchars_decode($category->name)) . '</a><br />' . Output::getPurified(htmlspecialchars_decode($category->description)); ?>
 					  </div>
 					  <div class="col-md-3">
 						<span class="pull-right">
