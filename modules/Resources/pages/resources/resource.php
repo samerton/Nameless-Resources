@@ -64,6 +64,11 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 		$queries->increment('resources', $resource->id, 'views');
 		Cookie::put('nl-resource-' . $resource->id, "true", 3600);
 	}
+} else {
+	if(!Session::exists('nl-resource-' . $resource->id)){
+		$queries->increment('resources', $resource->id, 'views');
+		Session::put("nl-resource-" . $resource->id, "true");
+	}
 }
 ?>
 
@@ -85,6 +90,14 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
     <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/css/emojione.min.css"/>
 	<link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/css/emojione.sprites.css"/>
     <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emojionearea/css/emojionearea.min.css"/>
+
+    <style>
+        .star-rating.set {
+            line-height:32px;
+            font-size:1.25em;
+            cursor: pointer;
+        }
+    </style>
   
   </head>
 
@@ -199,7 +212,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 		
 		if(!$cache->isCached('comments')){
 			// Get comments
-			$comments = $queries->getWhere('resources_comments', array('resource_id', '=', $resource->id));
+			$comments = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
 			
 			// Remove replies
 			$replies_array = array();
@@ -219,7 +232,10 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 		$results = $paginator->getLimited($comments, 10, $p, count($comments));
 		$pagination = $paginator->generate(7, URL::build('/resources/resource/', 'id=' . $resource->id . '&amp;'));
 		
-		$smarty->assign('PAGINATION', $pagination);
+		if(count($comments))
+			$smarty->assign('PAGINATION', $pagination);
+		else
+			$smarty->assign('PAGINATION', '');
 
 		// Array to pass to template
 		$comments_array = array();
@@ -239,9 +255,11 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 					'user_style' => $user->getGroupClass($results->data[$n]->author_id),
 					'user_profile' => URL::build('/profile/' . Output::getClean($user->idToName($results->data[$n]->author_id))),
 					'content' => Output::getPurified($emojione->unicodeToImage(htmlspecialchars_decode($results->data[$n]->content))),
-					'date' => $timeago->inWords(date('', $results->data[$n]->created), $language->getTimeLanguage()),
-					'date_full' => date('', $results->data[$n]->created),
-					'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array())
+					'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language->getTimeLanguage()),
+					'date_full' => date('d M Y, H:i', $results->data[$n]->created),
+					'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
+                    'rating' => $results->data[$n]->rating,
+					'release_tag' => Output::getClean($results->data[$n]->release_tag)
 				);
 				$n++;
 			}
@@ -571,5 +589,36 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 	if($user->isLoggedIn()) echo '<script type="text/javascript">' . Input::createEditor('editor') . '</script>';
 	}
 	?>
+  <script type="text/javascript">
+      var $star_rating = $('.star-rating.view .fa');
+      var $star_rating_set = $('.star-rating.set .fa');
+
+      var SetRatingStar = function(type = 0) {
+          if(type === 0) {
+              return $star_rating.each(function () {
+                  if (parseInt($star_rating.siblings('input.rating-value').val()) >= parseInt($(this).data('rating'))) {
+                      return $(this).removeClass('fa-star-o').addClass('fa-star');
+                  } else {
+                      return $(this).removeClass('fa-star').addClass('fa-star-o');
+                  }
+              });
+          } else {
+              return $star_rating_set.each(function () {
+                  if (parseInt($star_rating_set.siblings('input.rating-value').val()) >= parseInt($(this).data('rating'))) {
+                      return $(this).removeClass('fa-star-o').addClass('fa-star');
+                  } else {
+                      return $(this).removeClass('fa-star').addClass('fa-star-o');
+                  }
+              });
+          }
+      };
+
+      $star_rating_set.on('click', function() {
+          $star_rating_set.siblings('input.rating-value').val($(this).data('rating'));
+          return SetRatingStar(1);
+      });
+
+      SetRatingStar();
+  </script>
   </body>
 </html>

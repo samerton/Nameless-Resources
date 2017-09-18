@@ -50,7 +50,7 @@
 			  </center>
 			</div>
 		  </div>
-		
+		  <br />
 		  <div class="card">
 		    <div class="card-header">
 			  {$AUTHOR}
@@ -76,8 +76,26 @@
 	  
 	  {if count($COMMENT_ARRAY)}
 	    {foreach from=$COMMENT_ARRAY item=comment}
-		
+		  <div class="card">
+			<div class="card-block">
+			  {$comment.content}
+			  <hr />
+		      <div class="star-rating view" style="display:inline;">
+		        <span class="fa fa-star-o" data-rating="1" style="color:gold;"></span>
+		        <span class="fa fa-star-o" data-rating="2" style="color:gold"></span>
+		        <span class="fa fa-star-o" data-rating="3" style="color:gold;"></span>
+		        <span class="fa fa-star-o" data-rating="4" style="color:gold;"></span>
+		        <span class="fa fa-star-o" data-rating="5" style="color:gold;"></span>
+		        <input type="hidden" name="rating" class="rating-value" value="{$comment.rating}">
+		      </div> | {$comment.release_tag} | <span data-toggle="tooltip" data-original-title="{$comment.date_full}">{$comment.date}</span>
+			  <span class="pull-right">
+			    <a href="{$comment.user_profile}"><img class="rounded-circle" src="{$comment.user_avatar}" style="height:25px;width:25px;" alt="{$comment.username}" /></a> <a href="{$comment.user_profile}" style="{$comment.user_style}">{$comment.username}</a>
+			  </span>
+			</div>
+		  </div>
+		  <br />
 		{/foreach}
+		{$PAGINATION}
 	  {else}
 	    <p>{$NO_REVIEWS}</p>
 	  {/if}
