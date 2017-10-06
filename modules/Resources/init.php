@@ -47,7 +47,14 @@ $pages->add('Resources', '/resources/resource', 'pages/resources/resource.php');
 $pages->add('Resources', '/resources/new', 'pages/resources/new.php');
 
 // Add link to navbar
-$navigation->add('resources', $resource_language->get('resources', 'resources'), URL::build('/resources'));
+$cache->setCache('navbar_order');
+if(!$cache->isCached('resources_order')){
+    $resources_order = 2;
+    $cache->store('resources_order', 2);
+} else {
+    $resources_order = $cache->retrieve('resources_order');
+}
+$navigation->add('resources', $resource_language->get('resources', 'resources'), URL::build('/resources'), 'top', null, $resources_order);
 
 // Add link to admin sidebar
 if(!isset($admin_sidebar)) $admin_sidebar = array();
