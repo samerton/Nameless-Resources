@@ -281,7 +281,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 			'AUTHOR' => $resource_language->get('resources', 'author'),
 			'AUTHOR_RESOURCES' => URL::build('/resources/author/', 'id=' . $resource->creator_id),
 			'VIEW_OTHER_RESOURCES' => str_replace('{x}', Output::getClean($user->idToNickname($resource->creator_id)), $resource_language->get('resources', 'view_other_resources')),
-			'DESCRIPTION' => Output::getClean(htmlspecialchars_decode($resource->description)),
+			'DESCRIPTION' => Output::getPurified(htmlspecialchars_decode($resource->description)),
 			'CREATED' => $timeago->inWords(date('d M Y, H:i', $resource->created), $language->getTimeLanguage()),
 			'CREATED_FULL' => date('d M Y, H:i', $resource->created),
 			'REVIEWS' => $resource_language->get('resources', 'reviews'),
