@@ -63,7 +63,3 @@ $admin_sidebar['resources'] = array(
 	'title' => $resource_language->get('resources', 'resources'),
 	'url' => URL::build('/admin/resources')
 );
-
-// Front page module
-if(!isset($front_page_modules)) $front_page_modules = array();
-$front_page_modules[] = 'modules/Resources/front_page.php';
