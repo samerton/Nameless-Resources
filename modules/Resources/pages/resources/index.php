@@ -166,5 +166,22 @@ if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group 
 	
 	require('core/templates/scripts.php'); 
 	?>
+    <script type="text/javascript">
+        var $star_rating = $('.star-rating.view .fa');
+
+        var SetRatingStar = function(type = 0) {
+            if(type === 0) {
+                return $star_rating.each(function () {
+                    if (parseInt($(this).parent().children('input.rating-value').val()) >= parseInt($(this).data('rating'))) {
+                        return $(this).removeClass('fa-star-o').addClass('fa-star');
+                    } else {
+                        return $(this).removeClass('fa-star').addClass('fa-star-o');
+                    }
+                });
+            }
+        };
+
+        SetRatingStar();
+    </script>
   </body>
 </html>

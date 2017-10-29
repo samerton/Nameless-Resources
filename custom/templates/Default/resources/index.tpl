@@ -7,7 +7,7 @@
 	</div>
 	<div class="col-md-9">
 	  <div class="card">
-		<div class="card-block">
+		<div class="card-body">
 		  <h2 class="card-title" style="display:inline;">{$RESOURCES}</h2>
 		  
 		  <span class="pull-right">
@@ -40,7 +40,7 @@
 				  <small>{$resource.category}, <span data-toggle="tooltip" data-trigger="hover" data-original-title="{$resource.updated_full}">{$resource.updated}</span></small>
 				</td>
 				<td>
-				  <div class="star-rating"> 
+				  <div class="star-rating view">
 				    <span class="fa fa-star-o" data-rating="1" style="color:gold;"></span>
 				    <span class="fa fa-star-o" data-rating="2" style="color:gold"></span>
 				    <span class="fa fa-star-o" data-rating="3" style="color:gold;"></span>

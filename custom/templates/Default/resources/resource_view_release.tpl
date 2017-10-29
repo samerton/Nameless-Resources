@@ -2,7 +2,7 @@
 
 <div class="container">
   <div class="card">
-    <div class="card-block">
+    <div class="card-body">
 	  <h2 style="display:inline;">{$VIEWING_RELEASE}</h2>
 	  <span class="pull-right">
 		<a href="{$BACK_LINK}" class="btn btn-danger">{$BACK}</a>

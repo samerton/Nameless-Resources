@@ -2,8 +2,8 @@
 
 <div class="container">
   <div class="card">
-    <div class="card-block">
-	  <h2 style="display:inline;">{$VIEWING_RESOURCE}</h2>
+    <div class="card-body">
+	  <h2 style="display:inline;">{$VIEWING_RESOURCE}</h2> {$RELEASE_TAG}
 	  <span class="pull-right">
 	    {if isset($CAN_UPDATE)}
 		  <a href="{$UPDATE_LINK}" class="btn btn-info">{$UPDATE}</a>
@@ -35,7 +35,7 @@
 			  {$RESOURCE}
 			</div>
 			
-		    <div class="card-block">
+		    <div class="card-body">
 			  <center>
 				<div class="star-rating view"> 
 				  <span class="fa fa-star-o" data-rating="1" style="color:gold;"></span>
@@ -58,7 +58,7 @@
 			
 		    <div class="card-block">
 			  <center>
-			    <a href="{$AUTHOR_PROFILE}"><img src="{$AUTHOR_AVATAR}" class="rounded" alt="{$AUTHOR_NICKNAME}"></a><br />
+			    <a href="{$AUTHOR_PROFILE}"><img src="{$AUTHOR_AVATAR}" class="rounded" alt="{$AUTHOR_NICKNAME}" style="max-height:80px; max-width:80px;" /></a><br />
 				<a href="{$AUTHOR_PROFILE}" style="{$AUTHOR_STYLE}">{$AUTHOR_NICKNAME}</a>
 				<hr />
 			  </center>
@@ -77,7 +77,7 @@
 	  {if count($COMMENT_ARRAY)}
 	    {foreach from=$COMMENT_ARRAY item=comment}
 		  <div class="card">
-			<div class="card-block">
+			<div class="card-body">
 			  {$comment.content}
 			  <hr />
 		      <div class="star-rating view" style="display:inline;">

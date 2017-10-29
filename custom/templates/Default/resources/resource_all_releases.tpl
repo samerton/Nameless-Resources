@@ -2,7 +2,7 @@
 
 <div class="container">
   <div class="card">
-    <div class="card-block">
+    <div class="card-body">
 	  <h2 style="display:inline;">{$VIEWING_ALL_RELEASES}</h2>
 	  <span class="pull-right">
 		<a href="{$BACK_LINK}" class="btn btn-danger">{$BACK}</a>
@@ -22,7 +22,7 @@
 	  </div>
 	  <br />
 	  {$release.downloads} |
-	  <div class="star-rating view" style="display:inline;"> 
+	  <div class="star-rating view" style="display:inline;">
 	    <span class="fa fa-star-o" data-rating="1" style="color:gold;"></span>
 	    <span class="fa fa-star-o" data-rating="2" style="color:gold"></span>
 	    <span class="fa fa-star-o" data-rating="3" style="color:gold;"></span>

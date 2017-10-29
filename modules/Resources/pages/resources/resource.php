@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr2
+ *  NamelessMC version 2.0.0-pr3
  *
  *  License: MIT
  *
@@ -192,11 +192,10 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 								$queries->update('resources_releases', $latest_release->id, array(
 									'rating' => $release_rating
 								));
-			
-								// Requery to update rating etc
-								$resource = $queries->getWhere('resources', array('id', '=', $resource->id));
-								$resource = $resource[0];
 							}
+
+							Redirect::to(URL::build('/resources/resource/', 'id=' . $resource->id));
+							die();
 						}
 						
 					} else {
@@ -353,6 +352,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 				$releases_array = array();
 				foreach($releases as $release){
 					$releases_array[] = array(
+						'id' => $release->id,
 						'url' => URL::build('/resources/resource/', 'id=' . $resource->id . '&amp;releases=' . $release->id),
 						'tag' => Output::getClean($release->release_tag),
 						'name' => Output::getClean($release->release_title),
@@ -411,7 +411,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 			if($_GET['do'] == 'download'){
 				if(!isset($_GET['release'])){
 					// Get latest release
-					$release = $queries->orderWhere('resources_releases', 'id = ' . $resource->id, 'created', 'DESC LIMIT 1');
+					$release = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC LIMIT 3');
 					if(!count($release)){
 						Redirect::to(URL::build('/resources'));
 						die();
@@ -596,7 +596,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
       var SetRatingStar = function(type = 0) {
           if(type === 0) {
               return $star_rating.each(function () {
-                  if (parseInt($star_rating.siblings('input.rating-value').val()) >= parseInt($(this).data('rating'))) {
+                  if (parseInt($(this).parent().children('input.rating-value').val()) >= parseInt($(this).data('rating'))) {
                       return $(this).removeClass('fa-star-o').addClass('fa-star');
                   } else {
                       return $(this).removeClass('fa-star').addClass('fa-star-o');

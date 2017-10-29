@@ -1,5 +1,5 @@
 <div class="card">
-  <div class="card-block">
+  <div class="card-body">
     <h2>{$CATEGORIES_TITLE}</h2>
     <ul class="nav nav-pills flex-column">
 	  {foreach from=$CATEGORIES item=item}

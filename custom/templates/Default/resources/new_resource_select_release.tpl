@@ -2,7 +2,7 @@
 
 <div class="container">
   <div class="card">
-	<div class="card-block">
+	<div class="card-body">
 	  <h2 class="card-title" style="display:inline;">{$NEW_RESOURCE}</h2>
 	  
 	  <span class="pull-right">
