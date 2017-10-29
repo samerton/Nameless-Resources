@@ -96,12 +96,10 @@ if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group 
 		$n = 0;
 		
 		while($n < count($results->data) && isset($results->data[$n]->resource_id)){
-      // Check permissions
-      foreach($permissions as $permission){
-          if($permission->category_id == $results->data[$n]->category_id && $permission->view == 1){
-              // Have view permission
-          } else continue;
-      }
+            if(!$resources->canViewCategory($results->data[$n]->category_id, $user_group, ($user->isLoggedIn() ? $user->data()->secondary_groups : null))){
+                $n++;
+                continue;
+            }
 			// Get actual resource info
 			$resource = $queries->getWhere('resources', array('id', '=', $results->data[$n]->resource_id));
 			if(!count($resource))

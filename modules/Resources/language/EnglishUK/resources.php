@@ -74,6 +74,7 @@ $language = array(
     'no_categories_available' => 'There are no categories available to move this resource to!',
     'delete_review' => 'Delete Review',
     'confirm_delete_review' => 'Are you sure you want to delete this review?',
+    'viewing_resources_by_x' => 'Viewing resources by {x}', // Don't replace {x}
 
     // Admin
     'permissions' => 'Permissions',
