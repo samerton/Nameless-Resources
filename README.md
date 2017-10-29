@@ -2,7 +2,7 @@
 The Nameless-Resources module allows users to add GitHub projects to your website.
 
 ## Requirements
-- NamelessMC version 2 (from commit 4f511dd93cc2d2558c39317cbc12cffffe49965c onwards)
+- NamelessMC version 2 (from commit [4f511dd](https://github.com/NamelessMC/Nameless/commit/4f511dd93cc2d2558c39317cbc12cffffe49965c) onwards)
 
 ## Installation
 - Upload the contents of the **upload** directory straight into your NamelessMC installation's directory
