@@ -2,22 +2,21 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr2
+ *  NamelessMC version 2.0.0-pr3
  *
  *  License: MIT
  *
  *  Resources index page
  */
 
-// Section disabled?
-// TODO
-
 // Always define page name
 define('PAGE', 'resources');
 
+require('modules/Resources/classes/Resources.php');
+$resources = new Resources();
+
 // Initialise
 $timeago = new Timeago();
-$paginator = new Paginator();
 
 // Get page
 if(isset($_GET['p'])){
@@ -63,19 +62,19 @@ if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group 
 	
 	// Obtain categories + permissions from database
 	$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
-  $permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user_group));
+	$permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user_group));
 
 	// Assign to Smarty array
 	$category_array = array();
 	foreach($categories as $category){
-		// Check permissions
-    foreach($permissions as $permission){
+	  // Check permissions
+	  foreach($permissions as $permission){
         if($permission->category_id == $category->id && $permission->view == 1)
             $category_array[] = array(
                 'name' => Output::getClean($category->name),
-                'link' => URL::build('/resources/category/', 'id=' . $category->id)
+                'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name))
             );
-    }
+	  }
 	}
 	$categories = null;
 	
@@ -83,6 +82,7 @@ if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group 
 	$latest_releases = $queries->orderWhere('resources_releases', 'id <> 0', 'created', 'DESC');
 	
 	// Pagination
+    $paginator = new Paginator();
 	$results = $paginator->getLimited($latest_releases, 10, $p, count($latest_releases));
 	$pagination = $paginator->generate(7, URL::build('/resources/', true));
 	
@@ -119,9 +119,9 @@ if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group 
 
 			if(!isset($releases_array[$resource->id])){
 				$releases_array[$resource->id] = array(
-					'link' => URL::build('/resources/resource/', 'id=' . $resource->id),
+					'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 					'name' => Output::getClean($resource->name),
-					'description' => substr(Output::getPurified(preg_replace("/<img[^>]+\>/i", "(image) ", htmlspecialchars_decode($resource->description))), 0, 50),
+					'description' => substr(strip_tags(htmlspecialchars_decode($resource->description)), 0, 50) . '...',
 					'author' => Output::getClean($user->idToNickname($resource->creator_id)),
 					'author_style' => $user->getGroupClass($resource->creator_id),
 					'author_profile' => URL::build('/profile/' . Output::getClean($user->idToName($resource->creator_id))),
@@ -153,8 +153,7 @@ if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group 
 		'AUTHOR' => $resource_language->get('resources', 'author')
 	));
 	
-	if($user->isLoggedIn()){
-		// TODO: permissions
+	if($user->isLoggedIn() && $resources->canPostResourceInAnyCategory($user->data()->group_id, $user->data()->secondary_groups)){
 		$smarty->assign(array(
 			'NEW_RESOURCE_LINK' => URL::build('/resources/new'),
 			'NEW_RESOURCE' => $resource_language->get('resources', 'new_resource')

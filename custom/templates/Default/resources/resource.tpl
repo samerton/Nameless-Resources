@@ -18,12 +18,25 @@
 	      <div class="forum-post">
 	        {$DESCRIPTION}
 	      </div>
+
+		  <br />{$CONTRIBUTORS}
 		  
 		  <hr />
 		  
 		  <a href="{$DOWNLOAD_URL}" class="btn btn-primary" target="_blank">{$DOWNLOAD}</a>
 		  
 		  <span class="pull-right">
+			{if isset($CAN_EDIT)}<a href="{$EDIT_LINK}" class="btn btn-secondary">{$EDIT}</a>{/if}
+			{if isset($MODERATION) && count($MODERATION)}
+			  <div class="btn-group dropup">
+				<button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{$MODERATION_TEXT}</button>
+				<div class="dropdown-menu">
+				  {foreach from=$MODERATION item=item}
+					<a class="dropdown-item" href="{$item.link}">{$item.title}</a>
+				  {/foreach}
+				</div>
+			  </div>
+			{/if}
 		    <a href="{$OTHER_RELEASES_LINK}" class="btn btn-info">{$OTHER_RELEASES}</a>
 		  </span>
 		  
@@ -56,7 +69,7 @@
 			  {$AUTHOR}
 			</div>
 			
-		    <div class="card-block">
+		    <div class="card-body">
 			  <center>
 			    <a href="{$AUTHOR_PROFILE}"><img src="{$AUTHOR_AVATAR}" class="rounded" alt="{$AUTHOR_NICKNAME}" style="max-height:80px; max-width:80px;" /></a><br />
 				<a href="{$AUTHOR_PROFILE}" style="{$AUTHOR_STYLE}">{$AUTHOR_NICKNAME}</a>
@@ -79,6 +92,9 @@
 		  <div class="card">
 			<div class="card-body">
 			  {$comment.content}
+			  {if isset($DELETE_REVIEW)}
+				  <br /><br /><span class="pull-right"><a href="{$comment.delete_link}" onclick="return confirm('{$CONFIRM_DELETE_REVIEW}');">{$DELETE_REVIEW}</a></span><br />
+			  {/if}
 			  <hr />
 		      <div class="star-rating view" style="display:inline;">
 		        <span class="fa fa-star-o" data-rating="1" style="color:gold;"></span>

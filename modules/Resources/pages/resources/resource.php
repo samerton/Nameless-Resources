@@ -18,34 +18,46 @@ define('RESOURCE_PAGE', 'view_resource');
 
 // Initialise
 $timeago = new Timeago();
-$paginator = new Paginator();
 
 require('core/includes/emojione/autoload.php'); // Emojione
 require('core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
 $emojione = new Emojione\Client(new Emojione\Ruleset());
 
-// Get page
-if(isset($_GET['p'])){
-	if(!is_numeric($_GET['p'])){
-		Redirect::to(URL::build('/resources/resource/', 'id=' . $_GET['id']));
-		die();
-	} else {
-		$p = $_GET['p'];
-	}
-} else {
-	$p = 1;
-}
+require('modules/Resources/classes/Resources.php');
+$resources = new Resources();
 
 // Get user group ID
 if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group = null;
 
 // Get resource
-if(!isset($_GET['id']) || !is_numeric($_GET['id'])){
-	Redirect::to(URL::build('/resources'));
-	die();
+$rid = explode('/', $route);
+$rid = $rid[count($rid) - 1];
+
+if(!isset($rid[count($rid) - 1])){
+    Redirect::to(URL::build('/resources'));
+    die();
 }
 
-$resource = $queries->getWhere('resources', array('id', '=', $_GET['id']));
+$rid = explode('-', $rid);
+if(!is_numeric($rid[0])){
+    Redirect::to(URL::build('/resources'));
+    die();
+}
+$rid = $rid[0];
+
+// Get page
+if(isset($_GET['p'])){
+    if(!is_numeric($_GET['p'])){
+        Redirect::to(URL::build('/resources/resource/' . $rid));
+        die();
+    } else {
+        $p = $_GET['p'];
+    }
+} else {
+    $p = 1;
+}
+
+$resource = $queries->getWhere('resources', array('id', '=', $rid));
 
 if(!count($resource)){
 	// Doesn't exist
@@ -194,7 +206,10 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 								));
 							}
 
-							Redirect::to(URL::build('/resources/resource/', 'id=' . $resource->id));
+                            $cache->setCache('resource-comments-' . $resource->id);
+							$cache->erase('comments');
+
+							Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
 							die();
 						}
 						
@@ -212,7 +227,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 		if(!$cache->isCached('comments')){
 			// Get comments
 			$comments = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
-			
+
 			// Remove replies
 			$replies_array = array();
 			foreach($comments as $key => $comment){
@@ -221,15 +236,16 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 					unset($comments[$key]);
 				}
 			}
-			
+
 			// Cache
 			$cache->store('comments', $comments, 120);
 			
 		} else $comments = $cache->retrieve('comments');
-		
+
 		// Pagination
+        $paginator = new Paginator();
 		$results = $paginator->getLimited($comments, 10, $p, count($comments));
-		$pagination = $paginator->generate(7, URL::build('/resources/resource/', 'id=' . $resource->id . '&amp;'));
+		$pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringtoURL($resource->name) . '/', true));
 		
 		if(count($comments))
 			$smarty->assign('PAGINATION', $pagination);
@@ -238,6 +254,15 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 
 		// Array to pass to template
 		$comments_array = array();
+
+        // Can the user delete reviews?
+        if($user->isLoggedIn() && $resources->canDeleteReviews($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+            $can_delete_reviews = true;
+            $smarty->assign(array(
+                'DELETE_REVIEW' => $resource_language->get('resources', 'delete_review'),
+                'CONFIRM_DELETE_REVIEW' => $resource_language->get('resources', 'confirm_delete_review')
+            ));
+        }
 		
 		if(count($comments)){
 			// Display the correct number of comments
@@ -258,7 +283,8 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 					'date_full' => date('d M Y, H:i', $results->data[$n]->created),
 					'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
                     'rating' => $results->data[$n]->rating,
-					'release_tag' => Output::getClean($results->data[$n]->release_tag)
+					'release_tag' => Output::getClean($results->data[$n]->release_tag),
+                    'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
 				);
 				$n++;
 			}
@@ -278,7 +304,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 			'BACK_LINK' => URL::build('/resources'),
 			'RESOURCE_INDEX' => $resource_language->get('resources', 'resource_index'),
 			'AUTHOR' => $resource_language->get('resources', 'author'),
-			'AUTHOR_RESOURCES' => URL::build('/resources/author/', 'id=' . $resource->creator_id),
+			'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($user->idToName($resource->creator_id))),
 			'VIEW_OTHER_RESOURCES' => str_replace('{x}', Output::getClean($user->idToNickname($resource->creator_id)), $resource_language->get('resources', 'view_other_resources')),
 			'DESCRIPTION' => Output::getPurified(htmlspecialchars_decode($resource->description)),
 			'CREATED' => $timeago->inWords(date('d M Y, H:i', $resource->created), $language->getTimeLanguage()),
@@ -297,9 +323,9 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 			'DOWNLOADS' => str_replace('{x}', $resource->downloads, $resource_language->get('resources', 'x_downloads')),
 			'RATING' => round($resource->rating / 10),
 			'DOWNLOAD' => $resource_language->get('resources', 'download'),
-			'DOWNLOAD_URL' => URL::build('/resources/resource/', 'id=' . $resource->id . '&amp;do=download'),
+			'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download'),
 			'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
-			'OTHER_RELEASES_LINK' => URL::build('/resources/resource/', 'id=' . $resource->id . '&amp;releases=all'),
+			'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
 			'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
 			'RELEASE_DESCRIPTION' => Output::getPurified(htmlspecialchars_decode($latest_update->release_description)),
 			'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
@@ -309,7 +335,8 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 			'RELEASE_DATE_FULL' => date('d M Y, H:i', $latest_update->created),
 			'LOGGED_IN' => ($user->isLoggedIn() ? true : false),
 			'TOKEN' => Token::get(),
-			'SUBMIT' => $language->get('general', 'submit')
+			'SUBMIT' => $language->get('general', 'submit'),
+            'CONTRIBUTORS' => str_replace('{x}', Output::getClean($resource->contributors), $resource_language->get('resources', 'contributors_x'))
 		));
 		
 		if($user->isLoggedIn() && $resource->creator_id == $user->data()->id){
@@ -317,9 +344,37 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 			$smarty->assign(array(
 				'CAN_UPDATE' => true,
 				'UPDATE' => $resource_language->get('resources', 'update'),
-				'UPDATE_LINK' => URL::build('/resources/resource/', 'id=' . $resource->id . '&amp;do=update')
+                'UPDATE_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=update')
 			));
 		}
+
+		if($user->isLoggedIn()){
+		    if($resource->creator_id == $user->data()->id || $resources->canEditResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+		        $smarty->assign(array(
+                    'CAN_EDIT' => true,
+                    'EDIT' => $language->get('general', 'edit'),
+                    'EDIT_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=edit')
+                ));
+            }
+
+            // Moderation
+            $moderation = array();
+		    if($resources->canMoveResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+		        $moderation[] = array(
+                    'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=move'),
+                    'title' => $resource_language->get('resources', 'move_resource')
+                );
+            }
+            if($resources->canDeleteResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+                $moderation[] = array(
+                    'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete'),
+                    'title' => $resource_language->get('resources', 'delete_resource')
+                );
+            }
+
+            $smarty->assign('MODERATION', $moderation);
+		    $smarty->assign('MODERATION_TEXT', $resource_language->get('resources', 'moderation'));
+        }
 	
 		// Markdown?
 		if($formatting == 'markdown'){
@@ -338,13 +393,14 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 				$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
 				
 				if(!count($releases)){
-					Redirect::to('/resources/resource/', 'id=' . $resource->id);
+					Redirect::to('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name));
 					die();
 				}
 				
 				// Pagination
+                $paginator = new Paginator();
 				$results = $paginator->getLimited($releases, 10, $p, count($releases));
-				$pagination = $paginator->generate(7, URL::build('/resources/resource/', 'id=' . $resource->id . '&amp;releases=all&amp;'));
+				$pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all&amp;'));
 				
 				$smarty->assign('PAGINATION', $pagination);
 				
@@ -353,7 +409,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 				foreach($releases as $release){
 					$releases_array[] = array(
 						'id' => $release->id,
-						'url' => URL::build('/resources/resource/', 'id=' . $resource->id . '&amp;releases=' . $release->id),
+						'url' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=' . $release->id),
 						'tag' => Output::getClean($release->release_tag),
 						'name' => Output::getClean($release->release_title),
 						'description' => Output::getPurified(nl2br($release->release_description)),
@@ -369,7 +425,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 					'VIEWING_ALL_RELEASES' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_all_releases')),
 					'RELEASES' => $releases_array,
 					'BACK' => $language->get('general', 'back'),
-					'BACK_LINK' => URL::build('/resources/resource/', 'id=' . $resource->id)
+					'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name))
 				));
 				
 				// Display template
@@ -393,11 +449,11 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 				$smarty->assign(array(
 					'VIEWING_RELEASE' => str_replace(array('{x}', '{y}'), array(Output::getClean($release->release_title), Output::getClean($resource->name)), $resource_language->get('resources', 'viewing_release')),
 					'BACK' => $language->get('general', 'back'),
-					'BACK_LINK' => URL::build('/resources/resource/', 'id=' . $resource->id),
+					'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 					'DOWNLOADS' => str_replace('{x}', $release->downloads, $resource_language->get('resources', 'x_downloads')),
 					'RATING' => round($release->rating / 10),
 					'DOWNLOAD' => $resource_language->get('resources', 'download'),
-					'DOWNLOAD_URL' => URL::build('/resources/resource/', 'id=' . $resource->id . '&amp;do=download&amp;release=' . $release->id),
+					'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&amp;release=' . $release->id),
 					'DESCRIPTION' => Output::getPurified(nl2br($release->release_description)),
 					'DATE' => $timeago->inWords(date('d M Y, H:i', $release->created), $language->getTimeLanguage()),
 					'DATE_FULL' => date('d M Y, H:i', $release->created)
@@ -472,23 +528,37 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 								if(!isset($github_query->id)) $error = str_replace('{x}', Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name), $resource_language->get('resources', 'unable_to_get_repo'));
 								else {
 									// Valid response
-									$queries->update('resources', $resource->id, array(
-										'updated' => date('U'),
-										'latest_version' => Output::getClean($github_query->tag_name)
-									));
-									
-									$queries->create('resources_releases', array(
-										'resource_id' => $resource->id,
-										'category_id' => $resource->category_id,
-										'release_title' => Output::getClean($github_query->name),
-										'release_description' => Output::getPurified($github_query->body),
-										'release_tag' => Output::getClean($github_query->tag_name),
-										'created' => date('U'),
-										'download_link' => Output::getClean($github_query->html_url)
-									));
-									
-									Redirect::to(URL::build('/resources/resource/', 'id=' . $resource->id));
-									die();
+                                    // Check update doesn't already exist
+                                    $exists = $queries->getWhere('resources_releases', array('release_tag', '=', Output::getClean($github_query->tag_name)));
+                                    if(count($exists)){
+                                        foreach($exists as $item){
+                                            if($item->resource_id == $resource->id){
+                                                $update_exists = true;
+                                            }
+                                        }
+                                    }
+
+                                    if(isset($update_exists)){
+                                        $error = $resource_language->get('resources', 'update_already_exists');
+                                    } else {
+                                        $queries->update('resources', $resource->id, array(
+                                            'updated' => date('U'),
+                                            'latest_version' => Output::getClean($github_query->tag_name)
+                                        ));
+
+                                        $queries->create('resources_releases', array(
+                                            'resource_id' => $resource->id,
+                                            'category_id' => $resource->category_id,
+                                            'release_title' => Output::getClean($github_query->name),
+                                            'release_description' => Output::getPurified($github_query->body),
+                                            'release_tag' => Output::getClean($github_query->tag_name),
+                                            'created' => date('U'),
+                                            'download_link' => Output::getClean($github_query->html_url)
+                                        ));
+
+                                        Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                                        die();
+                                    }
 								}
 								
 							} catch(Exception $e){
@@ -545,7 +615,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 					$smarty->assign(array(
 						'NEW_RESOURCE' => $resource_language->get('resources', 'update'),
 						'CANCEL' => $language->get('general', 'cancel'),
-						'CANCEL_LINK' => URL::build('/resources/resource/', 'id=' . $resource->id),
+						'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 						'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
 						'SELECT_RELEASE' => $resource_language->get('resources', 'select_release'),
 						'RELEASES' => $releases_array,
@@ -561,7 +631,345 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 					Redirect::to(URL::build('/resources'));
 					die();
 				}
-			}
+			} else if($_GET['do'] == 'edit'){
+			    // Check user can edit
+                if(!$user->isLoggedIn()){
+                    Redirect::to(URL::build('/resources'));
+                    die();
+                }
+                if($resource->creator_id == $user->data()->id || $resources->canEditResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+                    // Can edit
+                    $errors = array();
+
+                    if(Input::exists()){
+                        if(Token::check(Input::get('token'))){
+                            $validate = new Validate();
+                            $validation = $validate->check($_POST, array(
+                                'title' => array(
+                                    'min' => 2,
+                                    'max' => 64,
+                                    'required' => true
+                                ),
+                                'description' => array(
+                                    'min' => 2,
+                                    'max' => 20000,
+                                    'required' => true
+                                ),
+                                'contributors' => array(
+                                    'max' => 255
+                                )
+                            ));
+
+                            if($validation->passed()){
+                                try {
+                                    $cache->setCache('post_formatting');
+                                    $formatting = $cache->retrieve('formatting');
+
+                                    if($formatting == 'markdown'){
+                                        $content = Michelf\Markdown::defaultTransform($_POST['description']);
+                                        $content = Output::getClean($content);
+                                    } else $content = Output::getClean($_POST['description']);
+
+                                    $queries->update('resources', $resource->id, array(
+                                        'name' => Output::getClean(Input::get('title')),
+                                        'description' => $content,
+                                        'contributors' => Output::getClean(Input::get('contributors'))
+                                    ));
+
+                                    Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL(Input::get('title'))));
+                                    die();
+                                } catch(Exception $e){
+                                    $errors[] = $e->getMessage();
+                                }
+                            } else {
+                                foreach($validation->errors() as $item){
+                                    if(strpos($item, 'is required') !== false){
+                                        switch($item){
+                                            case (strpos($item, 'name') !== false):
+                                                $errors[] = $resource_language->get('resources', 'name_required');
+                                                break;
+                                            case (strpos($item, 'description') !== false):
+                                                $errors[] = $resource_language->get('resources', 'content_required');
+                                                break;
+                                        }
+                                    } else if(strpos($item, 'minimum') !== false){
+                                        switch($item){
+                                            case (strpos($item, 'name') !== false):
+                                                $errors[] = $resource_language->get('resources', 'name_min_2');
+                                                break;
+                                            case (strpos($item, 'description') !== false):
+                                                $errors[] = $resource_language->get('resources', 'content_min_2');
+                                                break;
+                                        }
+                                    } else if(strpos($item, 'maximum') !== false){
+                                        switch($item){
+                                            case (strpos($item, 'name') !== false):
+                                                $errors[] = $resource_language->get('resources', 'name_max_64');
+                                                break;
+                                            case (strpos($item, 'description') !== false):
+                                                $errors[] = $resource_language->get('resources', 'content_max_20000');
+                                                break;
+                                            case (strpos($item, 'contributors') !== false):
+                                                $errors[] = $resource_language->get('resources', 'contributors_max_255');
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+
+                        } else {
+                            $errors[] = $language->get('general', 'invalid_token');
+                        }
+                    }
+                } else {
+                    Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                    die();
+                }
+
+                if(isset($errors) && count($errors))
+                    $smarty->assign('ERRORS', $errors);
+
+                // Smarty variables
+                $smarty->assign(array(
+                    'EDITING_RESOURCE' => $resource_language->get('resources', 'editing_resource'),
+                    'NAME' => $resource_language->get('resources', 'resource_name'),
+                    'DESCRIPTION' => $resource_language->get('resources', 'resource_description'),
+                    'CONTRIBUTORS' => $resource_language->get('resources', 'contributors'),
+                    'RESOURCE_NAME' => Output::getClean($resource->name),
+                    'RESOURCE_DESCRIPTION' => Output::getPurified(htmlspecialchars_decode($resource->description)),
+                    'RESOURCE_CONTRIBUTORS' => Output::getClean($resource->contributors),
+                    'CANCEL' => $language->get('general', 'cancel'),
+                    'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
+                    'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                    'TOKEN' => Token::get(),
+                    'SUBMIT' => $language->get('general', 'submit')
+                ));
+
+                // Get post formatting type (HTML or Markdown)
+                $cache->setCache('post_formatting');
+                $formatting = $cache->retrieve('formatting');
+
+                if($formatting == 'markdown'){
+                    // Markdown
+                    $smarty->assign('MARKDOWN', true);
+                    $smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
+                }
+
+                $smarty->display('custom/templates/' . TEMPLATE . '/resources/edit_resource.tpl');
+
+            } else if($_GET['do'] == 'move'){
+                // Check user can move
+                if(!$user->isLoggedIn()){
+                    Redirect::to(URL::build('/resources'));
+                    die();
+                }
+                if($resources->canMoveResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+                    $errors = array();
+
+                    // Get categories
+                    $categories = $queries->getWhere('resources_categories', array('id', '<>', $resource->category_id));
+                    if(!count($categories)){
+                        $smarty->assign('NO_CATEGORIES', $resource_language->get('resources', 'no_categories_available'));
+                    }
+
+                    if(Input::exists()){
+                        if(Token::check(Input::get('token'))){
+                            if(isset($_POST['category_id']) && is_numeric($_POST['category_id'])) {
+                                // Move resource
+                                $category = $queries->getWhere('resources_categories', array('id', '=', $_POST['category_id']));
+                                if(count($category)) {
+                                    try {
+                                        $queries->update('resources', $resource->id, array(
+                                            'category_id' => $_POST['category_id']
+                                        ));
+
+                                        $releases = $queries->getWhere('resources_releases', array('resource_id', '=', $resource->id));
+                                        if (count($releases)) {
+                                            foreach ($releases as $release) {
+                                                $queries->update('resources_releases', $release->id, array(
+                                                    'category_id' => $_POST['category_id']
+                                                ));
+                                            }
+                                        }
+
+                                        Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                                        die();
+                                    } catch (Exception $e) {
+                                        $errors[] = $e->getMessage();
+                                    }
+                                } else
+                                    $errors[] = $resource_language->get('resources', 'invalid_category');
+                            } else
+                                $errors[] = $resource_language->get('resources', 'invalid_category');
+
+                        } else
+                            $errors[] = $language->get('general', 'invalid_token');
+                    }
+
+                    if(count($errors))
+                        $smarty->assign('ERRORS', $errors);
+
+                    $smarty->assign(array(
+                        'MOVE_RESOURCE' => $resource_language->get('resources', 'move_resource'),
+                        'TOKEN' => Token::get(),
+                        'CANCEL' => $language->get('general', 'cancel'),
+                        'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
+                        'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                        'SUBMIT' => $language->get('general', 'submit'),
+                        'MOVE_TO' => $resource_language->get('resources', 'move_to'),
+                        'CATEGORIES' => $categories
+                    ));
+
+                    $smarty->display('custom/templates/' . TEMPLATE . '/resources/move.tpl');
+                } else {
+                    Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                    die();
+                }
+            } else if($_GET['do'] == 'delete'){
+                // Check user can delete
+                if(!$user->isLoggedIn()){
+                    Redirect::to(URL::build('/resources'));
+                    die();
+                }
+                if($resources->canDeleteResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+                    $errors = array();
+
+                    if(Input::exists()){
+                        if(Token::check(Input::get('token'))){
+                            // Delete resource
+                            try {
+                                $queries->delete('resources', array('id', '=', $resource->id));
+                                $queries->delete('resources_comments', array('resource_id', '=', $resource->id));
+                                $queries->delete('resources_releases', array('resource_id', '=', $resource->id));
+
+                                Redirect::to(URL::build('/resources'));
+                                die();
+                            } catch(Exception $e){
+                                $errors[] = $e->getMessage();
+                            }
+
+                        } else
+                            $errors[] = $language->get('general', 'invalid_token');
+                    }
+
+                    if(count($errors))
+                        $smarty->assign('ERRORS', $errors);
+
+                    $smarty->assign(array(
+                        'CONFIRM_DELETE_RESOURCE' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'confirm_delete_resource')),
+                        'TOKEN' => Token::get(),
+                        'CANCEL' => $language->get('general', 'cancel'),
+                        'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                        'DELETE' => $language->get('general', 'delete')
+                    ));
+
+                    $smarty->display('custom/templates/' . TEMPLATE . '/resources/delete.tpl');
+                } else {
+                    Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                    die();
+                }
+            } else if($_GET['do'] == 'delete_review'){
+                // Check user can delete reviews
+                if(!$user->isLoggedIn()){
+                    Redirect::to(URL::build('/resources'));
+                    die();
+                }
+                if($resources->canDeleteReviews($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+                    if(!isset($_GET['review']) || !is_numeric($_GET['review'])){
+                        Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                        die();
+                    }
+                    // Ensure review exists
+                    $review = $queries->getWhere('resources_comments', array('id', '=', $_GET['review']));
+                    if(count($review)){
+                        // Delete it
+                        try {
+                            $queries->delete('resources_comments', array('id', '=', $_GET['review']));
+
+                            // Re-calculate rating
+                            // Unhide user's previous rating if it exists
+                            $ratings = $queries->getWhere('resources_comments', array('resource_id', '=', $resource->id));
+                            if(count($ratings)){
+                                $overall_rating = 0;
+                                $overall_rating_count = 0;
+                                $release_rating = 0;
+                                $release_rating_count = 0;
+                                $last_rating = 0;
+                                $last_rating_created = 0;
+                                $last_rating_value = 0;
+
+                                foreach($ratings as $rating){
+                                    if($rating->author_id == $user->data()->id && $rating->hidden == 1 && $rating->created > $last_rating_created){
+                                        // Unhide rating
+                                        $last_rating = $rating->id;
+                                        $last_rating_created = $rating->created;
+
+                                        if($rating->release_tag == $resource->latest_version)
+                                            $last_rating_value = $rating->rating;
+
+                                    } else if($rating->hidden == 0){
+                                        // Update rating
+                                        // Overall
+                                        $overall_rating = $overall_rating + $rating->rating;
+                                        $overall_rating_count++;
+
+                                        if($rating->release_tag == $resource->latest_version){
+                                            // Release
+                                            $release_rating = $release_rating + $rating->rating;
+                                            $release_rating_count++;
+                                        }
+                                    }
+                                }
+
+                                if($last_rating > 0){
+                                    $queries->update('resources_comments', $last_rating, array(
+                                        'hidden' => 0
+                                    ));
+
+                                    if($last_rating_value > 0){
+                                        $overall_rating += $last_rating_value;
+                                        $overall_rating_count++;
+                                        $release_rating = $release_rating += $last_rating_value;
+                                        $release_rating_count++;
+                                    }
+
+                                }
+
+                                if($overall_rating > 0) {
+                                    $overall_rating = $overall_rating / $overall_rating_count;
+                                    $overall_rating = round($overall_rating * 10);
+                                }
+
+                                if($release_rating > 0) {
+                                    $release_rating = $release_rating / $release_rating_count;
+                                    $release_rating = round($release_rating * 10);
+                                }
+                            } else {
+                                $overall_rating = 0;
+                                $release_rating = 0;
+                            }
+
+                            $queries->update('resources', $resource->id, array(
+                                'rating' => $overall_rating
+                            ));
+                            $queries->update('resources_releases', $latest_release->id, array(
+                                'rating' => $release_rating
+                            ));
+
+                            $cache->setCache('resource-comments-' . $resource->id);
+                            $cache->erase('comments');
+
+                        } catch(Exception $e){
+                            // error
+                        }
+                    }
+                    Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                    die();
+                }
+            } else {
+			    Redirect::to(URL::build('/resources'));
+			    die();
+            }
 		}
 	}
 	
@@ -588,6 +996,46 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 	<?php
 	if($user->isLoggedIn()) echo '<script type="text/javascript">' . Input::createEditor('editor') . '</script>';
 	}
+	if(isset($_GET['do']) && $_GET['do'] == 'edit'){
+    // Get clean post content
+    if($formatting == 'markdown'){
+        // Markdown
+        require('core/includes/markdown/tomarkdown/autoload.php');
+        $converter = new League\HTMLToMarkdown\HtmlConverter(array('strip_tags' => true));
+
+        $clean = $converter->convert(htmlspecialchars_decode($resource->description));
+        $clean = Output::getPurified($clean);
+        ?>
+        <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/js/emojione.min.js"></script>
+        <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emojionearea/js/emojionearea.min.js"></script>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+                var el = $("#markdown").emojioneArea({
+                    pickerPosition: "bottom"
+                });
+
+                el[0].emojioneArea.setText('<?php echo str_replace(array("'", "&gt;", "&amp;"), array("&#39;", ">", "&"), str_replace(array("\r", "\n"), array("\\r", "\\n"), $clean)); ?>');
+            });
+        </script>
+    <?php
+    } else {
+    $clean = htmlspecialchars_decode($resource->description);
+    $clean = Output::getPurified($clean);
+    ?>
+        <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/js/emojione.min.js"></script>
+        <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js"></script>
+        <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/ckeditor.js"></script>
+
+        <script type="text/javascript">
+            <?php
+            echo Input::createEditor('editor');
+            ?>
+        </script>
+
+        <?php
+    }
+    }
 	?>
   <script type="text/javascript">
       var $star_rating = $('.star-rating.view .fa');

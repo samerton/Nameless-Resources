@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr2
+ *  NamelessMC version 2.0.0-pr3
  *
  *  License: MIT
  *
@@ -42,9 +42,10 @@ $resource_language = new Language(ROOT_PATH . '/modules/Resources/language', LAN
 // Define URLs which belong to this module
 $pages->add('Resources', '/admin/resources', 'pages/admin/resources.php');
 $pages->add('Resources', '/resources', 'pages/resources/index.php');
-$pages->add('Resources', '/resources/category/', 'pages/resources/category.php');
+$pages->add('Resources', '/resources/category', 'pages/resources/category.php');
 $pages->add('Resources', '/resources/resource', 'pages/resources/resource.php');
 $pages->add('Resources', '/resources/new', 'pages/resources/new.php');
+$pages->add('Resources', '/resources/author', 'pages/resources/author.php');
 
 // Add link to navbar
 $cache->setCache('navbar_order');

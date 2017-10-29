@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr2
+ *  NamelessMC version 2.0.0-pr3
  *
  *  License: MIT
  *
@@ -14,6 +14,10 @@
 
 // Always define page name
 define('PAGE', 'resources');
+
+require('core/includes/emojione/autoload.php'); // Emojione
+require('core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
+$emojione = new Emojione\Client(new Emojione\Ruleset());
 
 // Ensure user is logged in
 if(!$user->isLoggedIn()){
@@ -32,7 +36,7 @@ if(Input::exists()){
 				'name' => array(
 					'required' => true,
 					'min' => 2,
-					'max' => 32
+					'max' => 64
 				),
 				'category' => array(
 					'required' => true
@@ -50,7 +54,7 @@ if(Input::exists()){
 				'github_repo' => array(
 					'required' => true,
 					'min' => 2,
-					'max' => 32
+					'max' => 64
 				),
 				'contributors' => array(
 					'max' => 255
@@ -58,21 +62,21 @@ if(Input::exists()){
 			));
 			
 			if($validation->passed()){
-			  // Check permissions
-        $permissions = $queries->getWhere('resources_categories_permissions', array('category_id', '=', $_POST['category']));
-        if(!count($permissions)){
-            Redirect::to(URL::build('/resources'));
-            die();
-        }
+				// Check permissions
+				$permissions = $queries->getWhere('resources_categories_permissions', array('category_id', '=', $_POST['category']));
+				if(!count($permissions)){
+				  Redirect::to(URL::build('/resources'));
+				  die();
+				}
 
-        foreach($permissions as $permission){
-            if($permission->group_id == $user->data()->group_id && $permission->post == 1)
-                $has_permission = 1;
-        }
-        if(!isset($has_permission)){
-            Redirect::to(URL::build('/resources'));
-            die();
-        }
+				foreach($permissions as $permission){
+				  if($permission->group_id == $user->data()->group_id && $permission->post == 1)
+				    $has_permission = 1;
+				}
+				if(!isset($has_permission)){
+				  Redirect::to(URL::build('/resources'));
+				  die();
+				}
 
 				// Check GitHub API
 				try {
@@ -157,7 +161,7 @@ if(Input::exists()){
 					} else if(strpos($item, 'maximum') !== false){
 						switch($item){
 							case (strpos($item, 'name') !== false):
-								$errors[] = $resource_language->get('resources', 'name_max_32');
+								$errors[] = $resource_language->get('resources', 'name_max_64');
 							break;
 							case (strpos($item, 'content') !== false):
 								$errors[] = $resource_language->get('resources', 'content_max_20000');
@@ -166,7 +170,7 @@ if(Input::exists()){
 								$errors[] = $resource_language->get('resources', 'github_username_max_32');
 							break;
 							case (strpos($item, 'github_repo') !== false):
-								$errors[] = $resource_language->get('resources', 'github_repo_max_32');
+								$errors[] = $resource_language->get('resources', 'github_repo_max_64');
 							break;
 							case (strpos($item, 'contributors') !== false):
 								$errors[] = $resource_language->get('resources', 'contributors_max_255');
@@ -224,11 +228,20 @@ if(Input::exists()){
 				else {
 					// Valid response
 					// Create resource
+                    // Format description
+                    $cache->setCache('post_formatting');
+                    $formatting = $cache->retrieve('formatting');
+
+                    if($formatting == 'markdown'){
+                        $content = Michelf\Markdown::defaultTransform($_SESSION['post_data']['content']);
+                        $content = Output::getClean($content);
+                    } else $content = Output::getClean($_SESSION['post_data']['content']);
+
 					$queries->create('resources', array(
 						'category_id' => $_SESSION['post_data']['category'],
 						'creator_id' => $user->data()->id,
 						'name' => Output::getClean($_SESSION['post_data']['name']),
-						'description' => Output::getClean(nl2br($_SESSION['post_data']['content'])),
+						'description' => $content,
 						'contributors' => ((isset($_SESSION['post_data']['contributors']) && !is_null($_SESSION['post_data']['contributors'])) ? Output::getClean($_SESSION['post_data']['contributors']) : null),
 						'created' => date('U'),
 						'updated' => date('U'),
@@ -252,7 +265,7 @@ if(Input::exists()){
 					
 					unset($_SESSION['post_data']);
 					
-					Redirect::to(URL::build('/resources/resource/', 'id=' . $resource_id));
+					Redirect::to(URL::build('/resources/resource/' . $resource_id));
 					die();
 				}
 				
@@ -279,7 +292,7 @@ if(Input::exists()){
 	  require('core/templates/header.php');
 	  ?>
   
-	  <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css">
+    <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css">
     <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/css/emojione.min.css"/>
     <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emojionearea/css/emojionearea.min.css"/>
   
@@ -293,20 +306,20 @@ if(Input::exists()){
 	if(!isset($releases_array)){
 		// Obtain categories + permissions from database
 		$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
-    $permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user->data()->group_id));
+		$permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user->data()->group_id));
 		
 		// Assign to Smarty array
 		$categories_array = array();
-    foreach($categories as $category){
-        // Check permissions
-        foreach($permissions as $permission){
+		foreach($categories as $category){
+          // Check permissions
+          foreach($permissions as $permission){
             if($permission->category_id == $category->id && $permission->post == 1)
                 $categories_array[] = array(
                     'name' => Output::getClean($category->name),
                     'id' => $category->id
                 );
-        }
-    }
+          }
+		}
 		$categories = null;
 		
 		// Assign post content if it already exists

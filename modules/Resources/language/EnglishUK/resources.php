@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr2
+ *  NamelessMC version 2.0.0-pr3
  *
  *  License: MIT
  *
@@ -37,13 +37,14 @@ $language = array(
 	'content_min_2' => 'The resource description must be a minimum of 2 characters',
 	'github_username_min_2' => 'Your GitHub username must be a minimum of 2 characters',
 	'github_repo_min_2' => 'Your GitHub repository name must be a minimum of 2 characters',
-	'name_max_32' => 'The resource name must be a maximum of 32 characters',
+	'name_max_64' => 'The resource name must be a maximum of 64 characters',
 	'content_max_20000' => 'The resource description must be a maximum of 20000 characters',
 	'github_username_max_32' => 'Your GitHub username must be a maximum of 32 characters',
-	'github_repo_max_32' => 'Your GitHub repository name must be a maximum of 32 characters',
+	'github_repo_max_64' => 'Your GitHub repository name must be a maximum of 64 characters',
 	'version_max_16' => 'The version tag must be a maximum of 16 characters',
 	'contributors_max_255' => 'The contributors list must be a maximum of 255 characters',
 	'unable_to_get_repo' => 'Unable to get latest release information from {x}. Have you created a release on GitHub?',
+	'update_already_exists' => 'An update with that tag already exists!',
 	'select_release' => 'Select a release:',
 	'resource' => 'Resource',
 	'stats' => 'Stats',
@@ -63,6 +64,16 @@ $language = array(
 	'updated_x' => 'updated {x}', // Don't replace {x}
 	'viewing_all_releases' => 'Viewing all releases for resource {x}', // Don't replace {x}
 	'viewing_release' => 'Viewing release {x} for resource {y}', // Don't replace {x} or {y}
+    'editing_resource' => 'Editing Resource',
+    'contributors_x' => 'Contributors: {x}', // Don't replace {x}
+    'move_resource' => 'Move resource',
+    'delete_resource' => 'Delete resource',
+    'confirm_delete_resource' => 'Are you sure you want to delete the resource {x}?', // Don't replace {x}
+    'invalid_category' => 'You have selected an invalid category',
+    'move_to' => 'Move resource to:',
+    'no_categories_available' => 'There are no categories available to move this resource to!',
+    'delete_review' => 'Delete Review',
+    'confirm_delete_review' => 'Are you sure you want to delete this review?',
 
     // Admin
     'permissions' => 'Permissions',
