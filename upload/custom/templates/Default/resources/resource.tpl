@@ -15,7 +15,7 @@
 	  
 	  <div class="row">
 	    <div class="col-md-9">
-	      <div class="forum-post">
+	      <div class="forum_post">
 	        {$DESCRIPTION}
 	      </div>
 
