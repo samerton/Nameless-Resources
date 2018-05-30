@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr2
+ *  NamelessMC version 2.0.0-pr4
  *
  *  License: MIT
  *
@@ -21,7 +21,11 @@ if($user->isLoggedIn()){
 			// They haven't, do so now
 			Redirect::to(URL::build('/admin/auth'));
 			die();
-		}
+		} else if($user->data()->group_id != 2 && !$user->hasPermission('admincp.resources')){
+		    // No permission
+            Redirect::to(URL::build('/admin'));
+            die();
+        }
 	}
 } else {
 	// Not logged in
@@ -76,17 +80,20 @@ $admin_page = 'resources';
 				if(Session::exists('adm-resources')){
 					echo Session::flash('adm-resources');
 				}
+				if(isset($error)) echo '<div class="alert alert-danger">' . $error . '</div>';
+
+				// Get categories
 				$categories = $queries->orderAll('resources_categories', 'display_order', 'ASC');
 
 				// Form token
 				$token = Token::get();
 				?>
 
-				<div class="panel panel-default">
-				  <div class="panel-heading">
+				<div class="card card-default">
+				  <div class="card-header">
 				    <?php echo $resource_language->get('resources', 'categories'); ?>
 				  </div>
-				  <div class="panel-body">
+				  <div class="card-block">
 					<?php 
 					$number = count($categories);
 					$i = 1;

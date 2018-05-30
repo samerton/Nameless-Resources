@@ -336,7 +336,8 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 			'LOGGED_IN' => ($user->isLoggedIn() ? true : false),
 			'TOKEN' => Token::get(),
 			'SUBMIT' => $language->get('general', 'submit'),
-            'CONTRIBUTORS' => str_replace('{x}', Output::getClean($resource->contributors), $resource_language->get('resources', 'contributors_x'))
+            'CONTRIBUTORS' => str_replace('{x}', Output::getClean($resource->contributors), $resource_language->get('resources', 'contributors_x')),
+            'HAS_CONTRIBUTORS' => (strlen(trim($resource->contributors)) > 0) ? 1 : 0
 		));
 		
 		if($user->isLoggedIn() && $resource->creator_id == $user->data()->id){
@@ -554,6 +555,25 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
                                             'release_tag' => Output::getClean($github_query->tag_name),
                                             'created' => date('U'),
                                             'download_link' => Output::getClean($github_query->html_url)
+                                        ));
+
+                                        // Hook
+                                        $new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
+
+                                        if(count($new_resource_category))
+                                            $new_resource_category = Output::getClean($new_resource_category[0]->name);
+
+                                        else
+                                            $new_resource_category = 'Unknown';
+
+                                        HookHandler::executeEvent('updateResource', array(
+                                            'event' => 'updateResource',
+                                            'username' => Output::getClean($user->data()->nickname),
+                                            'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
+                                            'content_full' => str_replace('&nbsp;', '', strip_tags($github_query->body)),
+                                            'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+                                            'title' => Output::getClean($resource->name),
+                                            'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
                                         ));
 
                                         Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));

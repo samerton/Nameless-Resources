@@ -19,7 +19,7 @@
 	        {$DESCRIPTION}
 	      </div>
 
-		  <br />{$CONTRIBUTORS}
+		  <br />{if $HAS_CONTRIBUTORS eq 1}{$CONTRIBUTORS} {$RESOURCE_CONTRIBUTORS}{/if}
 		  
 		  <hr />
 		  

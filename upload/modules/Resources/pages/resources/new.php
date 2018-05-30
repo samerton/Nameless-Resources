@@ -262,8 +262,27 @@ if(Input::exists()){
 						'created' => date('U'),
 						'download_link' => Output::getClean($github_query->html_url)
 					));
-					
-					unset($_SESSION['post_data']);
+
+					// Hook
+                    $new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $_SESSION['post_data']['category']));
+
+                    if(count($new_resource_category))
+                        $new_resource_category = Output::getClean($new_resource_category[0]->name);
+
+                    else
+                        $new_resource_category = 'Unknown';
+
+                    HookHandler::executeEvent('newResource', array(
+                        'event' => 'newResource',
+                        'username' => Output::getClean($user->data()->nickname),
+                        'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
+                        'content_full' => str_replace('&nbsp;', '', strip_tags(htmlspecialchars_decode($content))),
+                        'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+                        'title' => Output::getClean($_SESSION['post_data']['name']),
+                        'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL($_SESSION['post_data']['name'])), '/')
+                    ));
+
+                    unset($_SESSION['post_data']);
 					
 					Redirect::to(URL::build('/resources/resource/' . $resource_id));
 					die();

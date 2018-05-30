@@ -99,5 +99,9 @@ $language = array(
     'can_delete_reviews' => 'Can delete reviews?',
     'delete_category' => 'Delete Category',
     'move_resources_to' => 'Move resources to',
-    'delete_resources' => 'Delete resources'
+    'delete_resources' => 'Delete resources',
+
+    // Hook
+    'new_resource_text' => 'New resource created in {x} by {y}',
+    'updated_resource_text' => 'Resource updated in {x} by {y}'
 );
