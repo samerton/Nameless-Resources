@@ -67,7 +67,15 @@ if(!$cache->isCached('resources_order')){
 } else {
     $resources_order = $cache->retrieve('resources_order');
 }
-$navigation->add('resources', $resource_language->get('resources', 'resources'), URL::build('/resources'), 'top', null, $resources_order);
+
+$cache->setCache('navbar_icons');
+if(!$cache->isCached('resources_icon')){
+    $icon = '';
+} else {
+    $icon = $cache->retrieve('resources_icon');
+}
+
+$navigation->add('resources', $resource_language->get('resources', 'resources'), URL::build('/resources'), 'top', null, $resources_order, $icon);
 
 // Add link to admin sidebar
 if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources')) {
