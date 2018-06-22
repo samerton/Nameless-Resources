@@ -3,15 +3,20 @@
 <div class="container">
   <div class="card">
     <div class="card-body">
-	  <h2 style="display:inline;">{$VIEWING_ALL_RELEASES}</h2>
-	  <span class="pull-right">
-		<a href="{$BACK_LINK}" class="btn btn-danger">{$BACK}</a>
-	  </span>
-	  
+
+      <div class="row">
+        <div class="col-md-9">
+          <h2 style="display:inline;">{$VIEWING_ALL_RELEASES}</h2>
+        </div>
+        <div class="col-md-3">
+          <span class="float-right"><a href="{$BACK_LINK}" class="btn btn-danger">{$BACK}</a></span>
+        </div>
+      </div>
+
 	  <br /><br />
-	  
+
 	  {foreach from=$RELEASES item=release}
-	  
+
 	  <a href="{$release.url}">{$release.name}</a>
 	  <span class="pull-right">
 	    <span data-toggle="tooltip" data-trigger="hover" data-original-title="{$release.date_full}">{$release.date}</span>
@@ -31,11 +36,11 @@
 	    <input type="hidden" name="rating" class="rating-value" value="{$release.rating}">
 	  </div>
 	  <hr />
-	  
+
 	  {/foreach}
-	  
+
 	  {$PAGINATION}
-	  
+
     </div>
   </div>
 </div>

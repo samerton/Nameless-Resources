@@ -3,16 +3,22 @@
 <div class="container">
   <div class="card">
     <div class="card-body">
-	  <h2 style="display:inline;">{$VIEWING_RESOURCE}</h2> {$RELEASE_TAG}
-	  <span class="pull-right">
-	    {if isset($CAN_UPDATE)}
-		  <a href="{$UPDATE_LINK}" class="btn btn-info">{$UPDATE}</a>
-		{/if}
-		<a href="{$BACK_LINK}" class="btn btn-danger">{$RESOURCE_INDEX}</a>
-	  </span>
-	  
+      <div class="row">
+        <div class="col-md-9">
+          <h2 style="display:inline;">{$VIEWING_RESOURCE}</h2> {$RELEASE_TAG}
+        </div>
+        <div class="col-md-3">
+          <span class="float-right">
+          {if isset($CAN_UPDATE)}
+      		  <a href="{$UPDATE_LINK}" class="btn btn-info">{$UPDATE}</a>
+      		{/if}
+      		<a href="{$BACK_LINK}" class="btn btn-danger">{$RESOURCE_INDEX}</a>
+      		</span>
+        </div>
+      </div>
+
 	  <hr />
-	  
+
 	  <div class="row">
 	    <div class="col-md-9">
 	      <div class="forum_post">
@@ -20,11 +26,11 @@
 	      </div>
 
 		  <br />{if $HAS_CONTRIBUTORS eq 1}{$CONTRIBUTORS} {$RESOURCE_CONTRIBUTORS}{/if}
-		  
+
 		  <hr />
-		  
+
 		  <a href="{$DOWNLOAD_URL}" class="btn btn-primary" target="_blank">{$DOWNLOAD}</a>
-		  
+
 		  <span class="pull-right">
 			{if isset($CAN_EDIT)}<a href="{$EDIT_LINK}" class="btn btn-secondary">{$EDIT}</a>{/if}
 			{if isset($MODERATION) && count($MODERATION)}
@@ -39,18 +45,18 @@
 			{/if}
 		    <a href="{$OTHER_RELEASES_LINK}" class="btn btn-info">{$OTHER_RELEASES}</a>
 		  </span>
-		  
+
 		</div>
-		
+
 		<div class="col-md-3">
 		  <div class="card">
 		    <div class="card-header">
 			  {$RESOURCE}
 			</div>
-			
+
 		    <div class="card-body">
 			  <center>
-				<div class="star-rating view"> 
+				<div class="star-rating view">
 				  <span class="fa fa-star-o" data-rating="1" style="color:gold;"></span>
 				  <span class="fa fa-star-o" data-rating="2" style="color:gold"></span>
 				  <span class="fa fa-star-o" data-rating="3" style="color:gold;"></span>
@@ -68,25 +74,25 @@
 		    <div class="card-header">
 			  {$AUTHOR}
 			</div>
-			
+
 		    <div class="card-body">
 			  <center>
 			    <a href="{$AUTHOR_PROFILE}"><img src="{$AUTHOR_AVATAR}" class="rounded" alt="{$AUTHOR_NICKNAME}" style="max-height:80px; max-width:80px;" /></a><br />
 				<a href="{$AUTHOR_PROFILE}" style="{$AUTHOR_STYLE}">{$AUTHOR_NICKNAME}</a>
 				<hr />
 			  </center>
-			
+
 			  <a href="{$AUTHOR_RESOURCES}">&raquo; {$VIEW_OTHER_RESOURCES}</a>
-			  
+
 			</div>
 		  </div>
 		</div>
 	  </div>
-	  
+
 	  <hr />
-		
+
 	  <h3>{$REVIEWS}</h3>
-	  
+
 	  {if count($COMMENT_ARRAY)}
 	    {foreach from=$COMMENT_ARRAY item=comment}
 		  <div class="card">
@@ -115,12 +121,12 @@
 	  {else}
 	    <p>{$NO_REVIEWS}</p>
 	  {/if}
-	  
+
 	  {if $LOGGED_IN == true}
 	  <h4>{$NEW_REVIEW}</h4>
 	  <form action="" method="post">
 	    <div class="form-group">
-		  <div class="star-rating set"> 
+		  <div class="star-rating set">
 		    <span class="fa fa-star-o" data-rating="1" style="color:gold;"></span>
 		    <span class="fa fa-star-o" data-rating="2" style="color:gold"></span>
 		    <span class="fa fa-star-o" data-rating="3" style="color:gold;"></span>
@@ -143,7 +149,7 @@
 		</div>
 	  </form>
 	  {/if}
-	  
+
     </div>
   </div>
 </div>
