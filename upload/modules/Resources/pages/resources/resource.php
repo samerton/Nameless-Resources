@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
@@ -93,11 +93,11 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
     <!-- Site Properties -->
-	<?php 
+	<?php
 	$title = Output::getClean($resource->name);
-	require('core/templates/header.php'); 
+	require('core/templates/header.php');
 	?>
-	
+
 	<link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css">
     <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/css/emojione.min.css"/>
 	<link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/css/emojione.sprites.css"/>
@@ -110,25 +110,25 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
             cursor: pointer;
         }
     </style>
-  
+
   </head>
 
   <body>
-    <?php 
-	require('core/templates/navbar.php'); 
+    <?php
+	require('core/templates/navbar.php');
 	require('core/templates/footer.php');
-	
+
 	// Get post formatting type (HTML or Markdown)
 	$cache->setCache('post_formatting');
 	$formatting = $cache->retrieve('formatting');
-	
+
 	if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		// Handle input
 		if(Input::exists()){
 			if($user->isLoggedIn()){
 				if(Token::check(Input::get('token'))){
 					$validate = new Validate();
-					
+
 					$validation = $validate->check($_POST, array(
 						'rating' => array(
 							'required' => true
@@ -139,19 +139,19 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 							'max' => 20000
 						)
 					));
-					
+
 					if($validation->passed()){
 						// Create review
 						// Validate rating
 						$rating = round($_POST['rating']);
-						
+
 						if($rating < 1 || $rating > 5){
 							// Invalid rating
-							
+
 						} else {
 							// Get latest release tag
 							$release_tag = $latest_release->release_tag;
-							
+
 							// Create comment
 							$queries->create('resources_comments', array(
 								'resource_id' => $resource->id,
@@ -162,7 +162,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 								'rating' => $rating
 							));
 							$rating_id = $queries->getLastId();
-							
+
 							// Calculate overall rating
 							// Ensure user hasn't already rated, and if so, hide their rating
 							$ratings = $queries->getWhere('resources_comments', array('resource_id', '=', $resource->id));
@@ -171,7 +171,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 								$overall_rating_count = 0;
 								$release_rating = 0;
 								$release_rating_count = 0;
-								
+
 								foreach($ratings as $rating){
 									if($rating_id != $rating->id && $rating->author_id == $user->data()->id && $rating->hidden == 0){
 										// Hide rating
@@ -183,7 +183,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 										// Overall
 										$overall_rating = $overall_rating + $rating->rating;
 										$overall_rating_count++;
-										
+
 										if($rating->release_tag == $release_tag){
 											// Release
 											$release_rating = $release_rating + $rating->rating;
@@ -191,13 +191,13 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 										}
 									}
 								}
-								
+
 								$overall_rating = $overall_rating / $overall_rating_count;
 								$overall_rating = round($overall_rating * 10);
-								
+
 								$release_rating = $release_rating / $release_rating_count;
 								$release_rating = round($release_rating * 10);
-								
+
 								$queries->update('resources', $resource->id, array(
 									'rating' => $overall_rating
 								));
@@ -212,18 +212,18 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 							Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
 							die();
 						}
-						
+
 					} else {
 						// Errors
-						
+
 					}
 				}
 			}
 		}
-		
+
 		// Check comment cache
 		$cache->setCache('resource-comments-' . $resource->id);
-		
+
 		if(!$cache->isCached('comments')){
 			// Get comments
 			$comments = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
@@ -239,14 +239,14 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 
 			// Cache
 			$cache->store('comments', $comments, 120);
-			
+
 		} else $comments = $cache->retrieve('comments');
 
 		// Pagination
         $paginator = new Paginator();
 		$results = $paginator->getLimited($comments, 10, $p, count($comments));
 		$pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringtoURL($resource->name) . '/', true));
-		
+
 		if(count($comments))
 			$smarty->assign('PAGINATION', $pagination);
 		else
@@ -263,15 +263,15 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
                 'CONFIRM_DELETE_REVIEW' => $resource_language->get('resources', 'confirm_delete_review')
             ));
         }
-		
+
 		if(count($comments)){
 			// Display the correct number of comments
 			$n = 0;
-			
+
 			// Get post formatting type (HTML or Markdown)
 			$cache->setCache('post_formatting');
 			$formatting = $cache->retrieve('formatting');
-			
+
 			while($n < count($results->data)){
 				$comments_array[] = array(
 					'username' => Output::getClean($user->idToNickname($results->data[$n]->author_id)),
@@ -289,15 +289,15 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 				$n++;
 			}
 		} else $comments_array = null;
-		
+
 		// Get latest update
 		$latest_update = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC LIMIT 1');
-		
+
 		if(!count($latest_update)){
 			Redirect::to(URL::build('/resources'));
 			die();
 		} else $latest_update = $latest_update[0];
-		
+
 		// Assign Smarty variables
 		$smarty->assign(array(
 			'VIEWING_RESOURCE' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_resource_x')),
@@ -339,7 +339,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
             'CONTRIBUTORS' => str_replace('{x}', Output::getClean($resource->contributors), $resource_language->get('resources', 'contributors_x')),
             'HAS_CONTRIBUTORS' => (strlen(trim($resource->contributors)) > 0) ? 1 : 0
 		));
-		
+
 		if($user->isLoggedIn() && $resource->creator_id == $user->data()->id){
 			// Allow updating
 			$smarty->assign(array(
@@ -376,35 +376,35 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
             $smarty->assign('MODERATION', $moderation);
 		    $smarty->assign('MODERATION_TEXT', $resource_language->get('resources', 'moderation'));
         }
-	
+
 		// Markdown?
 		if($formatting == 'markdown'){
 			// Markdown
 			$smarty->assign('MARKDOWN', true);
 			$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
 		}
-		
+
 		// Load Smarty template
 		$smarty->display('custom/templates/' . TEMPLATE . '/resources/resource.tpl');
-		
+
 	} else {
 		if(isset($_GET['releases'])){
 			if($_GET['releases'] == 'all'){
 				// Display list of all releases
 				$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
-				
+
 				if(!count($releases)){
 					Redirect::to('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name));
 					die();
 				}
-				
+
 				// Pagination
                 $paginator = new Paginator();
 				$results = $paginator->getLimited($releases, 10, $p, count($releases));
 				$pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all&amp;'));
-				
+
 				$smarty->assign('PAGINATION', $pagination);
-				
+
 				// Assign releases to new array for Smarty
 				$releases_array = array();
 				foreach($releases as $release){
@@ -428,24 +428,24 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 					'BACK' => $language->get('general', 'back'),
 					'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name))
 				));
-				
+
 				// Display template
 				$smarty->display('custom/templates/' . TEMPLATE . '/resources/resource_all_releases.tpl');
-				
+
 			} else {
 				if(!is_numeric($_GET['releases'])){
 					Redirect::to(URL::build('/resources'));
 					die();
 				}
-				
+
 				// Get info about a specific release
 				$release = $queries->getWhere('resources_releases', array('id', '=', $_GET['releases']));
-				
+
 				if(!count($release)){
 					Redirect::to(URL::build('/resources'));
 					die();
 				} else $release = $release[0];
-				
+
 				// Assign Smarty variables
 				$smarty->assign(array(
 					'VIEWING_RELEASE' => str_replace(array('{x}', '{y}'), array(Output::getClean($release->release_title), Output::getClean($resource->name)), $resource_language->get('resources', 'viewing_release')),
@@ -459,10 +459,10 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 					'DATE' => $timeago->inWords(date('d M Y, H:i', $release->created), $language->getTimeLanguage()),
 					'DATE_FULL' => date('d M Y, H:i', $release->created)
 				));
-				
+
 				// Display template
 				$smarty->display('custom/templates/' . TEMPLATE . '/resources/resource_view_release.tpl');
-				
+
 			}
 		} else if(isset($_GET['do'])){
 			if($_GET['do'] == 'download'){
@@ -479,14 +479,14 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 						Redirect::to(URL::build('/resources'));
 						die();
 					}
-					
+
 					$release = $queries->getWhere('resources_releases', array('id', '=', $_GET['release']));
 					if(!count($release) || $release[0]->resource_id != $resource->id){
 						Redirect::to(URL::build('/resources'));
 						die();
 					} else $release = $release[0];
 				}
-				
+
 				// Increment download counter
 				if($user->isLoggedIn() || Cookie::exists('alert-box')){
 					if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
@@ -495,7 +495,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 						Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
 					}
 				}
-				
+
 				// Redirect to download
 				Redirect::to(Output::getClean($release->download_link));
 				die();
@@ -509,7 +509,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 							try {
 								// Use cURL
 								$ch = curl_init();
-								
+
 								curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 									'Accept: application/vnd.github.v3+json',
 									'User-Agent: NamelessMC-App'
@@ -517,15 +517,15 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 								curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 								curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 								curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases/' . Output::getClean($_POST['release']));
-								
+
 								if(!$github_query = curl_exec($ch)){
 									$error = curl_error($ch);
 								}
-								
+
 								curl_close($ch);
-								
+
 								$github_query = json_decode($github_query);
-								
+
 								if(!isset($github_query->id)) $error = str_replace('{x}', Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name), $resource_language->get('resources', 'unable_to_get_repo'));
 								else {
 									// Valid response
@@ -580,7 +580,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
                                         die();
                                     }
 								}
-								
+
 							} catch(Exception $e){
 								$error = $e->getMessage();
 							}
@@ -588,11 +588,11 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 							$error = $language->get('general', 'invalid_token');
 						}
 					}
-					
+
 					// Github API
 					try {
 						$ch = curl_init();
-						
+
 						curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 							'Accept: application/vnd.github.v3+json',
 							'User-Agent: NamelessMC-App'
@@ -600,20 +600,20 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 						curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 						curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases');
-						
+
 						if(!$github_query = curl_exec($ch)){
 							$error = curl_error($ch);
 						}
-						
+
 						curl_close($ch);
-						
+
 					} catch(Exception $e){
 						die($e->getMessage());
 					}
-					
+
 					// Get list of all releases
 					$github_query = json_decode($github_query);
-					
+
 					if(!isset($github_query[0])) $error = str_replace('{x}', Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo), $resource_language->get('resources', 'unable_to_get_repo'));
 					else {
 						// Valid response
@@ -627,10 +627,10 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 							);
 						}
 					}
-					
+
 					// Select release
 					if(isset($error)) $smarty->assign('ERROR', $error);
-					
+
 					// Assign Smarty variables
 					$smarty->assign(array(
 						'NEW_RESOURCE' => $resource_language->get('resources', 'update'),
@@ -642,10 +642,10 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 						'SUBMIT' => $language->get('general', 'submit'),
 						'TOKEN' => Token::get()
 					));
-					
+
 					// Display template
 					$smarty->display('custom/templates/' . TEMPLATE . '/resources/new_resource_select_release.tpl');
-					
+
 				} else {
 					// Can't update, redirect
 					Redirect::to(URL::build('/resources'));
@@ -992,14 +992,14 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
             }
 		}
 	}
-	
-	require('core/templates/scripts.php'); 
+
+	require('core/templates/scripts.php');
 
 	if($formatting == 'markdown'){
 	?>
 	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/js/emojione.min.js"></script>
 	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emojionearea/js/emojionearea.min.js"></script>
-	
+
 	<script type="text/javascript">
 	  $(document).ready(function() {
 	    var el = $("#markdown").emojioneArea({
@@ -1010,9 +1010,10 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 	<?php
 	} else {
 	?>
-    <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/js/emojione.min.js"></script>
+	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/js/emojione.min.js"></script>
 	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js"></script>
 	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/ckeditor.js"></script>
+	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json"></script>
 	<?php
 	if($user->isLoggedIn()) echo '<script type="text/javascript">' . Input::createEditor('editor') . '</script>';
 	}
@@ -1046,6 +1047,7 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
         <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/js/emojione.min.js"></script>
         <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js"></script>
         <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/ckeditor.js"></script>
+        <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json"></script>
 
         <script type="text/javascript">
             <?php

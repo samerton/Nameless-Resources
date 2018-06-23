@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
@@ -31,7 +31,7 @@ if(Input::exists()){
 		if(!isset($_POST['release'])){
 			// Validate input
 			$validate = new Validate();
-			
+
 			$validation = $validate->check($_POST, array(
 				'name' => array(
 					'required' => true,
@@ -60,7 +60,7 @@ if(Input::exists()){
 					'max' => 255
 				)
 			));
-			
+
 			if($validation->passed()){
 				// Check permissions
 				$permissions = $queries->getWhere('resources_categories_permissions', array('category_id', '=', $_POST['category']));
@@ -82,7 +82,7 @@ if(Input::exists()){
 				try {
 					// Use cURL
 					$ch = curl_init();
-					
+
 					curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 						'Accept: application/vnd.github.v3+json',
 						'User-Agent: NamelessMC-App'
@@ -90,20 +90,20 @@ if(Input::exists()){
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 					curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 					curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($_POST['github_username']) . '/' . Output::getClean($_POST['github_repo']) . '/releases');
-					
+
 					if(!$github_query = curl_exec($ch)){
 						$error = curl_error($ch);
 					}
-					
+
 					curl_close($ch);
-					
+
 					$github_query = json_decode($github_query);
-					
+
 					if(!isset($github_query[0])) $error = str_replace('{x}', Output::getClean($_POST['github_username']) . '/' . Output::getClean($_POST['github_repo']), $resource_language->get('resources', 'unable_to_get_repo'));
 					else {
 						// Valid response
 						$_SESSION['post_data'] = $_POST;
-						
+
 						$releases_array = array();
 						foreach($github_query as $release){
 							// Select release
@@ -113,17 +113,17 @@ if(Input::exists()){
 								'name' => Output::getClean($release->name)
 							);
 						}
-						
+
 					}
-					
+
 				} catch(Exception $e){
 					$error = $e->getMessage();
 				}
-				
+
 			} else {
 				// Errors
 				$errors = array();
-				
+
 				foreach($validation->errors() as $item){
 					if(strpos($item, 'is required') !== false){
 						switch($item){
@@ -178,7 +178,7 @@ if(Input::exists()){
 						}
 					}
 				}
-				
+
 				$error = implode('<br />', $errors);
 			}
 		} else {
@@ -203,11 +203,11 @@ if(Input::exists()){
           Redirect::to(URL::build('/resources'));
           die();
       }
-			
+
 			try {
 				// Use cURL
 				$ch = curl_init();
-				
+
 				curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 					'Accept: application/vnd.github.v3+json',
 					'User-Agent: NamelessMC-App'
@@ -215,15 +215,15 @@ if(Input::exists()){
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 				curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($_SESSION['post_data']['github_username']) . '/' . Output::getClean($_SESSION['post_data']['github_repo']) . '/releases/' . Output::getClean($_POST['release']));
-				
+
 				if(!$github_query = curl_exec($ch)){
 					$error = curl_error($ch);
 				}
-				
+
 				curl_close($ch);
-				
+
 				$github_query = json_decode($github_query);
-				
+
 				if(!isset($github_query->id)) $error = str_replace('{x}', Output::getClean($_POST['github_username']) . '/' . Output::getClean($_POST['github_repo']), $resource_language->get('resources', 'unable_to_get_repo'));
 				else {
 					// Valid response
@@ -250,9 +250,9 @@ if(Input::exists()){
 						'github_repo_name' => Output::getClean($_SESSION['post_data']['github_repo']),
 						'latest_version' => Output::getClean($github_query->tag_name)
 					));
-					
+
 					$resource_id = $queries->getLastId();
-					
+
 					$queries->create('resources_releases', array(
 						'resource_id' => $resource_id,
 						'category_id' => $_SESSION['post_data']['category'],
@@ -283,11 +283,11 @@ if(Input::exists()){
                     ));
 
                     unset($_SESSION['post_data']);
-					
+
 					Redirect::to(URL::build('/resources/resource/' . $resource_id));
 					die();
 				}
-				
+
 			} catch(Exception $e){
 				$error = $e->getMessage();
 			}
@@ -310,23 +310,23 @@ if(Input::exists()){
 	  $title = $resource_language->get('resources', 'new_resource');
 	  require('core/templates/header.php');
 	  ?>
-  
+
     <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css">
     <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/css/emojione.min.css"/>
     <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emojionearea/css/emojionearea.min.css"/>
-  
+
   </head>
 
   <body>
   <?php
 	require('core/templates/navbar.php');
-	require('core/templates/footer.php'); 
-	
+	require('core/templates/footer.php');
+
 	if(!isset($releases_array)){
 		// Obtain categories + permissions from database
 		$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
 		$permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user->data()->group_id));
-		
+
 		// Assign to Smarty array
 		$categories_array = array();
 		foreach($categories as $category){
@@ -340,11 +340,11 @@ if(Input::exists()){
           }
 		}
 		$categories = null;
-		
+
 		// Assign post content if it already exists
 		if(isset($_POST['description'])) $smarty->assign('CONTENT', Output::getClean($_POST['description']));
 		else $smarty->assign('CONTENT', '');
-		
+
 		// Markdown or HTML?
 		$cache->setCache('post_formatting');
 		$formatting = $cache->retrieve('formatting');
@@ -354,10 +354,10 @@ if(Input::exists()){
 			$smarty->assign('MARKDOWN', true);
 			$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
 		}
-		
+
 		// Errors?
 		if(isset($error)) $smarty->assign('ERROR', $error);
-		
+
 		// Assign Smarty variables
 		$smarty->assign(array(
 			'NEW_RESOURCE' => $resource_language->get('resources', 'new_resource'),
@@ -376,14 +376,14 @@ if(Input::exists()){
 			'SUBMIT' => $language->get('general', 'submit'),
 			'TOKEN' => Token::get()
 		));
-		
+
 		// Load Smarty template
 		$smarty->display('custom/templates/' . TEMPLATE . '/resources/new_resource.tpl');
-		
+
 	} else {
 		// Select release
 		if(isset($error)) $smarty->assign('ERROR', $error);
-		
+
 		// Assign Smarty variables
 		$smarty->assign(array(
 			'NEW_RESOURCE' => $resource_language->get('resources', 'new_resource'),
@@ -395,13 +395,13 @@ if(Input::exists()){
 			'SUBMIT' => $language->get('general', 'submit'),
 			'TOKEN' => Token::get()
 		));
-		
+
 		// Display template
 		$smarty->display('custom/templates/' . TEMPLATE . '/resources/new_resource_select_release.tpl');
 	}
-	
-	require('core/templates/scripts.php'); 
-	
+
+	require('core/templates/scripts.php');
+
 	// Display either Markdown or HTML editor
 	if(!isset($formatting)){
 		$cache->setCache('post_formatting');
@@ -413,7 +413,7 @@ if(Input::exists()){
 	if($formatting == 'markdown'){
 	?>
 	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emojionearea/js/emojionearea.min.js"></script>
-	
+
 	<script type="text/javascript">
 	  $(document).ready(function() {
 	    var el = $("#markdown").emojioneArea({
@@ -424,6 +424,7 @@ if(Input::exists()){
 	<?php } else { ?>
 	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js"></script>
 	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/ckeditor.js"></script>
+	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json"></script>
   <?php echo '<script>' . Input::createEditor('reply') . '</script>'; ?>
 	<?php } ?>
   </body>
