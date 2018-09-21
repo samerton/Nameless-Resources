@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr3
+ *  NamelessMC version 2.0.0-pr5
  *
  *  License: MIT
  *
@@ -14,7 +14,7 @@ define('RESOURCE_PAGE', 'view_category');
 
 // Initialise
 $timeago = new Timeago();
-require('modules/Resources/classes/Resources.php');
+require(ROOT_PATH . '/modules/Resources/classes/Resources.php');
 $resources = new Resources();
 
 // Get page
@@ -59,27 +59,9 @@ if(!$resources->canViewCategory($current_category->id, $user_group, ($user->isLo
     Redirect::to(URL::build('/resources'));
     die();
 }
-?>
-<!DOCTYPE html>
-<html lang="<?php echo (defined('HTML_LANG') ? HTML_LANG : 'en'); ?>">
-<head>
-    <!-- Standard Meta -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-    <!-- Site Properties -->
-    <?php
-    $title = $resource_language->get('resources', 'resources');
-    require('core/templates/header.php');
-    ?>
-
-</head>
-
-<body>
-<?php
-require('core/templates/navbar.php');
-require('core/templates/footer.php');
+$page_title = $resource_language->get('resources', 'resources') . ' - ' . str_replace('{x}', $p, $language->get('general', 'page_x'));
+require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
 // Obtain categories + permissions from database
 $categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
@@ -189,27 +171,33 @@ if($user->isLoggedIn() && $resources->canPostResourceInAnyCategory($user->data()
     ));
 }
 
-// Load Smarty template
-$smarty->display('custom/templates/' . TEMPLATE . '/resources/category.tpl');
-
-require('core/templates/scripts.php');
-?>
-<script type="text/javascript">
-    var $star_rating = $('.star-rating.view .fa');
+$template->addJSScript('
+    var $star_rating = $(\'.star-rating.view .fa\');
 
     var SetRatingStar = function(type = 0) {
         if(type === 0) {
             return $star_rating.each(function () {
-                if (parseInt($(this).parent().children('input.rating-value').val()) >= parseInt($(this).data('rating'))) {
-                    return $(this).removeClass('fa-star-o').addClass('fa-star');
+                if (parseInt($(this).parent().children(\'input.rating-value\').val()) >= parseInt($(this).data(\'rating\'))) {
+                    return $(this).removeClass(\'fa-star-o\').addClass(\'fa-star\');
                 } else {
-                    return $(this).removeClass('fa-star').addClass('fa-star-o');
+                    return $(this).removeClass(\'fa-star\').addClass(\'fa-star-o\');
                 }
             });
         }
     };
 
     SetRatingStar();
-</script>
-</body>
-</html>
+');
+
+// Load modules + template
+Module::loadPage($user, $pages, $cache, $smarty, array($navigation, $cc_nav, $mod_nav), $widgets);
+
+$page_load = microtime(true) - $start;
+define('PAGE_LOAD_TIME', str_replace('{x}', round($page_load, 3), $language->get('general', 'page_loaded_in')));
+
+$template->onPageLoad();
+
+require(ROOT_PATH . '/core/templates/navbar.php');
+require(ROOT_PATH . '/core/templates/footer.php');
+
+$template->displayTemplate('resources/category.tpl', $smarty);

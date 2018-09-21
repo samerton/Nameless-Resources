@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr4
+ *  NamelessMC version 2.0.0-pr5
  *
  *  License: MIT
  *
@@ -47,7 +47,7 @@ $admin_page = 'resources';
 	
 	<?php 
 	$title = $language->get('admin', 'admin_cp');
-	require('core/templates/admin_header.php'); 
+	require(ROOT_PATH . '/core/templates/admin_header.php');
 	?>
   
 	<!-- Custom style -->
@@ -60,11 +60,11 @@ $admin_page = 'resources';
   </head>
 
   <body>
-    <?php require('modules/Core/pages/admin/navbar.php'); ?>
+    <?php require(ROOT_PATH . '/modules/Core/pages/admin/navbar.php'); ?>
     <div class="container">
 	  <div class="row">
 		<div class="col-md-3">
-		  <?php require('modules/Core/pages/admin/sidebar.php'); ?>
+		  <?php require(ROOT_PATH . '/modules/Core/pages/admin/sidebar.php'); ?>
 		</div>
 		<div class="col-md-9">
 		  <div class="card">
@@ -951,8 +951,8 @@ $admin_page = 'resources';
       </div>
     </div>
 	<?php
-  require('modules/Core/pages/admin/footer.php');
-  require('modules/Core/pages/admin/scripts.php');
+  require(ROOT_PATH . '/modules/Core/pages/admin/footer.php');
+  require(ROOT_PATH . '/modules/Core/pages/admin/scripts.php');
   ?>
 
     <script type="text/javascript">

@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr3
+ *  NamelessMC version 2.0.0-pr5
  *
  *  License: MIT
  *
@@ -15,8 +15,8 @@
 // Always define page name
 define('PAGE', 'resources');
 
-require('core/includes/emojione/autoload.php'); // Emojione
-require('core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
+require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
+require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
 $emojione = new Emojione\Client(new Emojione\Ruleset());
 
 // Ensure user is logged in
@@ -295,137 +295,129 @@ if(Input::exists()){
 	} else
 		  $error = $language->get('general', 'invalid_token');
 }
-?>
 
-<!DOCTYPE html>
-<html lang="<?php echo (defined('HTML_LANG') ? HTML_LANG : 'en'); ?>">
-  <head>
-    <!-- Standard Meta -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+$page_title = $resource_language->get('resources', 'new_resource');
+require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
-    <!-- Site Properties -->
-	  <?php
-	  $title = $resource_language->get('resources', 'new_resource');
-	  require('core/templates/header.php');
-	  ?>
+if(!isset($releases_array)){
+	// Obtain categories + permissions from database
+	$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
+	$permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user->data()->group_id));
 
-    <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css">
-    <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/css/emojione.min.css"/>
-    <link rel="stylesheet" href="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emojionearea/css/emojionearea.min.css"/>
-
-  </head>
-
-  <body>
-  <?php
-	require('core/templates/navbar.php');
-	require('core/templates/footer.php');
-
-	if(!isset($releases_array)){
-		// Obtain categories + permissions from database
-		$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
-		$permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user->data()->group_id));
-
-		// Assign to Smarty array
-		$categories_array = array();
-		foreach($categories as $category){
-          // Check permissions
-          foreach($permissions as $permission){
-            if($permission->category_id == $category->id && $permission->post == 1)
-                $categories_array[] = array(
-                    'name' => Output::getClean($category->name),
-                    'id' => $category->id
-                );
-          }
-		}
-		$categories = null;
-
-		// Assign post content if it already exists
-		if(isset($_POST['description'])) $smarty->assign('CONTENT', Output::getClean($_POST['description']));
-		else $smarty->assign('CONTENT', '');
-
-		// Markdown or HTML?
-		$cache->setCache('post_formatting');
-		$formatting = $cache->retrieve('formatting');
-
-		if($formatting == 'markdown'){
-			// Markdown
-			$smarty->assign('MARKDOWN', true);
-			$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
-		}
-
-		// Errors?
-		if(isset($error)) $smarty->assign('ERROR', $error);
-
-		// Assign Smarty variables
-		$smarty->assign(array(
-			'NEW_RESOURCE' => $resource_language->get('resources', 'new_resource'),
-			'CANCEL' => $language->get('general', 'cancel'),
-			'CANCEL_LINK' => URL::build('/resources'),
-			'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
-			'IN_CATEGORY' => $resource_language->get('resources', 'in_category'),
-			'CATEGORIES' => $categories_array,
-			'SELECT_CATEGORY' => $resource_language->get('resources', 'select_category'),
-			'GITHUB_USERNAME' => $resource_language->get('resources', 'github_username'),
-			'GITHUB_REPO_NAME' => $resource_language->get('resources', 'github_repo_name'),
-			'REQUIRED' => $resource_language->get('resources', 'required'),
-			'RESOURCE_NAME' => $resource_language->get('resources', 'resource_name'),
-			'RESOURCE_DESCRIPTION' => $resource_language->get('resources', 'resource_description'),
-			'CONTRIBUTORS' => $resource_language->get('resources', 'contributors'),
-			'SUBMIT' => $language->get('general', 'submit'),
-			'TOKEN' => Token::get()
-		));
-
-		// Load Smarty template
-		$smarty->display('custom/templates/' . TEMPLATE . '/resources/new_resource.tpl');
-
-	} else {
-		// Select release
-		if(isset($error)) $smarty->assign('ERROR', $error);
-
-		// Assign Smarty variables
-		$smarty->assign(array(
-			'NEW_RESOURCE' => $resource_language->get('resources', 'new_resource'),
-			'CANCEL' => $language->get('general', 'cancel'),
-			'CANCEL_LINK' => URL::build('/resources'),
-			'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
-			'SELECT_RELEASE' => $resource_language->get('resources', 'select_release'),
-			'RELEASES' => $releases_array,
-			'SUBMIT' => $language->get('general', 'submit'),
-			'TOKEN' => Token::get()
-		));
-
-		// Display template
-		$smarty->display('custom/templates/' . TEMPLATE . '/resources/new_resource_select_release.tpl');
+	// Assign to Smarty array
+	$categories_array = array();
+	foreach($categories as $category){
+	  // Check permissions
+	  foreach($permissions as $permission){
+		if($permission->category_id == $category->id && $permission->post == 1)
+			$categories_array[] = array(
+				'name' => Output::getClean($category->name),
+				'id' => $category->id
+			);
+	  }
 	}
+	$categories = null;
 
-	require('core/templates/scripts.php');
+	// Assign post content if it already exists
+	if(isset($_POST['description'])) $smarty->assign('CONTENT', Output::getClean($_POST['description']));
+	else $smarty->assign('CONTENT', '');
 
-	// Display either Markdown or HTML editor
-	if(!isset($formatting)){
-		$cache->setCache('post_formatting');
-		$formatting = $cache->retrieve('formatting');
-	}
-	?>
-  <script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emoji/js/emojione.min.js"></script>
-  <?php
+	// Markdown or HTML?
+	$cache->setCache('post_formatting');
+	$formatting = $cache->retrieve('formatting');
+
 	if($formatting == 'markdown'){
-	?>
-	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/emojionearea/js/emojionearea.min.js"></script>
+		// Markdown
+		$smarty->assign('MARKDOWN', true);
+		$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
+	}
 
-	<script type="text/javascript">
-	  $(document).ready(function() {
+	// Errors?
+	if(isset($error)) $smarty->assign('ERROR', $error);
+
+	// Assign Smarty variables
+	$smarty->assign(array(
+		'NEW_RESOURCE' => $resource_language->get('resources', 'new_resource'),
+		'CANCEL' => $language->get('general', 'cancel'),
+		'CANCEL_LINK' => URL::build('/resources'),
+		'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
+		'IN_CATEGORY' => $resource_language->get('resources', 'in_category'),
+		'CATEGORIES' => $categories_array,
+		'SELECT_CATEGORY' => $resource_language->get('resources', 'select_category'),
+		'GITHUB_USERNAME' => $resource_language->get('resources', 'github_username'),
+		'GITHUB_REPO_NAME' => $resource_language->get('resources', 'github_repo_name'),
+		'REQUIRED' => $resource_language->get('resources', 'required'),
+		'RESOURCE_NAME' => $resource_language->get('resources', 'resource_name'),
+		'RESOURCE_DESCRIPTION' => $resource_language->get('resources', 'resource_description'),
+		'CONTRIBUTORS' => $resource_language->get('resources', 'contributors'),
+		'SUBMIT' => $language->get('general', 'submit'),
+		'TOKEN' => Token::get()
+	));
+
+	$template_file = 'resources/new_resource.tpl';
+
+} else {
+	// Select release
+	if(isset($error)) $smarty->assign('ERROR', $error);
+
+	// Assign Smarty variables
+	$smarty->assign(array(
+		'NEW_RESOURCE' => $resource_language->get('resources', 'new_resource'),
+		'CANCEL' => $language->get('general', 'cancel'),
+		'CANCEL_LINK' => URL::build('/resources'),
+		'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
+		'SELECT_RELEASE' => $resource_language->get('resources', 'select_release'),
+		'RELEASES' => $releases_array,
+		'SUBMIT' => $language->get('general', 'submit'),
+		'TOKEN' => Token::get()
+	));
+
+	$template_file = 'resources/new_resource_select_release.tpl';
+
+}
+
+// Display either Markdown or HTML editor
+if(!isset($formatting)){
+	$cache->setCache('post_formatting');
+	$formatting = $cache->retrieve('formatting');
+}
+
+$template->addJSFiles(array(
+	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array()
+));
+
+if($formatting == 'markdown'){
+	$template->addJSFiles(array(
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/js/emojionearea.min.js' => array()
+	));
+
+	$template->addJSScript('
+	$(document).ready(function() {
 	    var el = $("#markdown").emojioneArea({
 			pickerPosition: "bottom"
 		});
-	  });
-	</script>
-	<?php } else { ?>
-	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js"></script>
-	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/ckeditor.js"></script>
-	<script src="<?php if(defined('CONFIG_PATH')) echo CONFIG_PATH . '/'; else echo '/'; ?>core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json"></script>
-  <?php echo '<script>' . Input::createEditor('reply') . '</script>'; ?>
-	<?php } ?>
-  </body>
-</html>
+	});
+	');
+
+} else {
+	$template->addJSFiles(array(
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
+	));
+
+	$template->addJSScript(Input::createEditor('reply'));
+}
+
+// Load modules + template
+Module::loadPage($user, $pages, $cache, $smarty, array($navigation, $cc_nav, $mod_nav), $widgets);
+
+$page_load = microtime(true) - $start;
+define('PAGE_LOAD_TIME', str_replace('{x}', round($page_load, 3), $language->get('general', 'page_loaded_in')));
+
+$template->onPageLoad();
+
+require(ROOT_PATH . '/core/templates/navbar.php');
+require(ROOT_PATH . '/core/templates/footer.php');
+
+$template->displayTemplate($template_file, $smarty);
