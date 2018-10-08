@@ -97,7 +97,7 @@ if(Input::exists()){
 
 					curl_close($ch);
 
-					$github_query = json_decode($github_query);
+					$github_query = json_decode($github_query, true);
 
 					if(!isset($github_query[0])) $error = str_replace('{x}', Output::getClean($_POST['github_username']) . '/' . Output::getClean($_POST['github_repo']), $resource_language->get('resources', 'unable_to_get_repo'));
 					else {
@@ -108,9 +108,9 @@ if(Input::exists()){
 						foreach($github_query as $release){
 							// Select release
 							$releases_array[] = array(
-								'id' => $release->id,
-								'tag' => Output::getClean($release->tag_name),
-								'name' => Output::getClean($release->name)
+								'id' => $release['id'],
+								'tag' => Output::getClean($release['tag_name']),
+								'name' => Output::getClean($release['name'])
 							);
 						}
 
