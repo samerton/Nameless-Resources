@@ -87,6 +87,8 @@ $language = array(
     'category_name_maxmimum' => 'Your category name must be a maximum of 150 characters.',
     'category_description_maximum' => 'Your category description must be a maximum of 250 characters.',
     'category_created_successfully' => 'Category created successfully.',
+    'category_updated_successfully' => 'Category updated successfully.',
+    'category_deleted_successfully' => 'Category deleted successfully.',
     'category_permissions' => 'Category Permissions',
     'group' => 'Group',
     'can_view_category' => 'Can view category?',
@@ -97,9 +99,14 @@ $language = array(
     'can_delete_resources' => 'Can delete resources?',
     'can_edit_reviews' => 'Can edit reviews?',
     'can_delete_reviews' => 'Can delete reviews?',
+    'can_download_resources' => 'Can download resources?',
+    'can_post_premium_resource' => 'Can post premium resources?',
     'delete_category' => 'Delete Category',
     'move_resources_to' => 'Move resources to',
     'delete_resources' => 'Delete resources',
+    'downloads' => 'Downloads',
+    'no_categories' => 'No categories have been created yet.',
+    'editing_category' => 'Editing Category',
 
     // Hook
     'new_resource_text' => 'New resource created in {x} by {y}',

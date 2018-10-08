@@ -10,29 +10,26 @@
  */
 
 class Resources_Module extends Module {
-	private $_resource_language;
+	private $_resource_language, $_language;
 
 	public function __construct($pages, $language, $resource_language){
 		$this->_resource_language = $resource_language;
+		$this->_language = $language;
 
 		$name = 'Resources';
 		$author = '<a href="https://samerton.me" target="_blank">Samerton</a>';
-		$module_version = '1.0.1';
+		$module_version = '1.1.0';
 		$nameless_version = '2.0.0-pr5';
 
 		parent::__construct($this, $name, $author, $module_version, $nameless_version);
-
-		// AdminCP
-		PermissionHandler::registerPermissions('Resources', array(
-			'admincp.resources' => $language->get('admin', 'admin_cp') . ' &raquo; ' . $resource_language->get('resources', 'resources')
-		));
 
 		// Hooks
 		HookHandler::registerEvent('newResource', $resource_language->get('resources', 'new_resource'));
 		HookHandler::registerEvent('updateResource', $resource_language->get('resources', 'update'));
 
 		// Define URLs which belong to this module
-		$pages->add('Resources', '/admin/resources', 'pages/admin/resources.php');
+		$pages->add('Resources', '/panel/resources/categories', 'pages/panel/categories.php');
+		$pages->add('Resources', '/panel/resources/downloads', 'pages/panel/downloads.php');
 		$pages->add('Resources', '/resources', 'pages/resources/index.php');
 		$pages->add('Resources', '/resources/category', 'pages/resources/category.php');
 		$pages->add('Resources', '/resources/resource', 'pages/resources/resource.php');
@@ -69,25 +66,65 @@ class Resources_Module extends Module {
 
 	}
 
-	public function onPageLoad($user, $pages, $cache, $smarty, $navs, $widgets){
-		if(defined('FRONT_END')){
-			// Add link to navbar
-			$cache->setCache('navbar_order');
-			if(!$cache->isCached('resources_order')){
-				$resources_order = 2;
-				$cache->store('resources_order', 2);
-			} else {
-				$resources_order = $cache->retrieve('resources_order');
-			}
-
-			$cache->setCache('navbar_icons');
-			if(!$cache->isCached('resources_icon')){
-				$icon = '';
-			} else {
-				$icon = $cache->retrieve('resources_icon');
-			}
-
-			$navs[0]->add('resources', $this->_resource_language->get('resources', 'resources'), URL::build('/resources'), 'top', null, $resources_order, $icon);
+	public function onPageLoad($user, $pages, $cache, $smarty, $navs, $widgets, $template){
+		// Add link to navbar
+		$cache->setCache('navbar_order');
+		if(!$cache->isCached('resources_order')){
+			$resources_order = 2;
+			$cache->store('resources_order', 2);
+		} else {
+			$resources_order = $cache->retrieve('resources_order');
 		}
+
+		$cache->setCache('navbar_icons');
+		if(!$cache->isCached('resources_icon')){
+			$icon = '';
+		} else {
+			$icon = $cache->retrieve('resources_icon');
+		}
+
+		$navs[0]->add('resources', $this->_resource_language->get('resources', 'resources'), URL::build('/resources'), 'top', null, $resources_order, $icon);
+
+		if(defined('BACK_END')){
+			if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources')){
+				$cache->setCache('panel_sidebar');
+				if(!$cache->isCached('resources_order')){
+					$order = 10;
+					$cache->store('resources_order', 10);
+				} else {
+					$order = $cache->retrieve('resources_order');
+				}
+
+				$navs[2]->add('resources_divider', mb_strtoupper($this->_resource_language->get('resources', 'resources')), 'divider', 'top', null, $order, '');
+
+				if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources.categories')){
+					if(!$cache->isCached('resources_categories_icon')){
+						$icon = '<i class="nav-icon fa fa-list" aria-hidden="true"></i>';
+						$cache->store('resources_categories_icon', $icon);
+					} else
+						$icon = $cache->retrieve('resources_categories_icon');
+
+					$navs[2]->add('resources_categories', $this->_resource_language->get('resources', 'categories'), URL::build('/panel/resources/categories'), 'top', null, $order, $icon);
+				}
+
+				if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources.download')){
+					if(!$cache->isCached('resources_downloads_icon')){
+						$icon = '<i class="nav-icon fa fa-download" aria-hidden="true"></i>';
+						$cache->store('resources_downloads_icon', $icon);
+					} else
+						$icon = $cache->retrieve('resources_downloads_icon');
+
+					$navs[2]->add('resources_downloads', $this->_resource_language->get('resources', 'downloads'), URL::build('/panel/resources/downloads'), 'top', null, $order, $icon);
+				}
+
+			}
+		}
+
+		// AdminCP
+		PermissionHandler::registerPermissions('Resources', array(
+			'admincp.resources' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'resources'),
+			'admincp.resources.categories' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'categories'),
+			'admincp.resources.downloads' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'downloads')
+		));
 	}
 }

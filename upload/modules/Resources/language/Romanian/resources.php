@@ -76,6 +76,7 @@ $language = array(
     'delete_review' => 'Șterge recenzia',
     'confirm_delete_review' => 'Sigur doriți să ștergeți această recenzie?',
     'viewing_resources_by_x' => 'Vizualizează resursele lui {x}', // Don't replace {x}
+
     // Admin
     'permissions' => 'Permisiuni',
     'new_category' => '<i class="fa fa-plus-circle"></i> Categorie nouă',
@@ -87,6 +88,8 @@ $language = array(
     'category_name_maxmimum' => 'Numele categoriei dvs. trebuie să aibă maximum 150 de caractere.',
     'category_description_maximum' => 'Descrierea categoriei dvs. trebuie să aibă maxim 250 de caractere.',
     'category_created_successfully' => 'Categorie creată cu succes.',
+    'category_updated_successfully' => 'Category updated successfully.',
+    'category_deleted_successfully' => 'Category deleted successfully.',
     'category_permissions' => 'Permisiuni categorie',
     'group' => 'Grup',
     'can_view_category' => 'Poate vizualiza categoria?',
@@ -97,9 +100,15 @@ $language = array(
     'can_delete_resources' => 'Poate să șteargă resursele?',
     'can_edit_reviews' => 'Poate edita recenzii?',
     'can_delete_reviews' => 'Poate șterge recenzii?',
+    'can_download_resources' => 'Can download resources?',
+    'can_post_premium_resource' => 'Can post premium resources?',
     'delete_category' => 'Ștergeți categoria',
     'move_resources_to' => 'Mutați resursele în',
     'delete_resources' => 'Ștergeți resursele',
+    'downloads' => 'Downloads',
+    'no_categories' => 'No categories have been created yet.',
+    'editing_category' => 'Editing Category',
+
     // Hook
     'new_resource_text' => 'Resursă nouă creată în {x} de {y}',
     'updated_resource_text' => 'Resursă actualizată în {x} de {y}'
