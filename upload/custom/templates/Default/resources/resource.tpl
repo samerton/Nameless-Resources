@@ -4,18 +4,13 @@
 <div class="container">
   <div class="card">
     <div class="card-body">
-      <div class="row">
-        <div class="col-md-9">
-          <h2 style="display:inline;">{$VIEWING_RESOURCE}</h2> {$RELEASE_TAG}
-        </div>
-        <div class="col-md-3">
-          <span class="float-right">
-          {if isset($CAN_UPDATE)}
-      		  <a href="{$UPDATE_LINK}" class="btn btn-info">{$UPDATE}</a>
-      		{/if}
-      		<a href="{$BACK_LINK}" class="btn btn-danger">{$RESOURCE_INDEX}</a>
-      		</span>
-        </div>
+      <h2 style="display:inline;">{$VIEWING_RESOURCE}</h2> {$RELEASE_TAG}
+
+      <div class="float-md-right">
+        {if isset($CAN_UPDATE)}
+          <a href="{$UPDATE_LINK}" class="btn btn-info">{$UPDATE}</a>
+        {/if}
+        <a href="{$BACK_LINK}" class="btn btn-danger">{$RESOURCE_INDEX}</a>
       </div>
 
 	  <hr />
