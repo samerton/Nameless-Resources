@@ -6,9 +6,9 @@
 	<div class="card-body">
 	  <h2 class="card-title" style="display:inline;">{$NEW_RESOURCE}</h2>
 	  
-	  <span class="pull-right">
+	  <div class="float-md-right">
 		<a href="{$CANCEL_LINK}" class="btn btn-danger" onclick="return confirm('{$CONFIRM_CANCEL}');">{$CANCEL}</a>
-	  </span>
+      </div>
 	  <br /><br />
 
 	  {if isset($ERROR)}
@@ -47,18 +47,16 @@
 		</div>
 		
 		<div class="form-group">
-		  <label for="inputGitHubUsername">{$GITHUB_USERNAME} <small>{$REQUIRED}</small></label>
-		  <input type="text" class="form-control" name="github_username" id="inputGitHubUsername">
-		</div>
-		
-		<div class="form-group">
-		  <label for="inputGitHubRepo">{$GITHUB_REPO_NAME} <small>{$REQUIRED}</small></label>
-		  <input type="text" class="form-control" name="github_repo" id="inputGitHubRepo">
-		</div>
-		
-		<div class="form-group">
 		  <label for="inputContributors">{$CONTRIBUTORS}</label>
 		  <input type="text" class="form-control" name="contributors" id="inputContributors">
+		</div>
+
+		<div class="form-group">
+		  <label for="inputReleaseType">{$RELEASE_TYPE}</label>
+		  <select class="form-control" id="inputReleaseType" name="type">
+		    <option value="zip">{$ZIP_FILE}</option>
+		    <option value="github">{$GITHUB_RELEASE}</option>
+		  </select>
 		</div>
 		
 		<div class="form-group">

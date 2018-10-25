@@ -9,9 +9,6 @@
  *  View resource page
  */
 
-// Section disabled?
-// TODO
-
 // Always define page name
 define('PAGE', 'resources');
 define('RESOURCE_PAGE', 'view_resource');
@@ -86,6 +83,22 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 		$queries->increment('resources', $resource->id, 'views');
 		Session::put("nl-resource-" . $resource->id, "true");
 	}
+}
+
+// Get metadata
+$page_metadata = $queries->getWhere('page_descriptions', array('page', '=', '/resources/resource'));
+if(count($page_metadata)){
+	$category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
+	if(count($category)){
+		$category = Output::getClean($category[0]->name);
+	} else {
+		$category = 'Unknown';
+	}
+
+	$description = strip_tags(str_ireplace(array('<br />', '<br>', '<br/>', '&nbsp;'), array("\n", "\n", "\n", ' '), Output::getDecoded($resource->description)));
+
+	define('PAGE_DESCRIPTION', str_replace(array('{site}', '{title}', '{author}', '{category_title}', '{page}', '{description}'), array(SITE_NAME, Output::getClean($resource->name), Output::getClean($user->idToName($resource->creator_id)), $category, Output::getClean($p), substr($description, 0, 160) . '...'), $page_metadata[0]->description));
+	define('PAGE_KEYWORDS', $page_metadata[0]->tags);
 }
 
 $page_title = Output::getClean($resource->name);
@@ -203,6 +216,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 				} else {
 					// Errors
+					$error = $resource_language->get('resources', 'invalid_review');
 
 				}
 			}
@@ -310,8 +324,6 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		'VIEWS' => str_replace('{x}', $resource->views, $resource_language->get('resources', 'x_views')),
 		'DOWNLOADS' => str_replace('{x}', $resource->downloads, $resource_language->get('resources', 'x_downloads')),
 		'RATING' => round($resource->rating / 10),
-		'DOWNLOAD' => $resource_language->get('resources', 'download'),
-		'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download'),
 		'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
 		'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
 		'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
@@ -322,11 +334,108 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		'RELEASE_DATE' => $timeago->inWords(date('d M Y, H:i', $latest_update->created), $language->getTimeLanguage()),
 		'RELEASE_DATE_FULL' => date('d M Y, H:i', $latest_update->created),
 		'LOGGED_IN' => ($user->isLoggedIn() ? true : false),
+		'CAN_REVIEW' => (($user->isLoggedIn() && $user->data()->id != $resource->creator_id) ? true : false),
 		'TOKEN' => Token::get(),
 		'SUBMIT' => $language->get('general', 'submit'),
 		'CONTRIBUTORS' => str_replace('{x}', Output::getClean($resource->contributors), $resource_language->get('resources', 'contributors_x')),
 		'HAS_CONTRIBUTORS' => (strlen(trim($resource->contributors)) > 0) ? 1 : 0
 	));
+
+	if(isset($error))
+		$smarty->assign('ERROR', $error);
+
+	// Get currency
+	$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
+	if(!count($currency)){
+		$queries->create('settings', array(
+			'name' => 'resources_currency',
+			'value' => 'GBP'
+		));
+		$currency = 'GBP';
+
+	} else
+		$currency = $currency[0]->value;
+
+	if($resource->type == 0){
+		// Can the user download?
+		if($user->isLoggedIn())
+			$group_id = $user->data()->group_id;
+		else
+			$group_id = 0;
+
+		$download = DB::getInstance()->query('SELECT download FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
+
+		if(count($download)){
+			if($download[0]->download == 1){
+				$smarty->assign(array(
+					'DOWNLOAD' => $resource_language->get('resources', 'download'),
+					'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+				));
+			}
+		}
+	} else {
+		// Can the user download?
+		if($user->isLoggedIn()){
+			$group_id = $user->data()->group_id;
+
+			$download = DB::getInstance()->query('SELECT download FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
+
+			if(count($download)){
+				$download = $download[0];
+
+				if($download->download == 1){
+					if($user->data()->id == $resource->creator_id){
+						// Author can download their own resources
+						$smarty->assign(array(
+							'DOWNLOAD' => $resource_language->get('resources', 'download'),
+							'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+						));
+
+					} else {
+						// Check purchases
+						$paid = DB::getInstance()->query('SELECT status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
+
+						if(count($paid)){
+							$paid = $paid[0];
+
+							if($paid->status == 1){
+								// Purchased
+								$smarty->assign(array(
+									'DOWNLOAD' => $resource_language->get('resources', 'download'),
+									'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+								));
+
+							} else if($paid->status == 0){
+								// Pending
+								$smarty->assign(array(
+									'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
+								));
+
+							} else if($paid->status == 2){
+								// Cancelled
+								$smarty->assign(array(
+									'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+									'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+								));
+
+							}
+						} else {
+							// Needs to purchase
+							$smarty->assign(array(
+								'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+								'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+							));
+						}
+					}
+				}
+			}
+
+		} else {
+			$smarty->assign(array(
+				'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . $currency, $resource_language->get('resources', 'purchase_for_x'))
+			));
+		}
+	}
 
 	if($user->isLoggedIn() && $resource->creator_id == $user->data()->id){
 		// Allow updating
@@ -439,12 +548,103 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'DOWNLOADS' => str_replace('{x}', $release->downloads, $resource_language->get('resources', 'x_downloads')),
 				'RATING' => round($release->rating / 10),
-				'DOWNLOAD' => $resource_language->get('resources', 'download'),
-				'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&amp;release=' . $release->id),
 				'DESCRIPTION' => Output::getPurified(nl2br($release->release_description)),
 				'DATE' => $timeago->inWords(date('d M Y, H:i', $release->created), $language->getTimeLanguage()),
 				'DATE_FULL' => date('d M Y, H:i', $release->created)
 			));
+
+			$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
+			if(!count($currency)){
+				$queries->create('settings', array(
+					'name' => 'resources_currency',
+					'value' => 'GBP'
+				));
+				$currency = 'GBP';
+
+			} else
+				$currency = $currency[0]->value;
+
+			// Ensure user has download permission
+			if($resource->type == 0){
+				// Can the user download?
+				if($user->isLoggedIn())
+					$group_id = $user->data()->group_id;
+				else
+					$group_id = 0;
+
+				$download = DB::getInstance()->query('SELECT download FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
+
+				if(count($download)){
+					if($download[0]->download == 1){
+						$smarty->assign(array(
+							'DOWNLOAD' => $resource_language->get('resources', 'download'),
+							'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+						));
+					}
+				}
+			} else {
+				// Can the user download?
+				if($user->isLoggedIn()){
+					$group_id = $user->data()->group_id;
+
+					$download = DB::getInstance()->query('SELECT download FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
+
+					if(count($download)){
+						$download = $download[0];
+
+						if($download->download == 1){
+							if($user->data()->id == $resource->creator_id){
+								// Author can download their own resources
+								$smarty->assign(array(
+									'DOWNLOAD' => $resource_language->get('resources', 'download'),
+									'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+								));
+
+							} else {
+								// Check purchases
+								$paid = DB::getInstance()->query('SELECT status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
+
+								if(count($paid)){
+									$paid = $paid[0];
+
+									if($paid->status == 1){
+										// Purchased
+										$smarty->assign(array(
+											'DOWNLOAD' => $resource_language->get('resources', 'download'),
+											'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+										));
+
+									} else if($paid->status == 0){
+										// Pending
+										$smarty->assign(array(
+											'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
+										));
+
+									} else if($paid->status == 2){
+										// Cancelled
+										$smarty->assign(array(
+											'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+											'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+										));
+
+									}
+								} else {
+									// Needs to purchase
+									$smarty->assign(array(
+										'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+										'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+									));
+								}
+							}
+						}
+					}
+
+				} else {
+					$smarty->assign(array(
+						'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . $currency, $resource_language->get('resources', 'purchase_for_x'))
+					));
+				}
+			}
 
 			$template_file = 'resources/resource_view_release.tpl';;
 
@@ -458,6 +658,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 					Redirect::to(URL::build('/resources'));
 					die();
 				} else $release = $release[0];
+
 			} else {
 				// Get specific release
 				if(!is_numeric($_GET['release'])){
@@ -472,18 +673,129 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				} else $release = $release[0];
 			}
 
-			// Increment download counter
-			if($user->isLoggedIn() || Cookie::exists('alert-box')){
-				if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
-					$queries->increment('resources', $resource->id, 'downloads');
-					$queries->increment('resources_releases', $release->id, 'downloads');
-					Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+			// Download permission?
+			if($user->isLoggedIn()){
+				$group_id = $user->data()->group_id;
+
+				if($user->data()->id == $resource->creator_id)
+					$can_download = true;
+			} else
+				$group_id = 0;
+
+			$permissions = DB::getInstance()->query('SELECT `view`, download, premium FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
+			if(!isset($can_download) && count($permissions)){
+				$permissions = $permissions[0];
+				if($permissions->view == 0 || $permissions->download == 0){
+					Redirect::to(URL::build('/resources'));
+					die();
 				}
+
+			} else if(!count($permissions)){
+				// No permission
+				Redirect::to(URL::build('/resources'));
+				die();
 			}
 
-			// Redirect to download
-			Redirect::to(Output::getClean($release->download_link));
-			die();
+
+			if($release->download_link != 'local'){
+				// Increment download counter
+				if($user->isLoggedIn() || Cookie::exists('accept')){
+					if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
+						$queries->increment('resources', $resource->id, 'downloads');
+						$queries->increment('resources_releases', $release->id, 'downloads');
+						Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+					}
+				}
+
+				// Redirect to download
+				Redirect::to(Output::getClean($release->download_link));
+				die();
+
+			} else {
+				// Local zip
+				$dir = ROOT_PATH . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR . $resource->creator_id . DIRECTORY_SEPARATOR . $resource->id . DIRECTORY_SEPARATOR . $release->id;
+				$files = scandir($dir);
+
+				if(!count($files)){
+					// Unable to find files
+					Redirect::to(URL::build('/resources/resource/' . $resource->id));
+					die();
+				}
+
+				$finfo = finfo_open(FILEINFO_MIME_TYPE); // return mime type
+				foreach($files as $file){
+					// Ensure file is zip
+					if($file == '.' || $file == '..')
+						continue;
+
+					if(finfo_file($finfo, $dir . DIRECTORY_SEPARATOR . $file) == 'application/zip')
+						$zip = $dir . DIRECTORY_SEPARATOR . $file;
+				}
+				finfo_close($finfo);
+
+				if(!isset($zip)){
+					// No valid .zip
+					Redirect::to(URL::build('/resources/resource/' . $resource->id));
+					die();
+				}
+
+				// Get resource type
+				if($resource->type == 0){
+					// Free, continue
+					header('Content-Type: application/octet-stream');
+					header('Content-Transfer-Encoding: Binary');
+					header('Content-disposition: attachment; filename="' . basename($zip) . '"');
+					ob_clean();
+					flush();
+					readfile($zip);
+					die();
+
+				} else {
+					// Premium, ensure user is logged in and has purchased this resource
+					if(!$user->isLoggedIn()){
+						Redirect::to(URL::build('/resources'));
+						die();
+					}
+
+					if(isset($can_download)){
+						header('Content-Type: application/octet-stream');
+						header('Content-Transfer-Encoding: Binary');
+						header('Content-disposition: attachment; filename="' . basename($zip) . '"');
+						ob_clean();
+						flush();
+						readfile($zip);
+						die();
+					}
+
+					$paid = DB::getInstance()->query('SELECT status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
+					if(count($paid)){
+						$paid = $paid[0];
+
+						if($paid->status == 1){
+							// Purchased
+							header('Content-Type: application/octet-stream');
+							header('Content-Transfer-Encoding: Binary');
+							header('Content-disposition: attachment; filename="' . basename($zip) . '"');
+							ob_clean();
+							flush();
+							readfile($zip);
+							die();
+
+						} else {
+							Redirect::to(URL::build('/resources/resource/' . Output::getClean($resource->id)));
+							die();
+
+						}
+					} else {
+						Redirect::to(URL::build('/resources/resource/' . Output::getClean($resource->id)));
+						die();
+
+					}
+				}
+
+				die();
+			}
+
 		} else if($_GET['do'] == 'update'){
 			// Update resource
 			if($user->isLoggedIn() && $resource->creator_id == $user->data()->id){
@@ -491,144 +803,311 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				if(Input::exists()){
 					if(Token::check(Input::get('token'))){
 						// Validate release
-						try {
-							// Use cURL
-							$ch = curl_init();
+						if($resource->type == 0 && $resource->github_url != 'none'){
+							try {
+								// Use cURL
+								$ch = curl_init();
 
-							curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-								'Accept: application/vnd.github.v3+json',
-								'User-Agent: NamelessMC-App'
-							));
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-							curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-							curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases/' . Output::getClean($_POST['release']));
+								curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+									'Accept: application/vnd.github.v3+json',
+									'User-Agent: NamelessMC-App'
+								));
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+								curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+								curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases/' . Output::getClean($_POST['release']));
 
-							if(!$github_query = curl_exec($ch)){
-								$error = curl_error($ch);
-							}
+								if(!$github_query = curl_exec($ch)){
+									$error = curl_error($ch);
+								}
 
-							curl_close($ch);
+								curl_close($ch);
 
-							$github_query = json_decode($github_query);
+								$github_query = json_decode($github_query);
 
-							if(!isset($github_query->id)) $error = str_replace('{x}', Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name), $resource_language->get('resources', 'unable_to_get_repo'));
-							else {
-								// Valid response
-								// Check update doesn't already exist
-								$exists = $queries->getWhere('resources_releases', array('release_tag', '=', Output::getClean($github_query->tag_name)));
-								if(count($exists)){
-									foreach($exists as $item){
-										if($item->resource_id == $resource->id){
-											$update_exists = true;
+								if(!isset($github_query->id)) $error = str_replace('{x}', Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name), $resource_language->get('resources', 'unable_to_get_repo'));
+								else {
+									// Valid response
+									// Check update doesn't already exist
+									$exists = $queries->getWhere('resources_releases', array('release_tag', '=', Output::getClean($github_query->tag_name)));
+									if(count($exists)){
+										foreach($exists as $item){
+											if($item->resource_id == $resource->id){
+												$update_exists = true;
+											}
 										}
+									}
+
+									if(isset($update_exists)){
+										$error = $resource_language->get('resources', 'update_already_exists');
+									} else {
+										$queries->update('resources', $resource->id, array(
+											'updated' => date('U'),
+											'latest_version' => Output::getClean($github_query->tag_name)
+										));
+
+										$queries->create('resources_releases', array(
+											'resource_id' => $resource->id,
+											'category_id' => $resource->category_id,
+											'release_title' => Output::getClean($github_query->name),
+											'release_description' => Output::getPurified($github_query->body),
+											'release_tag' => Output::getClean($github_query->tag_name),
+											'created' => date('U'),
+											'download_link' => Output::getClean($github_query->html_url)
+										));
+
+										// Hook
+										$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
+
+										if(count($new_resource_category))
+											$new_resource_category = Output::getClean($new_resource_category[0]->name);
+
+										else
+											$new_resource_category = 'Unknown';
+
+										HookHandler::executeEvent('updateResource', array(
+											'event' => 'updateResource',
+											'username' => Output::getClean($user->data()->nickname),
+											'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
+											'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($github_query->body)),
+											'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+											'title' => Output::getClean($resource->name),
+											'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
+										));
+
+										Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+										die();
 									}
 								}
 
-								if(isset($update_exists)){
-									$error = $resource_language->get('resources', 'update_already_exists');
-								} else {
-									$queries->update('resources', $resource->id, array(
-										'updated' => date('U'),
-										'latest_version' => Output::getClean($github_query->tag_name)
-									));
-
-									$queries->create('resources_releases', array(
-										'resource_id' => $resource->id,
-										'category_id' => $resource->category_id,
-										'release_title' => Output::getClean($github_query->name),
-										'release_description' => Output::getPurified($github_query->body),
-										'release_tag' => Output::getClean($github_query->tag_name),
-										'created' => date('U'),
-										'download_link' => Output::getClean($github_query->html_url)
-									));
-
-									// Hook
-									$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
-
-									if(count($new_resource_category))
-										$new_resource_category = Output::getClean($new_resource_category[0]->name);
-
-									else
-										$new_resource_category = 'Unknown';
-
-									HookHandler::executeEvent('updateResource', array(
-										'event' => 'updateResource',
-										'username' => Output::getClean($user->data()->nickname),
-										'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
-										'content_full' => str_replace('&nbsp;', '', strip_tags($github_query->body)),
-										'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
-										'title' => Output::getClean($resource->name),
-										'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
-									));
-
-									Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
-									die();
-								}
+							} catch(Exception $e){
+								$error = $e->getMessage();
 							}
 
-						} catch(Exception $e){
-							$error = $e->getMessage();
+						} else {
+							// Upload zip
+							require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
+							require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
+							$emojione = new Emojione\Client(new Emojione\Ruleset());
+
+							if(!isset($_POST['version']))
+								$version = '1.0.0';
+							else
+								$version = $_POST['version'];
+
+							$user_dir = ROOT_PATH . '/uploads/resources/' . $user->data()->id . DIRECTORY_SEPARATOR . $resource->id;
+
+							if(isset($_FILES['resourceFile'])){
+								$filename = $_FILES['resourceFile']['name'];
+								$fileext = pathinfo($filename, PATHINFO_EXTENSION);
+
+								if(strtolower($fileext) != 'zip'){
+									$error = $resource_language->get('resources', 'file_not_zip');
+								} else {
+									// Check file size
+									$filesize = $queries->getWhere('settings', array('name', '=', 'resources_filesize'));
+									if(!count($filesize)){
+										$queries->create('settings', array(
+											'name' => 'resources_filesize',
+											'value' => '2048'
+										));
+										$filesize = '2048';
+
+									} else {
+										$filesize = $filesize[0]->value;
+
+										if(!is_numeric($filesize))
+											$filesize = '2048';
+									}
+
+									if($_FILES['resourceFile']['size'] > ($filesize * 1000)){
+										$error = str_replace('{x}', Output::getClean($filesize), $resource_language->get('resources', 'filesize_max_x'));
+
+									} else {
+										// Create release
+										// Format description
+										$cache->setCache('post_formatting');
+										$formatting = $cache->retrieve('formatting');
+
+										if($formatting == 'markdown'){
+											$content = Michelf\Markdown::defaultTransform($_SESSION['new_resource']['content']);
+											$content = Output::getClean($content);
+										} else $content = Output::getClean($_SESSION['new_resource']['content']);
+
+										$queries->create('resources_releases', array(
+											'resource_id' => $resource->id,
+											'category_id' => $resource->category_id,
+											'release_title' => Output::getClean($version),
+											'release_description' => $content,
+											'release_tag' => Output::getClean($version),
+											'created' => date('U'),
+											'download_link' => 'local'
+										));
+
+										$release_id = $queries->getLastId();
+
+										$uploadPath = $user_dir . DIRECTORY_SEPARATOR . $release_id;
+
+										if(!is_dir($uploadPath))
+											mkdir($uploadPath);
+
+										$uploadPath .= DIRECTORY_SEPARATOR . basename($_FILES['resourceFile']['name']);
+
+										if(move_uploaded_file($_FILES['resourceFile']['tmp_name'], $uploadPath)){
+											// File uploaded
+											$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
+
+											if(count($new_resource_category))
+												$new_resource_category = Output::getClean($new_resource_category[0]->name);
+
+											else
+												$new_resource_category = 'Unknown';
+
+											HookHandler::executeEvent('updateResource', array(
+												'event' => 'updateResource',
+												'username' => Output::getClean($user->data()->nickname),
+												'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
+												'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
+												'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+												'title' => Output::getClean($resource->name),
+												'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
+											));
+
+											Redirect::to(URL::build('/resources/resource/' . $resource->id));
+											die();
+
+										} else {
+											// Unable to upload file
+											$error = str_replace('{x}', $_FILES['resourceFile']['error'], $resource_language->get('resources', 'file_upload_failed'));
+
+											$queries->delete('resources_releases', array('id', '=', $release_id));
+										}
+									}
+								}
+							}
 						}
 					} else {
 						$error = $language->get('general', 'invalid_token');
 					}
 				}
 
-				// Github API
-				try {
-					$ch = curl_init();
+				if($resource->type == 0 && $resource->github_url != 'none'){
+					// Github API
+					try {
+						$ch = curl_init();
 
-					curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-						'Accept: application/vnd.github.v3+json',
-						'User-Agent: NamelessMC-App'
+						curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+							'Accept: application/vnd.github.v3+json',
+							'User-Agent: NamelessMC-App'
+						));
+						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+						curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+						curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases');
+
+						if(!$github_query = curl_exec($ch)){
+							$error = curl_error($ch);
+						}
+
+						curl_close($ch);
+
+					} catch(Exception $e){
+						die($e->getMessage());
+					}
+
+					// Get list of all releases
+					$github_query = json_decode($github_query);
+
+					if(!isset($github_query[0])) $error = str_replace('{x}', Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo), $resource_language->get('resources', 'unable_to_get_repo'));
+					else {
+						// Valid response
+						$releases_array = array();
+						foreach($github_query as $release){
+							// Select release
+							$releases_array[] = array(
+								'id' => $release->id,
+								'tag' => Output::getClean($release->tag_name),
+								'name' => Output::getClean($release->name)
+							);
+						}
+					}
+
+					// Select release
+					if(isset($error)) $smarty->assign('ERROR', $error);
+
+					// Assign Smarty variables
+					$smarty->assign(array(
+						'NEW_RESOURCE' => $resource_language->get('resources', 'update'),
+						'CANCEL' => $language->get('general', 'cancel'),
+						'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+						'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
+						'SELECT_RELEASE' => $resource_language->get('resources', 'select_release'),
+						'RELEASES' => $releases_array,
+						'SUBMIT' => $language->get('general', 'submit'),
+						'TOKEN' => Token::get()
 					));
-					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-					curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-					curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases');
 
-					if(!$github_query = curl_exec($ch)){
-						$error = curl_error($ch);
+					$template_file = 'resources/new_resource_select_release.tpl';
+
+				} else {
+					require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
+					require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
+					$emojione = new Emojione\Client(new Emojione\Ruleset());
+
+					// Upload new zip
+					if(isset($error)) $smarty->assign('ERROR', $error);
+
+					$smarty->assign(array(
+						'UPDATE_RESOURCE' => $resource_language->get('resources', 'update'),
+						'CANCEL' => $language->get('general', 'cancel'),
+						'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+						'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
+						'CHOOSE_FILE' => $resource_language->get('resources', 'choose_file'),
+						'ZIP_ONLY' => $resource_language->get('resources', 'zip_only'),
+						'VERSION_TAG' => $resource_language->get('resources', 'version_tag'),
+						'SUBMIT' => $language->get('general', 'submit'),
+						'TOKEN' => Token::get(),
+						'UPDATE_INFORMATION' => $resource_language->get('resources', 'update_information')
+					));
+
+					// Display either Markdown or HTML editor
+					if(!isset($formatting)){
+						$cache->setCache('post_formatting');
+						$formatting = $cache->retrieve('formatting');
 					}
 
-					curl_close($ch);
+					$template->addJSFiles(array(
+						(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array()
+					));
 
-				} catch(Exception $e){
-					die($e->getMessage());
-				}
+					if($formatting == 'markdown'){
+						// Markdown
+						$smarty->assign('MARKDOWN', true);
+						$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
 
-				// Get list of all releases
-				$github_query = json_decode($github_query);
+						$template->addJSFiles(array(
+							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/js/emojionearea.min.js' => array()
+						));
 
-				if(!isset($github_query[0])) $error = str_replace('{x}', Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo), $resource_language->get('resources', 'unable_to_get_repo'));
-				else {
-					// Valid response
-					$releases_array = array();
-					foreach($github_query as $release){
-						// Select release
-						$releases_array[] = array(
-							'id' => $release->id,
-							'tag' => Output::getClean($release->tag_name),
-							'name' => Output::getClean($release->name)
-						);
+						$template->addJSScript('
+							$(document).ready(function() {
+							    var el = $("#markdown").emojioneArea({
+									pickerPosition: "bottom"
+								});
+							});
+						');
+
+					} else {
+						$template->addJSFiles(array(
+							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
+							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
+							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
+						));
+
+						$template->addJSScript(Input::createEditor('content'));
 					}
+
+					$template_file = 'resources/update_resource_upload.tpl';
+
 				}
-
-				// Select release
-				if(isset($error)) $smarty->assign('ERROR', $error);
-
-				// Assign Smarty variables
-				$smarty->assign(array(
-					'NEW_RESOURCE' => $resource_language->get('resources', 'update'),
-					'CANCEL' => $language->get('general', 'cancel'),
-					'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
-					'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
-					'SELECT_RELEASE' => $resource_language->get('resources', 'select_release'),
-					'RELEASES' => $releases_array,
-					'SUBMIT' => $language->get('general', 'submit'),
-					'TOKEN' => Token::get()
-				));
-
-				$template_file = 'resources/new_resource_select_release.tpl';
 
 			} else {
 				// Can't update, redirect
@@ -665,6 +1144,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 						));
 
 						if($validation->passed()){
+							if($resource->type == 1 && isset($_POST['price']) && !empty($_POST['price']) && is_numeric($_POST['price']) && $_POST['price'] >= 0.01 && $_POST['price'] < 100 && preg_match('/^\d+(?:\.\d{2})?$/', $_POST['price'])){
+								$price = number_format($_POST['price'], 2, '.', '');
+							} else
+								$price = $resource->price;
+
 							try {
 								$cache->setCache('post_formatting');
 								$formatting = $cache->retrieve('formatting');
@@ -677,7 +1161,8 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 								$queries->update('resources', $resource->id, array(
 									'name' => Output::getClean(Input::get('title')),
 									'description' => $content,
-									'contributors' => Output::getClean(Input::get('contributors'))
+									'contributors' => Output::getClean(Input::get('contributors')),
+									'price' => $price
 								));
 
 								Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL(Input::get('title'))));
@@ -748,6 +1233,25 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				'TOKEN' => Token::get(),
 				'SUBMIT' => $language->get('general', 'submit')
 			));
+
+			if($resource->type == 1){
+				$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
+				if(!count($currency)){
+					$queries->create('settings', array(
+						'name' => 'resources_currency',
+						'value' => 'GBP'
+					));
+					$currency = 'GBP';
+
+				} else
+					$currency = $currency[0]->value;
+
+				$smarty->assign(array(
+					'PRICE' => $resource_language->get('resources', 'price'),
+					'RESOURCE_PRICE' => Output::getClean($resource->price),
+					'CURRENCY' => $currency
+				));
+			}
 
 			// Get post formatting type (HTML or Markdown)
 			$cache->setCache('post_formatting');
@@ -846,6 +1350,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 							$queries->delete('resources', array('id', '=', $resource->id));
 							$queries->delete('resources_comments', array('resource_id', '=', $resource->id));
 							$queries->delete('resources_releases', array('resource_id', '=', $resource->id));
+							$queries->delete('resources_payments', array('resource_id', '=', $resource->id));
+
+							if(is_dir(ROOT_PATH . '/uploads/resources/' . $resource->creator_id . '/' . $resource->id)){
+								Util::recursiveRemoveDirectory(ROOT_PATH . '/uploads/resources/' . $resource->creator_id . '/' . $resource->id);
+							}
 
 							Redirect::to(URL::build('/resources'));
 							die();

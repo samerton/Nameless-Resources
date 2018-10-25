@@ -42,7 +42,8 @@ $page_title = $resource_language->get('resources', 'resources') . ' - ' . str_re
 require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
 // Obtain categories + permissions from database
-$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
+//$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
+$categories = $queries->orderWhere('resources_categories', 'id <> 0', 'display_order');
 $permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user_group));
 
 // Assign to Smarty array
@@ -60,7 +61,8 @@ foreach($categories as $category){
 $categories = null;
 
 // Get latest releases
-$latest_releases = $queries->orderWhere('resources_releases', 'id <> 0', 'created', 'DESC');
+//$latest_releases = $queries->orderWhere('resources_releases', 'id <> 0', 'created', 'DESC');
+$latest_releases = $queries->orderWhere('resources', 'id <> 0', 'updated', 'DESC');
 
 // Pagination
 $paginator = new Paginator();
@@ -76,17 +78,19 @@ if(count($latest_releases)){
 	// Display the correct number of resources
 	$n = 0;
 
-	while($n < count($results->data) && isset($results->data[$n]->resource_id)){
+	while($n < count($results->data) && isset($results->data[$n]->id)){
 		if(!$resources->canViewCategory($results->data[$n]->category_id, $user_group, ($user->isLoggedIn() ? $user->data()->secondary_groups : null))){
 			$n++;
 			continue;
 		}
 		// Get actual resource info
+		/*
 		$resource = $queries->getWhere('resources', array('id', '=', $results->data[$n]->resource_id));
 		if(!count($resource))
 			  continue;
+		*/
 
-		$resource = $resource[0];
+		$resource = $results->data[$n];
 
 		// Get category
 		$category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));

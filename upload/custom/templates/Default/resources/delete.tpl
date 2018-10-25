@@ -18,7 +18,7 @@
                 <form action="" method="post">
                     <div style="text-align: center;">
                       <input type="hidden" name="token" value="{$TOKEN}">
-                      <a class="btn btn-warning" href="{$CANCEL_LINK}" onclick="return confirm('{$CONFIRM_CANCEL}')">{$CANCEL}</a>
+                      <a class="btn btn-warning" href="{$CANCEL_LINK}">{$CANCEL}</a>
                       <input type="submit" class="btn btn-danger" value="{$DELETE}">
                     </div>
                 </form>
