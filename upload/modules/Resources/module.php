@@ -106,8 +106,8 @@ class Resources_Module extends Module {
 			if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources')){
 				$cache->setCache('panel_sidebar');
 				if(!$cache->isCached('resources_order')){
-					$order = 10;
-					$cache->store('resources_order', 10);
+					$order = 20;
+					$cache->store('resources_order', 20);
 				} else {
 					$order = $cache->retrieve('resources_order');
 				}
