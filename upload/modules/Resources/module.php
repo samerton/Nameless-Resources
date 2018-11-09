@@ -121,7 +121,7 @@ class Resources_Module extends Module {
 					} else
 						$icon = $cache->retrieve('resources_categories_icon');
 
-					$navs[2]->add('resources_categories', $this->_resource_language->get('resources', 'categories'), URL::build('/panel/resources/categories'), 'top', null, $order, $icon);
+					$navs[2]->add('resources_categories', $this->_resource_language->get('resources', 'categories'), URL::build('/panel/resources/categories'), 'top', null, ($order + 0.1), $icon);
 				}
 
 				if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources.download')){
@@ -131,7 +131,7 @@ class Resources_Module extends Module {
 					} else
 						$icon = $cache->retrieve('resources_downloads_icon');
 
-					$navs[2]->add('resources_downloads', $this->_resource_language->get('resources', 'downloads'), URL::build('/panel/resources/downloads'), 'top', null, $order, $icon);
+					$navs[2]->add('resources_downloads', $this->_resource_language->get('resources', 'downloads'), URL::build('/panel/resources/downloads'), 'top', null, ($order + 0.2), $icon);
 				}
 
 				if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources.settings')){
@@ -141,7 +141,7 @@ class Resources_Module extends Module {
 					} else
 						$icon = $cache->retrieve('resources_settings_icon');
 
-					$navs[2]->add('resources_settings', $this->_resource_language->get('resources', 'settings'), URL::build('/panel/resources/settings'), 'top', null, $order, $icon);
+					$navs[2]->add('resources_settings', $this->_resource_language->get('resources', 'settings'), URL::build('/panel/resources/settings'), 'top', null, ($order + 0.3), $icon);
 				}
 
 			}
