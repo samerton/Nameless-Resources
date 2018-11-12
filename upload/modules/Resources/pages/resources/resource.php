@@ -509,7 +509,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 					'url' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=' . $release->id),
 					'tag' => Output::getClean($release->release_tag),
 					'name' => Output::getClean($release->release_title),
-					'description' => Output::getPurified(nl2br($release->release_description)),
+					'description' => Output::getPurified(nl2br(Output::getDecoded($release->release_description))),
 					'date' => $timeago->inWords(date('d M Y, H:i', $release->created), $language->getTimeLanguage()),
 					'date_full' => date('d M Y, H:i', $release->created),
 					'rating' => round($release->rating / 10),
@@ -548,7 +548,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'DOWNLOADS' => str_replace('{x}', $release->downloads, $resource_language->get('resources', 'x_downloads')),
 				'RATING' => round($release->rating / 10),
-				'DESCRIPTION' => Output::getPurified(nl2br($release->release_description)),
+				'DESCRIPTION' => Output::getPurified(nl2br(Output::getDecoded($release->release_description))),
 				'DATE' => $timeago->inWords(date('d M Y, H:i', $release->created), $language->getTimeLanguage()),
 				'DATE_FULL' => date('d M Y, H:i', $release->created)
 			));
