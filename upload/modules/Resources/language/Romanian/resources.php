@@ -142,7 +142,7 @@ $language = array(
 	'editing_category' => 'Editare categorie',
 	'settings' => 'Setări',
 	'settings_updated_successfully' => 'Setările au fost actualizate cu succes.',
-	'currency' => 'Moneda ISO-4217',
+	'currency' => 'Cod monedă ISO-4217',
 	'invalid_currency' => 'Codul pentru monedă ISO-4217 este invalid! O listă de coduri valide poate fi găsită <a href="https://en.wikipedia.org/wiki/ISO_4217#Active_codes" target="_blank" rel="noopener nofollow">aici</a>',
 	'upload_directory_not_writable' => 'Directorul "uploads/resources" nu poate fi scris!',
 	'maximum_filesize' => 'Dimensiunea maximă a fișierului (in kb)',
