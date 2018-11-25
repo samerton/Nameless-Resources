@@ -748,6 +748,13 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 					ob_clean();
 					flush();
 					readfile($zip);
+
+					if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
+						$queries->increment('resources', $resource->id, 'downloads');
+						$queries->increment('resources_releases', $release->id, 'downloads');
+						Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+					}
+
 					die();
 
 				} else {
@@ -764,6 +771,13 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 						ob_clean();
 						flush();
 						readfile($zip);
+
+						if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
+							$queries->increment('resources', $resource->id, 'downloads');
+							$queries->increment('resources_releases', $release->id, 'downloads');
+							Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+						}
+
 						die();
 					}
 
@@ -779,6 +793,13 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 							ob_clean();
 							flush();
 							readfile($zip);
+
+							if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
+								$queries->increment('resources', $resource->id, 'downloads');
+								$queries->increment('resources_releases', $release->id, 'downloads');
+								Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+							}
+							
 							die();
 
 						} else {
