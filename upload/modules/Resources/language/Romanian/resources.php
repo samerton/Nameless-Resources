@@ -108,6 +108,9 @@ $language = array(
 	'sorry_please_try_again' => 'Ne pare rău! A apărut o problemă, încercați din nou.',
 	'purchase_cancelled' => 'Achiziția a fost anulată cu succes.',
 	'purchase_complete' => 'Achiziția a fost finalizată cu succes. Rețineți că resursa va deveni disponibilă numai după ce plata va fi finalizată.',
+	'log_in_to_download' => 'Log in to download',
+	'external_download' => 'External Download',
+	'external_link' => 'External Link',
 
 	// Admin
 	'permissions' => 'Permisiuni',

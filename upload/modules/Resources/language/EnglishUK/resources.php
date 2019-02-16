@@ -106,6 +106,9 @@ $language = array(
 	'sorry_please_try_again' => 'Sorry! There was a problem, please try again.',
     'purchase_cancelled' => 'The purchase has been cancelled successfully.',
     'purchase_complete' => 'The purchase has been successful. Please note, the resource will only become available for download once the payment has been fully completed.',
+    'log_in_to_download' => 'Log in to download',
+	'external_download' => 'External Download',
+    'external_link' => 'External Link',
 
     // Admin
     'permissions' => 'Permissions',

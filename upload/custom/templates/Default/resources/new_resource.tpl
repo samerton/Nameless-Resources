@@ -56,6 +56,7 @@
 		  <select class="form-control" id="inputReleaseType" name="type">
 		    <option value="zip">{$ZIP_FILE}</option>
 		    <option value="github">{$GITHUB_RELEASE}</option>
+			<option value="external">{$EXTERNAL_DOWNLOAD}</option>
 		  </select>
 		</div>
 		

@@ -472,6 +472,8 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 		$smarty->assign('MODERATION', $moderation);
 		$smarty->assign('MODERATION_TEXT', $resource_language->get('resources', 'moderation'));
+	} else {
+		$smarty->assign('LOG_IN_TO_DOWNLOAD', $resource_language->get('resources', 'log_in_to_download'));
 	}
 
 	// Markdown?
@@ -696,14 +698,21 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				die();
 			}
 
-
 			if($release->download_link != 'local'){
 				// Increment download counter
-				if($user->isLoggedIn() || Cookie::exists('accept')){
-					if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
-						$queries->increment('resources', $resource->id, 'downloads');
-						$queries->increment('resources_releases', $release->id, 'downloads');
-						Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+				if(!$user->isLoggedIn() || $user->data()->id != $resource->creator_id){
+					if($user->isLoggedIn() || Cookie::exists('accept')){
+						if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
+							$queries->increment('resources', $resource->id, 'downloads');
+							$queries->increment('resources_releases', $release->id, 'downloads');
+							Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+						}
+					} else {
+						if(!Session::exists('nl-resource-download-' . $resource->id)) {
+							$queries->increment('resources', $resource->id, 'downloads');
+							$queries->increment('resources_releases', $release->id, 'downloads');
+							Session::put('nl-resource-download-' . $resource->id, "true", 3600);
+						}
 					}
 				}
 
@@ -741,6 +750,22 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 				// Get resource type
 				if($resource->type == 0){
+					if(!$user->isLoggedIn() || $user->data()->id != $resource->creator_id){
+						if($user->isLoggedIn() || Cookie::exists('accept')){
+							if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
+								$queries->increment('resources', $resource->id, 'downloads');
+								$queries->increment('resources_releases', $release->id, 'downloads');
+								Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+							}
+						} else {
+							if(!Session::exists('nl-resource-download-' . $resource->id)) {
+								$queries->increment('resources', $resource->id, 'downloads');
+								$queries->increment('resources_releases', $release->id, 'downloads');
+								Session::put('nl-resource-download-' . $resource->id, "true", 3600);
+							}
+						}
+					}
+
 					// Free, continue
 					header('Content-Type: application/octet-stream');
 					header('Content-Transfer-Encoding: Binary');
@@ -748,12 +773,6 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 					ob_clean();
 					flush();
 					readfile($zip);
-
-					if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
-						$queries->increment('resources', $resource->id, 'downloads');
-						$queries->increment('resources_releases', $release->id, 'downloads');
-						Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
-					}
 
 					die();
 
@@ -765,18 +784,28 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 					}
 
 					if(isset($can_download)){
+						if(!$user->isLoggedIn() || $user->data()->id != $resource->creator_id){
+							if($user->isLoggedIn() || Cookie::exists('accept')){
+								if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
+									$queries->increment('resources', $resource->id, 'downloads');
+									$queries->increment('resources_releases', $release->id, 'downloads');
+									Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+								}
+							} else {
+								if(!Session::exists('nl-resource-download-' . $resource->id)) {
+									$queries->increment('resources', $resource->id, 'downloads');
+									$queries->increment('resources_releases', $release->id, 'downloads');
+									Session::put('nl-resource-download-' . $resource->id, "true", 3600);
+								}
+							}
+						}
+
 						header('Content-Type: application/octet-stream');
 						header('Content-Transfer-Encoding: Binary');
 						header('Content-disposition: attachment; filename="' . basename($zip) . '"');
 						ob_clean();
 						flush();
 						readfile($zip);
-
-						if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
-							$queries->increment('resources', $resource->id, 'downloads');
-							$queries->increment('resources_releases', $release->id, 'downloads');
-							Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
-						}
 
 						die();
 					}
@@ -786,6 +815,22 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 						$paid = $paid[0];
 
 						if($paid->status == 1){
+							if(!$user->isLoggedIn() || $user->data()->id != $resource->creator_id){
+								if($user->isLoggedIn() || Cookie::exists('accept')){
+									if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
+										$queries->increment('resources', $resource->id, 'downloads');
+										$queries->increment('resources_releases', $release->id, 'downloads');
+										Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
+									}
+								} else {
+									if(!Session::exists('nl-resource-download-' . $resource->id)) {
+										$queries->increment('resources', $resource->id, 'downloads');
+										$queries->increment('resources_releases', $release->id, 'downloads');
+										Session::put('nl-resource-download-' . $resource->id, "true", 3600);
+									}
+								}
+							}
+
 							// Purchased
 							header('Content-Type: application/octet-stream');
 							header('Content-Transfer-Encoding: Binary');
@@ -793,12 +838,6 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 							ob_clean();
 							flush();
 							readfile($zip);
-
-							if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
-								$queries->increment('resources', $resource->id, 'downloads');
-								$queries->increment('resources_releases', $release->id, 'downloads');
-								Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
-							}
 							
 							die();
 
@@ -905,46 +944,126 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 							}
 
 						} else {
-							// Upload zip
-							require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
-							require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
-							$emojione = new Emojione\Client(new Emojione\Ruleset());
+							if($resource->link == 'local'){
+								// Upload zip
+								require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
+								require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
+								$emojione = new Emojione\Client(new Emojione\Ruleset());
 
-							if(!isset($_POST['version']))
-								$version = '1.0.0';
-							else
-								$version = $_POST['version'];
+								if(!isset($_POST['version']))
+									$version = '1.0.0';
+								else
+									$version = $_POST['version'];
 
-							$user_dir = ROOT_PATH . '/uploads/resources/' . $user->data()->id . DIRECTORY_SEPARATOR . $resource->id;
+								$user_dir = ROOT_PATH . '/uploads/resources/' . $user->data()->id . DIRECTORY_SEPARATOR . $resource->id;
 
-							if(isset($_FILES['resourceFile'])){
-								$filename = $_FILES['resourceFile']['name'];
-								$fileext = pathinfo($filename, PATHINFO_EXTENSION);
+								if(isset($_FILES['resourceFile'])){
+									$filename = $_FILES['resourceFile']['name'];
+									$fileext = pathinfo($filename, PATHINFO_EXTENSION);
 
-								if(strtolower($fileext) != 'zip'){
-									$error = $resource_language->get('resources', 'file_not_zip');
-								} else {
-									// Check file size
-									$filesize = $queries->getWhere('settings', array('name', '=', 'resources_filesize'));
-									if(!count($filesize)){
-										$queries->create('settings', array(
-											'name' => 'resources_filesize',
-											'value' => '2048'
-										));
-										$filesize = '2048';
-
+									if(strtolower($fileext) != 'zip'){
+										$error = $resource_language->get('resources', 'file_not_zip');
 									} else {
-										$filesize = $filesize[0]->value;
-
-										if(!is_numeric($filesize))
+										// Check file size
+										$filesize = $queries->getWhere('settings', array('name', '=', 'resources_filesize'));
+										if(!count($filesize)){
+											$queries->create('settings', array(
+												'name' => 'resources_filesize',
+												'value' => '2048'
+											));
 											$filesize = '2048';
+
+										} else {
+											$filesize = $filesize[0]->value;
+
+											if(!is_numeric($filesize))
+												$filesize = '2048';
+										}
+
+										if($_FILES['resourceFile']['size'] > ($filesize * 1000)){
+											$error = str_replace('{x}', Output::getClean($filesize), $resource_language->get('resources', 'filesize_max_x'));
+
+										} else {
+											// Create release
+											// Format description
+											$cache->setCache('post_formatting');
+											$formatting = $cache->retrieve('formatting');
+
+											if($formatting == 'markdown'){
+												$content = Michelf\Markdown::defaultTransform($_SESSION['new_resource']['content']);
+												$content = Output::getClean($content);
+											} else $content = Output::getClean($_SESSION['new_resource']['content']);
+
+											$queries->create('resources_releases', array(
+												'resource_id' => $resource->id,
+												'category_id' => $resource->category_id,
+												'release_title' => Output::getClean($version),
+												'release_description' => $content,
+												'release_tag' => Output::getClean($version),
+												'created' => date('U'),
+												'download_link' => 'local'
+											));
+
+											$release_id = $queries->getLastId();
+
+											$uploadPath = $user_dir . DIRECTORY_SEPARATOR . $release_id;
+
+											if(!is_dir($uploadPath))
+												mkdir($uploadPath);
+
+											$uploadPath .= DIRECTORY_SEPARATOR . basename($_FILES['resourceFile']['name']);
+
+											if(move_uploaded_file($_FILES['resourceFile']['tmp_name'], $uploadPath)){
+												// File uploaded
+												$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
+
+												if(count($new_resource_category))
+													$new_resource_category = Output::getClean($new_resource_category[0]->name);
+
+												else
+													$new_resource_category = 'Unknown';
+
+												HookHandler::executeEvent('updateResource', array(
+													'event' => 'updateResource',
+													'username' => Output::getClean($user->data()->nickname),
+													'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
+													'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
+													'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+													'title' => Output::getClean($resource->name),
+													'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
+												));
+
+												Redirect::to(URL::build('/resources/resource/' . $resource->id));
+												die();
+
+											} else {
+												// Unable to upload file
+												$error = str_replace('{x}', $_FILES['resourceFile']['error'], $resource_language->get('resources', 'file_upload_failed'));
+
+												$queries->delete('resources_releases', array('id', '=', $release_id));
+											}
+										}
 									}
+								}
+							} else {
+								// Update link
+								if(Token::check(Input::get('token'))){
+									// Validate link
+									$validate = new Validate();
+									$validation = $validate->check($_POST, array(
+										'link' => array(
+											'required' => true,
+											'min' => 4,
+											'max' => 256
+										)
+									));
 
-									if($_FILES['resourceFile']['size'] > ($filesize * 1000)){
-										$error = str_replace('{x}', Output::getClean($filesize), $resource_language->get('resources', 'filesize_max_x'));
+									if($validation->passed()){
+										if(!isset($_POST['version']))
+											$version = '1.0.0';
+										else
+											$version = $_POST['version'];
 
-									} else {
-										// Create release
 										// Format description
 										$cache->setCache('post_formatting');
 										$formatting = $cache->retrieve('formatting');
@@ -954,6 +1073,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 											$content = Output::getClean($content);
 										} else $content = Output::getClean($_SESSION['new_resource']['content']);
 
+										$queries->update('resources', $resource->id, array(
+											'updated' => date('U'),
+											'latest_version' => Output::getClean($version)
+										));
+
 										$queries->create('resources_releases', array(
 											'resource_id' => $resource->id,
 											'category_id' => $resource->category_id,
@@ -961,48 +1085,36 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 											'release_description' => $content,
 											'release_tag' => Output::getClean($version),
 											'created' => date('U'),
-											'download_link' => 'local'
+											'download_link' => Output::getClean($_POST['link'])
 										));
 
-										$release_id = $queries->getLastId();
+										// Hook
+										$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
 
-										$uploadPath = $user_dir . DIRECTORY_SEPARATOR . $release_id;
+										if(count($new_resource_category))
+											$new_resource_category = Output::getClean($new_resource_category[0]->name);
 
-										if(!is_dir($uploadPath))
-											mkdir($uploadPath);
+										else
+											$new_resource_category = 'Unknown';
 
-										$uploadPath .= DIRECTORY_SEPARATOR . basename($_FILES['resourceFile']['name']);
+										HookHandler::executeEvent('updateResource', array(
+											'event' => 'updateResource',
+											'username' => Output::getClean($user->data()->nickname),
+											'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
+											'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
+											'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+											'title' => Output::getClean($resource->name),
+											'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
+										));
 
-										if(move_uploaded_file($_FILES['resourceFile']['tmp_name'], $uploadPath)){
-											// File uploaded
-											$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
+										Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+										die();
 
-											if(count($new_resource_category))
-												$new_resource_category = Output::getClean($new_resource_category[0]->name);
-
-											else
-												$new_resource_category = 'Unknown';
-
-											HookHandler::executeEvent('updateResource', array(
-												'event' => 'updateResource',
-												'username' => Output::getClean($user->data()->nickname),
-												'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
-												'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
-												'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
-												'title' => Output::getClean($resource->name),
-												'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
-											));
-
-											Redirect::to(URL::build('/resources/resource/' . $resource->id));
-											die();
-
-										} else {
-											// Unable to upload file
-											$error = str_replace('{x}', $_FILES['resourceFile']['error'], $resource_language->get('resources', 'file_upload_failed'));
-
-											$queries->delete('resources_releases', array('id', '=', $release_id));
-										}
+									} else {
+										$error = $resource_language->get('resources', 'external_link_error');
 									}
+								} else {
+									$error = $language->get('general', 'invalid_token');
 								}
 							}
 						}
@@ -1069,46 +1181,47 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 					$template_file = 'resources/new_resource_select_release.tpl';
 
 				} else {
-					require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
-					require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
-					$emojione = new Emojione\Client(new Emojione\Ruleset());
+					if($resource->link == 'local'){
+						require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
+						require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
+						$emojione = new Emojione\Client(new Emojione\Ruleset());
 
-					// Upload new zip
-					if(isset($error)) $smarty->assign('ERROR', $error);
+						// Upload new zip
+						if(isset($error)) $smarty->assign('ERROR', $error);
 
-					$smarty->assign(array(
-						'UPDATE_RESOURCE' => $resource_language->get('resources', 'update'),
-						'CANCEL' => $language->get('general', 'cancel'),
-						'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
-						'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
-						'CHOOSE_FILE' => $resource_language->get('resources', 'choose_file'),
-						'ZIP_ONLY' => $resource_language->get('resources', 'zip_only'),
-						'VERSION_TAG' => $resource_language->get('resources', 'version_tag'),
-						'SUBMIT' => $language->get('general', 'submit'),
-						'TOKEN' => Token::get(),
-						'UPDATE_INFORMATION' => $resource_language->get('resources', 'update_information')
-					));
-
-					// Display either Markdown or HTML editor
-					if(!isset($formatting)){
-						$cache->setCache('post_formatting');
-						$formatting = $cache->retrieve('formatting');
-					}
-
-					$template->addJSFiles(array(
-						(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array()
-					));
-
-					if($formatting == 'markdown'){
-						// Markdown
-						$smarty->assign('MARKDOWN', true);
-						$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
-
-						$template->addJSFiles(array(
-							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/js/emojionearea.min.js' => array()
+						$smarty->assign(array(
+							'UPDATE_RESOURCE' => $resource_language->get('resources', 'update'),
+							'CANCEL' => $language->get('general', 'cancel'),
+							'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+							'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
+							'CHOOSE_FILE' => $resource_language->get('resources', 'choose_file'),
+							'ZIP_ONLY' => $resource_language->get('resources', 'zip_only'),
+							'VERSION_TAG' => $resource_language->get('resources', 'version_tag'),
+							'SUBMIT' => $language->get('general', 'submit'),
+							'TOKEN' => Token::get(),
+							'UPDATE_INFORMATION' => $resource_language->get('resources', 'update_information')
 						));
 
-						$template->addJSScript('
+						// Display either Markdown or HTML editor
+						if(!isset($formatting)){
+							$cache->setCache('post_formatting');
+							$formatting = $cache->retrieve('formatting');
+						}
+
+						$template->addJSFiles(array(
+							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array()
+						));
+
+						if($formatting == 'markdown'){
+							// Markdown
+							$smarty->assign('MARKDOWN', true);
+							$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
+
+							$template->addJSFiles(array(
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/js/emojionearea.min.js' => array()
+							));
+
+							$template->addJSScript('
 							$(document).ready(function() {
 							    var el = $("#markdown").emojioneArea({
 									pickerPosition: "bottom"
@@ -1116,18 +1229,78 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 							});
 						');
 
+						} else {
+							$template->addJSFiles(array(
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
+							));
+
+							$template->addJSScript(Input::createEditor('content'));
+						}
+
+						$template_file = 'resources/update_resource_upload.tpl';
+
 					} else {
-						$template->addJSFiles(array(
-							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
-							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
-							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
+						require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
+						require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
+						$emojione = new Emojione\Client(new Emojione\Ruleset());
+
+						// Upload new zip
+						if(isset($error)) $smarty->assign('ERROR', $error);
+
+						$smarty->assign(array(
+							'NEW_RESOURCE' => $resource_language->get('resources', 'update'),
+							'CANCEL' => $language->get('general', 'cancel'),
+							'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+							'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
+							'EXTERNAL_LINK' => $resource_language->get('resources', 'external_link'),
+							'VERSION_TAG' => $resource_language->get('resources', 'version_tag'),
+							'SUBMIT' => $language->get('general', 'submit'),
+							'TOKEN' => Token::get(),
+							'UPDATE_INFORMATION' => $resource_language->get('resources', 'update_information')
 						));
 
-						$template->addJSScript(Input::createEditor('content'));
+						// Display either Markdown or HTML editor
+						if(!isset($formatting)){
+							$cache->setCache('post_formatting');
+							$formatting = $cache->retrieve('formatting');
+						}
+
+						$template->addJSFiles(array(
+							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array()
+						));
+
+						if($formatting == 'markdown'){
+							// Markdown
+							$smarty->assign('MARKDOWN', true);
+							$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
+
+							$template->addJSFiles(array(
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/js/emojionearea.min.js' => array()
+							));
+
+							$template->addJSScript('
+							$(document).ready(function() {
+							    var el = $("#markdown").emojioneArea({
+									pickerPosition: "bottom"
+								});
+							});
+						');
+
+						} else {
+							$template->addJSFiles(array(
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
+							));
+
+							$template->addJSScript(Input::createEditor('content'));
+						}
+
+						$template_file = 'resources/new_resource_external_link.tpl';
+
 					}
-
-					$template_file = 'resources/update_resource_upload.tpl';
-
 				}
 
 			} else {

@@ -386,10 +386,16 @@ if(Input::exists()){
 							$to_continue = array('type' => $type);
 							if(isset($price)) $to_continue['price'] = $price;
 
+							$type = $_SESSION['new_resource']['type'];
 							$_SESSION['new_resource']['type'] = $to_continue;
 
-							Redirect::to(URL::build('/resources/new/', 'step=upload '));
-							die();
+							if($type == 'external'){
+								Redirect::to(URL::build('/resources/new/', 'step=link'));
+								die();
+							} else {
+								Redirect::to(URL::build('/resources/new/', 'step=upload'));
+								die();
+							}
 						}
 
 					} else
@@ -565,6 +571,102 @@ if(Input::exists()){
 						}
 					}
 				}
+			} else if($_GET['step'] == 'link'){
+				if(Token::check(Input::get('token'))){
+					// Validate link
+					$validate = new Validate();
+					$validation = $validate->check($_POST, array(
+						'link' => array(
+							'required' => true,
+							'min' => 4,
+							'max' => 256
+						)
+					));
+
+					if($validation->passed()){
+						$cache->setCache('post_formatting');
+						$formatting = $cache->retrieve('formatting');
+
+						if($formatting == 'markdown'){
+							$content = Michelf\Markdown::defaultTransform($_SESSION['new_resource']['content']);
+							$content = Output::getClean($content);
+						} else $content = Output::getClean($_SESSION['new_resource']['content']);
+
+						if(!isset($_POST['version']))
+							$version = '1.0.0';
+						else
+							$version = $_POST['version'];
+
+						$type = 0;
+						$price = null;
+
+						if(isset($_SESSION['new_resource']['type']['type'])){
+							if($_SESSION['new_resource']['type']['type'] == 'premium'){
+								$type = 1;
+
+								if(isset($_SESSION['new_resource']['type']['price']))
+									$price = $_SESSION['new_resource']['type']['price'];
+							}
+						}
+
+						$queries->create('resources', array(
+							'category_id' => $_SESSION['new_resource']['category'],
+							'creator_id' => $user->data()->id,
+							'name' => Output::getClean($_SESSION['new_resource']['name']),
+							'description' => $content,
+							'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? Output::getClean($_SESSION['new_resource']['contributors']) : null),
+							'created' => date('U'),
+							'updated' => date('U'),
+							'github_url' => 'none',
+							'github_username' => 'none',
+							'github_repo_name' => 'none',
+							'latest_version' => Output::getClean($version),
+							'type' => $type,
+							'price' => $price
+						));
+
+						$resource_id = $queries->getLastId();
+
+						$queries->create('resources_releases', array(
+							'resource_id' => $resource_id,
+							'category_id' => $_SESSION['new_resource']['category'],
+							'release_title' => Output::getClean($version),
+							'release_description' => $content,
+							'release_tag' => Output::getClean($version),
+							'created' => date('U'),
+							'download_link' => Output::getClean($_POST['link'])
+						));
+
+						// Hook
+						$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
+
+						if(count($new_resource_category))
+							$new_resource_category = Output::getClean($new_resource_category[0]->name);
+
+						else
+							$new_resource_category = 'Unknown';
+
+						HookHandler::executeEvent('newResource', array(
+							'event' => 'newResource',
+							'username' => Output::getClean($user->data()->nickname),
+							'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
+							'content_full' => str_replace('&nbsp;', '', strip_tags(htmlspecialchars_decode($content))),
+							'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+							'title' => Output::getClean($_SESSION['new_resource']['name']),
+							'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
+						));
+
+						unset($_SESSION['new_resource']);
+
+						Redirect::to(URL::build('/resources/resource/' . $resource_id));
+						die();
+
+					} else {
+						$error = $resource_language->get('resources', 'external_link_error');
+					}
+				} else {
+					$error = $language->get('general', 'invalid_token');
+				}
 			}
 		}
 	} else
@@ -621,7 +723,8 @@ if(!isset($_GET['step'])){
 		'CONTRIBUTORS' => $resource_language->get('resources', 'contributors'),
 		'RELEASE_TYPE' => $resource_language->get('resources', 'release_type'),
 		'ZIP_FILE' => $resource_language->get('resources', 'zip_file'),
-		'GITHUB_RELEASE' => $resource_language->get('resources', 'github_release')
+		'GITHUB_RELEASE' => $resource_language->get('resources', 'github_release'),
+		'EXTERNAL_DOWNLOAD' => $resource_language->get('resources', 'external_download')
 	));
 
 	$template_file = 'resources/new_resource.tpl';
@@ -713,7 +816,6 @@ if(!isset($_GET['step'])){
 			break;
 
 		case 'upload':
-
 			if(isset($error)) $smarty->assign('ERROR', $error);
 
 			$smarty->assign(array(
@@ -723,6 +825,18 @@ if(!isset($_GET['step'])){
 			));
 
 			$template_file = 'resources/new_resource_upload.tpl';
+
+			break;
+
+		case 'link':
+			if(isset($error)) $smarty->assign('ERROR', $error);
+
+			$smarty->assign(array(
+				'EXTERNAL_LINK' => $resource_language->get('resources', 'external_link'),
+				'VERSION_TAG' => $resource_language->get('resources', 'version_tag')
+			));
+
+			$template_file = 'resources/new_resource_external_link.tpl';
 
 			break;
 

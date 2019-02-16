@@ -29,6 +29,9 @@
 
 		  <hr />
 
+		  {if isset($LOG_IN_TO_DOWNLOAD)}
+			  <button disabled class="btn btn-primary">{$LOG_IN_TO_DOWNLOAD}</button>
+		  {/if}
 		  {if isset($DOWNLOAD_URL)}
 			  <a href="{$DOWNLOAD_URL}" class="btn btn-primary" target="_blank">{$DOWNLOAD}</a>
 		  {elseif isset($PURCHASE_FOR_PRICE)}
@@ -128,7 +131,7 @@
 	    <p>{$NO_REVIEWS}</p>
 	  {/if}
 
-	  {if $CAN_REVIEW == true}
+	  {if $CAN_REVIEW == true && !isset($PAYMENT_PENDING) && !isset($PURCHASE_FOR_PRICE)}
 	  <h4>{$NEW_REVIEW}</h4>
 	  <form action="" method="post">
 	    <div class="form-group">
