@@ -161,8 +161,9 @@ if(Input::exists()){
 
 						$github_query = json_decode($github_query, true);
 
-						if(!isset($github_query[0])) $error = str_replace('{x}', Output::getClean($_POST['github_username']) . '/' . Output::getClean($_POST['github_repo']), $resource_language->get('resources', 'unable_to_get_repo'));
-						else {
+						if(!isset($github_query[0])){
+							$error = str_replace('{x}', Output::getClean($_POST['github_username']) . '/' . Output::getClean($_POST['github_repo']), $resource_language->get('resources', 'unable_to_get_repo'));
+						} else {
 							// Valid response
 							$releases_array = array();
 							foreach($github_query as $release){
@@ -684,14 +685,14 @@ if(!isset($_GET['step'])){
 	// Assign to Smarty array
 	$categories_array = array();
 	foreach($categories as $category){
-	  // Check permissions
-	  foreach($permissions as $permission){
-		if($permission->category_id == $category->id && $permission->post == 1)
-			$categories_array[] = array(
-				'name' => Output::getClean($category->name),
-				'id' => $category->id
-			);
-	  }
+		// Check permissions
+		foreach($permissions as $permission){
+			if($permission->category_id == $category->id && $permission->post == 1)
+				$categories_array[] = array(
+					'name' => Output::getClean($category->name),
+					'id' => $category->id
+				);
+		}
 	}
 	$categories = null;
 
@@ -732,6 +733,9 @@ if(!isset($_GET['step'])){
 } else {
 	switch($_GET['step']){
 		case 'github':
+			// Errors?
+			if(isset($error)) $smarty->assign('ERROR', $error);
+
 			$smarty->assign(array(
 				'GITHUB_USERNAME' => $resource_language->get('resources', 'github_username'),
 				'GITHUB_REPO_NAME' => $resource_language->get('resources', 'github_repo_name'),
