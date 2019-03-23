@@ -106,9 +106,11 @@ require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
 $template->addCSSFiles(array(
 	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css' => array(),
+	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.css' => array(),
+	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/css/spoiler.css' => array(),
 	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/css/emojione.min.css' => array(),
 	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/css/emojione.sprites.css' => array(),
-	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/css/emojionearea.min.css' => array()
+	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/css/emojionearea.min.css' => array(),
 ));
 
 $template->addCSSStyle('
@@ -245,7 +247,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 	} else $comments = $cache->retrieve('comments');
 
 	// Pagination
-	$paginator = new Paginator();
+	$paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
 	$results = $paginator->getLimited($comments, 10, $p, count($comments));
 	$pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringtoURL($resource->name) . '/', true));
 
@@ -497,7 +499,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			}
 
 			// Pagination
-			$paginator = new Paginator();
+			$paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
 			$results = $paginator->getLimited($releases, 10, $p, count($releases));
 			$pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all&amp;'));
 
@@ -944,7 +946,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 							}
 
 						} else {
-							if($resource->link == 'local'){
+							if($latest_release->download_link == 'local'){
 								// Upload zip
 								require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
 								require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
@@ -1022,6 +1024,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 												else
 													$new_resource_category = 'Unknown';
+
+												$queries->update('resources', $resource->id, array(
+													'updated' => date('U'),
+													'latest_version' => Output::getClean($version)
+												));
 
 												HookHandler::executeEvent('updateResource', array(
 													'event' => 'updateResource',
@@ -1181,7 +1188,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 					$template_file = 'resources/new_resource_select_release.tpl';
 
 				} else {
-					if($resource->link == 'local'){
+					if($latest_release->download_link == 'local'){
 						require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
 						require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
 						$emojione = new Emojione\Client(new Emojione\Ruleset());
@@ -1232,11 +1239,12 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 						} else {
 							$template->addJSFiles(array(
 								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.js' => array(),
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/js/spoiler.js' => array(),
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/tinymce.min.js' => array()
 							));
 
-							$template->addJSScript(Input::createEditor('content'));
+							$template->addJSScript(Input::createTinyEditor($language, 'editor'));
 						}
 
 						$template_file = 'resources/update_resource_upload.tpl';
@@ -1291,11 +1299,12 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 						} else {
 							$template->addJSFiles(array(
 								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.js' => array(),
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/js/spoiler.js' => array(),
+								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/tinymce.min.js' => array()
 							));
 
-							$template->addJSScript(Input::createEditor('content'));
+							$template->addJSScript(Input::createTinyEditor($language, 'content'));
 						}
 
 						$template_file = 'resources/new_resource_external_link.tpl';
@@ -1719,35 +1728,35 @@ if($user->isLoggedIn()){
 
 	} else {
 		$template->addJSFiles(array(
-			(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array(),
 			(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
-			(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
-			(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array(),
+			(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.js' => array(),
+			(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/js/spoiler.js' => array(),
+			(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/tinymce.min.js' => array()
 		));
 
-		$template->addJSScript(Input::createEditor('editor'));
+		$template->addJSScript(Input::createTinyEditor($language, 'editor'));
 
 	}
 
 	$template->addJSScript('
-	  var $star_rating = $(\'.star-rating.view .fa\');
-	  var $star_rating_set = $(\'.star-rating.set .fa\');
+	  var $star_rating = $(\'.star-rating.view .far\');
+	  var $star_rating_set = $(\'.star-rating.set .far\');
 	
 	  var SetRatingStar = function(type = 0) {
 		  if(type === 0) {
 			  return $star_rating.each(function () {
 				  if (parseInt($(this).parent().children(\'input.rating-value\').val()) >= parseInt($(this).data(\'rating\'))) {
-					  return $(this).removeClass(\'fa-star-o\').addClass(\'fa-star\');
+					  return $(this).removeClass(\'far\').addClass(\'fas\');
 				  } else {
-					  return $(this).removeClass(\'fa-star\').addClass(\'fa-star-o\');
+					  return $(this).removeClass(\'fas\').addClass(\'far\');
 				  }
 			  });
 		  } else {
 			  return $star_rating_set.each(function () {
 				  if (parseInt($star_rating_set.siblings(\'input.rating-value\').val()) >= parseInt($(this).data(\'rating\'))) {
-					  return $(this).removeClass(\'fa-star-o\').addClass(\'fa-star\');
+					  return $(this).removeClass(\'far\').addClass(\'fas\');
 				  } else {
-					  return $(this).removeClass(\'fa-star\').addClass(\'fa-star-o\');
+					  return $(this).removeClass(\'fas\').addClass(\'far\');
 				  }
 			  });
 		  }
@@ -1763,24 +1772,24 @@ if($user->isLoggedIn()){
 
 } else {
 	$template->addJSScript('
-	  var $star_rating = $(\'.star-rating.view .fa\');
-	  var $star_rating_set = $(\'.star-rating.set .fa\');
+	  var $star_rating = $(\'.star-rating.view .far\');
+	  var $star_rating_set = $(\'.star-rating.set .far\');
 	
 	  var SetRatingStar = function(type = 0) {
 		  if(type === 0) {
 			  return $star_rating.each(function () {
 				  if (parseInt($(this).parent().children(\'input.rating-value\').val()) >= parseInt($(this).data(\'rating\'))) {
-					  return $(this).removeClass(\'fa-star-o\').addClass(\'fa-star\');
+					  return $(this).removeClass(\'far\').addClass(\'fas\');
 				  } else {
-					  return $(this).removeClass(\'fa-star\').addClass(\'fa-star-o\');
+					  return $(this).removeClass(\'fas\').addClass(\'far\');
 				  }
 			  });
 		  } else {
 			  return $star_rating_set.each(function () {
 				  if (parseInt($star_rating_set.siblings(\'input.rating-value\').val()) >= parseInt($(this).data(\'rating\'))) {
-					  return $(this).removeClass(\'fa-star-o\').addClass(\'fa-star\');
+					  return $(this).removeClass(\'far\').addClass(\'fas\');
 				  } else {
-					  return $(this).removeClass(\'fa-star\').addClass(\'fa-star-o\');
+					  return $(this).removeClass(\'fas\').addClass(\'far\');
 				  }
 			  });
 		  }

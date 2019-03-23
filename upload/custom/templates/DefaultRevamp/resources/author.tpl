@@ -1,36 +1,34 @@
 {include file='header.tpl'}
 {include file='navbar.tpl'}
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-3">
-            {include file='resources/categories.tpl'}
-        </div>
-        <div class="col-md-9">
-            <div class="card">
-                <div class="card-body">
-                    <h2 class="card-title" style="display:inline;">{$VIEWING_RESOURCES_BY}</h2>
-
-                    <span class="pull-right">
-                      <a href="{$BACK_LINK}" class="btn btn-info">{$BACK}</a>
+<div class="ui container">
+    <div class="ui padded segment">
+        <div class="ui stackable grid">
+            <div class="ui row">
+                <div class="twelve wide column">
+                    <h1 style="display:inline">{$VIEWING_RESOURCES_BY}</h1>
+                </div>
+                <div class="four wide column">
+                    <span class="res right floated">
+                      <a href="{$BACK_LINK}" class="ui button">{$BACK}</a>
                         {if isset($NEW_RESOURCE)}
-                            <a href="{$NEW_RESOURCE_LINK}" class="btn btn-primary">{$NEW_RESOURCE}</a>
+                            <a href="{$NEW_RESOURCE_LINK}" class="ui blue button">{$NEW_RESOURCE}</a>
                         {/if}
-                    </span>
-                    <br /><br />
+				    </span>
+                </div>
+            </div>
 
+            <div class="ui divider"></div>
+
+            <div class="ui row">
+                <div class="twelve wide column">
                     {if $LATEST_RESOURCES}
-                        <table class="table table-striped">
-                            <colgroup>
-                                <col span="1" style="width: 60%;">
-                                <col span="1" style="width: 20%;">
-                                <col span="1" style="width: 20%;">
-                            </colgroup>
+                        <table class="ui fixed single line selectable unstackable small padded res table">
                             <thead>
                             <tr>
-                                <th>{$RESOURCE}</th>
-                                <th>{$STATS}</th>
-                                <th>{$AUTHOR}</th>
+                                <th class="eight wide"><h4>{$RESOURCE}</h4></th>
+                                <th class="three wide"><h4>{$STATS}</h4></th>
+                                <th class="five wide"><h4>{$AUTHOR}</h4></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -39,7 +37,7 @@
                                     <td>
                                         <a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small><br />
                                         {$resource.description}<br />
-                                        <small>{$resource.category}, <span data-toggle="tooltip" data-trigger="hover" data-original-title="{$resource.updated_full}">{$resource.updated}</span></small>
+                                        <small>{$resource.category}</small>
                                     </td>
                                     <td>
                                         <div class="star-rating view">
@@ -54,8 +52,13 @@
                                         {$resource.downloads}
                                     </td>
                                     <td>
-                                        <a href="{$resource.author_profile}"><img class="rounded" style="max-height:30px; max-width:30px;" src="{$resource.author_avatar}" alt="{$resource.author}" /></a><br />
-                                        <a style="{$resource.author_style}" href="{$resource.author_profile}">{$resource.author}</a>
+                                        <h5 class="ui image header">
+                                            <img class="ui mini circular image" style="max-height:30px; max-width:30px;" src="{$resource.author_avatar}" alt="{$resource.author}">
+                                            <div class="content">
+                                                <a href="{$resource.author_profile}" style="{$resource.author_style}">{$resource.author}</a>
+                                                <div class="sub header"><span data-toggle="tooltip" data-content="{$resource.updated_full}">{$resource.updated}</span></div>
+                                            </div>
+                                        </h5>
                                     </td>
                                 </tr>
                             {/foreach}
@@ -67,7 +70,9 @@
                     {else}
                         {$NO_RESOURCES}
                     {/if}
-
+                </div>
+                <div class="four wide column">
+                    {include file='resources/categories.tpl'}
                 </div>
             </div>
         </div>

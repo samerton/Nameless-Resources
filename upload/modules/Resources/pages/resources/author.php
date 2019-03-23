@@ -82,7 +82,7 @@ $categories = null;
 $latest_releases = $queries->orderWhere('resources', 'creator_id =' . $author->id, 'updated', 'DESC');
 
 // Pagination
-$paginator = new Paginator();
+$paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
 $results = $paginator->getLimited($latest_releases, 10, $p, count($latest_releases));
 $pagination = $paginator->generate(7, URL::build('/resources/author/' . $author->id . '-' . Util::stringToURL($author->username) . '/', true));
 
@@ -150,15 +150,15 @@ $smarty->assign(array(
 ));
 
 $template->addJSScript('
-    var $star_rating = $(\'.star-rating.view .fa\');
+    var $star_rating = $(\'.star-rating.view .fa-star\');
 
     var SetRatingStar = function(type = 0) {
         if(type === 0) {
             return $star_rating.each(function () {
                 if (parseInt($(this).parent().children(\'input.rating-value\').val()) >= parseInt($(this).data(\'rating\'))) {
-                    return $(this).removeClass(\'fa-star-o\').addClass(\'fa-star\');
+                    return $(this).removeClass(\'far\').addClass(\'fas\');
                 } else {
-                    return $(this).removeClass(\'fa-star\').addClass(\'fa-star-o\');
+                    return $(this).removeClass(\'fas\').addClass(\'far\');
                 }
             });
         }

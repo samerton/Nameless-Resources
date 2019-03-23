@@ -685,14 +685,14 @@ if(!isset($_GET['step'])){
 	// Assign to Smarty array
 	$categories_array = array();
 	foreach($categories as $category){
-		// Check permissions
-		foreach($permissions as $permission){
-			if($permission->category_id == $category->id && $permission->post == 1)
-				$categories_array[] = array(
-					'name' => Output::getClean($category->name),
-					'id' => $category->id
-				);
-		}
+	  // Check permissions
+	  foreach($permissions as $permission){
+		if($permission->category_id == $category->id && $permission->post == 1)
+			$categories_array[] = array(
+				'name' => Output::getClean($category->name),
+				'id' => $category->id
+			);
+	  }
 	}
 	$categories = null;
 
@@ -887,15 +887,21 @@ if($formatting == 'markdown'){
 
 } else {
 	$template->addCSSFiles(array(
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css' => array()
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css' => array(),
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.css' => array(),
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/css/spoiler.css' => array(),
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/css/emojione.min.css' => array(),
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/css/emojione.sprites.css' => array(),
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/css/emojionearea.min.css' => array(),
 	));
 	$template->addJSFiles(array(
 		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.js' => array(),
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/js/spoiler.js' => array(),
+		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/tinymce.min.js' => array()
 	));
 
-	$template->addJSScript(Input::createEditor('reply'));
+	$template->addJSScript(Input::createTinyEditor($language, 'reply'));
 }
 
 // Load modules + template

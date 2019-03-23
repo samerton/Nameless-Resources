@@ -43,11 +43,11 @@
                                     </td>
                                     <td>
                                         <div class="star-rating view">
-                                            <span class="fa fa-star-o" data-rating="1" style="color:gold;"></span>
-                                            <span class="fa fa-star-o" data-rating="2" style="color:gold"></span>
-                                            <span class="fa fa-star-o" data-rating="3" style="color:gold;"></span>
-                                            <span class="fa fa-star-o" data-rating="4" style="color:gold;"></span>
-                                            <span class="fa fa-star-o" data-rating="5" style="color:gold;"></span>
+                                            <span class="far fa-star" data-rating="1" style="color:gold;"></span>
+                                            <span class="far fa-star" data-rating="2" style="color:gold"></span>
+                                            <span class="far fa-star" data-rating="3" style="color:gold;"></span>
+                                            <span class="far fa-star" data-rating="4" style="color:gold;"></span>
+                                            <span class="far fa-star" data-rating="5" style="color:gold;"></span>
                                             <input type="hidden" name="rating" class="rating-value" value="{$resource.rating}">
                                         </div>
                                         {$resource.views}<br />

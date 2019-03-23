@@ -42,7 +42,6 @@ $page_title = $resource_language->get('resources', 'resources') . ' - ' . str_re
 require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
 // Obtain categories + permissions from database
-//$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
 $categories = $queries->orderWhere('resources_categories', 'id <> 0', 'display_order');
 $permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user_group));
 
@@ -61,11 +60,10 @@ foreach($categories as $category){
 $categories = null;
 
 // Get latest releases
-//$latest_releases = $queries->orderWhere('resources_releases', 'id <> 0', 'created', 'DESC');
 $latest_releases = $queries->orderWhere('resources', 'id <> 0', 'updated', 'DESC');
 
 // Pagination
-$paginator = new Paginator();
+$paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
 $results = $paginator->getLimited($latest_releases, 10, $p, count($latest_releases));
 $pagination = $paginator->generate(7, URL::build('/resources/', true));
 
@@ -84,12 +82,6 @@ if(count($latest_releases)){
 			continue;
 		}
 		// Get actual resource info
-		/*
-		$resource = $queries->getWhere('resources', array('id', '=', $results->data[$n]->resource_id));
-		if(!count($resource))
-			  continue;
-		*/
-
 		$resource = $results->data[$n];
 
 		// Get category
@@ -104,7 +96,7 @@ if(count($latest_releases)){
 			$releases_array[$resource->id] = array(
 				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'name' => Output::getClean($resource->name),
-				'description' => substr(strip_tags(htmlspecialchars_decode($resource->description)), 0, 50) . '...',
+				'description' => substr(strip_tags(htmlspecialchars_decode($resource->description)), 0, 60) . '...',
 				'author' => Output::getClean($user->idToNickname($resource->creator_id)),
 				'author_style' => $user->getGroupClass($resource->creator_id),
 				'author_profile' => URL::build('/profile/' . Output::getClean($user->idToName($resource->creator_id))),
@@ -144,15 +136,15 @@ if($user->isLoggedIn() && $resources->canPostResourceInAnyCategory($user->data()
 }
 
 $template->addJSScript('
-var $star_rating = $(\'.star-rating.view .fa\');
+var $star_rating = $(\'.star-rating.view .far\');
 
 var SetRatingStar = function(type = 0) {
 	if(type === 0) {
 		return $star_rating.each(function () {
 			if (parseInt($(this).parent().children(\'input.rating-value\').val()) >= parseInt($(this).data(\'rating\'))) {
-				return $(this).removeClass(\'fa-star-o\').addClass(\'fa-star\');
+				return $(this).removeClass(\'far\').addClass(\'fas\');
 			} else {
-				return $(this).removeClass(\'fa-star\').addClass(\'fa-star-o\');
+				return $(this).removeClass(\'fas\').addClass(\'far\');
 			}
 		});
 	}
@@ -162,7 +154,7 @@ SetRatingStar();
 ');
 
 // Load modules + template
-Module::loadPage($user, $pages, $cache, $smarty, array($navigation, $cc_nav, $mod_nav), $widgets);
+Module::loadPage($user, $pages, $cache, $smarty, array($navigation, $cc_nav, $mod_nav), $widgets, $template);
 
 $page_load = microtime(true) - $start;
 define('PAGE_LOAD_TIME', str_replace('{x}', round($page_load, 3), $language->get('general', 'page_loaded_in')));
