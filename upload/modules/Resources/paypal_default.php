@@ -21,10 +21,6 @@ try {
 	$data = $queries->getWhere('settings', array('name', '=', 'resources_paypal_hook'));
 	if(!count($data)){
 		$key = md5(uniqid());
-		$queries->create('settings', array(
-			'name' => 'resources_paypal_hook',
-			'value' => $key
-		));
 
 		// Create API webhook
 		$webhook = new \PayPal\Api\Webhook();
@@ -44,7 +40,11 @@ try {
 			'name' => 'resources_paypal_hook_id',
 			'value' => $id
 		));
-
+		
+		$queries->create('settings', array(
+			'name' => 'resources_paypal_hook',
+			'value' => $key
+		));
 	}
 } catch(Exception $e){
 	ErrorHandler::logCustomError($e->getData());
