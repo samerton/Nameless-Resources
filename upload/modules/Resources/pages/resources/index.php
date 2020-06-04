@@ -60,7 +60,7 @@ foreach($categories as $category){
 $categories = null;
 
 // Get latest releases
-$latest_releases = $queries->orderWhere('resources', 'id <> 0', 'updated', 'DESC');
+$latest_releases = DB::getInstance()->query('SELECT * FROM nl2_resources WHERE category_id IN (SELECT category_id FROM nl2_resources_categories_permissions WHERE group_id = ? AND view = 1) ORDER BY updated DESC', array($user_group))->results();
 
 // Pagination
 $paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
@@ -77,10 +77,6 @@ if(count($latest_releases)){
 	$n = 0;
 
 	while($n < count($results->data) && isset($results->data[$n]->id)){
-		if(!$resources->canViewCategory($results->data[$n]->category_id, $user_group, ($user->isLoggedIn() ? $user->data()->secondary_groups : null))){
-			$n++;
-			continue;
-		}
 		// Get actual resource info
 		$resource = $results->data[$n];
 
