@@ -109,6 +109,7 @@ $language = array(
     'log_in_to_download' => 'Přihlašte se pro stažení',
 	'external_download' => 'Externí stažení',
     'external_link' => 'Externí odkaz',
+    'invalid_review' => 'Invalid review. Please enter text and leave a rating.',
 
     // Admin
     'permissions' => 'Oprávnění',

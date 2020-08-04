@@ -134,7 +134,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 				$validation = $validate->check($_POST, array(
 					'rating' => array(
-						'required' => true
+						'required' => true,
+						'min' => 1,
+						'max' => 5
 					),
 					'content' => array(
 						'required' => true,
@@ -148,78 +150,72 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 					// Validate rating
 					$rating = round($_POST['rating']);
 
-					if($rating < 1 || $rating > 5){
-						// Invalid rating
+					// Get latest release tag
+					$release_tag = $latest_release->release_tag;
 
-					} else {
-						// Get latest release tag
-						$release_tag = $latest_release->release_tag;
+					// Create comment
+					$queries->create('resources_comments', array(
+						'resource_id' => $resource->id,
+						'author_id' => $user->data()->id,
+						'content' => Output::getClean(Input::get('content')),
+						'release_tag' => $release_tag,
+						'created' => date('U'),
+						'rating' => $rating
+					));
+					$rating_id = $queries->getLastId();
 
-						// Create comment
-						$queries->create('resources_comments', array(
-							'resource_id' => $resource->id,
-							'author_id' => $user->data()->id,
-							'content' => Output::getClean(Input::get('content')),
-							'release_tag' => $release_tag,
-							'created' => date('U'),
-							'rating' => $rating
-						));
-						$rating_id = $queries->getLastId();
+					// Calculate overall rating
+					// Ensure user hasn't already rated, and if so, hide their rating
+					$ratings = $queries->getWhere('resources_comments', array('resource_id', '=', $resource->id));
+					if(count($ratings)){
+						$overall_rating = 0;
+						$overall_rating_count = 0;
+						$release_rating = 0;
+						$release_rating_count = 0;
 
-						// Calculate overall rating
-						// Ensure user hasn't already rated, and if so, hide their rating
-						$ratings = $queries->getWhere('resources_comments', array('resource_id', '=', $resource->id));
-						if(count($ratings)){
-							$overall_rating = 0;
-							$overall_rating_count = 0;
-							$release_rating = 0;
-							$release_rating_count = 0;
+						foreach($ratings as $rating){
+							if($rating_id != $rating->id && $rating->author_id == $user->data()->id && $rating->hidden == 0){
+								// Hide rating
+								$queries->update('resources_comments', $rating->id, array(
+									'hidden' => 1
+								));
+							} else if($rating->hidden == 0){
+								// Update rating
+								// Overall
+								$overall_rating = $overall_rating + $rating->rating;
+								$overall_rating_count++;
 
-							foreach($ratings as $rating){
-								if($rating_id != $rating->id && $rating->author_id == $user->data()->id && $rating->hidden == 0){
-									// Hide rating
-									$queries->update('resources_comments', $rating->id, array(
-										'hidden' => 1
-									));
-								} else if($rating->hidden == 0){
-									// Update rating
-									// Overall
-									$overall_rating = $overall_rating + $rating->rating;
-									$overall_rating_count++;
-
-									if($rating->release_tag == $release_tag){
-										// Release
-										$release_rating = $release_rating + $rating->rating;
-										$release_rating_count++;
-									}
+								if($rating->release_tag == $release_tag){
+									// Release
+									$release_rating = $release_rating + $rating->rating;
+									$release_rating_count++;
 								}
 							}
-
-							$overall_rating = $overall_rating / $overall_rating_count;
-							$overall_rating = round($overall_rating * 10);
-
-							$release_rating = $release_rating / $release_rating_count;
-							$release_rating = round($release_rating * 10);
-
-							$queries->update('resources', $resource->id, array(
-								'rating' => $overall_rating
-							));
-							$queries->update('resources_releases', $latest_release->id, array(
-								'rating' => $release_rating
-							));
 						}
 
-						$cache->setCache('resource-comments-' . $resource->id);
-						$cache->erase('comments');
+						$overall_rating = $overall_rating / $overall_rating_count;
+						$overall_rating = round($overall_rating * 10);
 
-						Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
-						die();
+						$release_rating = $release_rating / $release_rating_count;
+						$release_rating = round($release_rating * 10);
+
+						$queries->update('resources', $resource->id, array(
+							'rating' => $overall_rating
+						));
+						$queries->update('resources_releases', $latest_release->id, array(
+							'rating' => $release_rating
+						));
 					}
+
+					$cache->setCache('resource-comments-' . $resource->id);
+					$cache->erase('comments');
+
+					Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+					die();
 
 				} else {
 					// Errors
 					$error = $resource_language->get('resources', 'invalid_review');
-
 				}
 			}
 		}
