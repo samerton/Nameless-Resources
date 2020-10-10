@@ -92,7 +92,7 @@ if(count($latest_releases)){
 			$releases_array[$resource->id] = array(
 				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'name' => Output::getClean($resource->name),
-				'description' => substr(strip_tags(htmlspecialchars_decode($resource->description)), 0, 60) . '...',
+				'description' => mb_substr(strip_tags(htmlspecialchars_decode($resource->description)), 0, 60) . '...',
 				'author' => Output::getClean($user->idToNickname($resource->creator_id)),
 				'author_style' => $user->getGroupClass($resource->creator_id),
 				'author_profile' => URL::build('/profile/' . Output::getClean($user->idToName($resource->creator_id))),

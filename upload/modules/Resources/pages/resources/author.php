@@ -114,7 +114,7 @@ if(count($latest_releases)){
             $releases_array[$results->data[$n]->id] = array(
                 'link' => URL::build('/resources/resource/' . $results->data[$n]->id . '-' . Util::stringToURL($results->data[$n]->name)),
                 'name' => Output::getClean($results->data[$n]->name),
-                'description' => substr(strip_tags(htmlspecialchars_decode($results->data[$n]->description)), 0, 50) . '...',
+                'description' => mb_substr(strip_tags(htmlspecialchars_decode($results->data[$n]->description)), 0, 50) . '...',
                 'author' => Output::getClean($author->nickname),
                 'author_style' => $user->getGroupClass($author->id),
                 'author_profile' => URL::build('/profile/' . Output::getClean($author->username)),
