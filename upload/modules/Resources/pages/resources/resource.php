@@ -97,7 +97,7 @@ if(count($page_metadata)){
 
 	$description = strip_tags(str_ireplace(array('<br />', '<br>', '<br/>', '&nbsp;'), array("\n", "\n", "\n", ' '), Output::getDecoded($resource->description)));
 
-	define('PAGE_DESCRIPTION', str_replace(array('{site}', '{title}', '{author}', '{category_title}', '{page}', '{description}'), array(SITE_NAME, Output::getClean($resource->name), Output::getClean($user->idToName($resource->creator_id)), $category, Output::getClean($p), substr($description, 0, 160) . '...'), $page_metadata[0]->description));
+	define('PAGE_DESCRIPTION', str_replace(array('{site}', '{title}', '{author}', '{category_title}', '{page}', '{description}'), array(SITE_NAME, Output::getClean($resource->name), Output::getClean($user->idToName($resource->creator_id)), $category, Output::getClean($p), mb_substr($description, 0, 160) . '...'), $page_metadata[0]->description));
 	define('PAGE_KEYWORDS', $page_metadata[0]->tags);
 }
 
