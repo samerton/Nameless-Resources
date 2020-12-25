@@ -1,14 +1,13 @@
 # Nameless-Resources
-The Nameless-Resources module allows users to add GitHub projects to your website.
+The Nameless-Resources module allows users to share zip files, GitHub projects and external links to your website, either freely or requiring a PayPal purchase.
 
 ## Requirements
-- NamelessMC version 2 (from commit [4f511dd](https://github.com/NamelessMC/Nameless/commit/4f511dd93cc2d2558c39317cbc12cffffe49965c) onwards)
+- NamelessMC version 2 pre-release 8
 
 ## Installation
 - Upload the contents of the **upload** directory straight into your NamelessMC installation's directory
-- Activate the module in the AdminCP -> Modules tab
-- Set up some categories and permissions in the AdminCP -> Resources tab
+- Activate the module in the StaffCP -> Modules tab
+- Set up some categories and permissions in the StaffCP -> Resources tab
 
 ## Notes
-- This module does not allow users to upload their own files, users can only add GitHub repositories
 - Any GitHub repositories you add to the Resources module must have at least one release created
