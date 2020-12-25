@@ -21,7 +21,7 @@ if($user->isLoggedIn()){
 		Redirect::to(URL::build('/panel/auth'));
 		die();
 	} else {
-		if($user->data()->group_id != 2 && !$user->hasPermission('admincp.resources.categories')){
+		if($user->getMainGroup()->id != 2 && !$user->hasPermission('admincp.resources.categories')){
 			require_once(ROOT_PATH . '/404.php');
 			die();
 		}

@@ -23,14 +23,20 @@ $emojione = new Emojione\Client(new Emojione\Ruleset());
 require(ROOT_PATH . '/modules/Resources/classes/Resources.php');
 $resources = new Resources();
 
-// Get user group ID
-if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group = null;
+if ($user->isLoggedIn()) {
+    $groups = array();
+    foreach ($user->getGroups() as $group) {
+        $groups[] = $group->id;
+    }
+} else {
+    $groups = array(0);
+}
 
 // Get resource
 $rid = explode('/', $route);
 $rid = $rid[count($rid) - 1];
 
-if(!isset($rid[count($rid) - 1])){
+if (!strlen($rid)) {
     Redirect::to(URL::build('/resources'));
     die();
 }
@@ -62,7 +68,7 @@ if(!count($resource)){
 	die();
 } else $resource = $resource[0];
 
-if(!$resources->canViewCategory($resource->category_id, $user_group, ($user->isLoggedIn() ? $user->data()->secondary_groups : null))){
+if (!$resources->canViewCategory($resource->category_id, $groups)) {
 	Redirect::to(URL::build('/resources'));
 	die();
 }
@@ -244,7 +250,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		// Cache
 		$cache->store('comments', $comments, 120);
 
-	} else $comments = $cache->retrieve('comments');
+	} else $comments = (array) $cache->retrieve('comments');
 
 	// Pagination
 	$paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
@@ -260,7 +266,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 	$comments_array = array();
 
 	// Can the user delete reviews?
-	if($user->isLoggedIn() && $resources->canDeleteReviews($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+	if ($user->isLoggedIn() && $resources->canDeleteReviews($resource->category_id, $groups)) {
 		$can_delete_reviews = true;
 		$smarty->assign(array(
 			'DELETE_REVIEW' => $resource_language->get('resources', 'delete_review'),
@@ -277,12 +283,13 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		$formatting = $cache->retrieve('formatting');
 
 		while($n < count($results->data)){
+		    $author = new User($results->data[$n]->author_id);
 			$comments_array[] = array(
-				'username' => Output::getClean($user->idToNickname($results->data[$n]->author_id)),
-				'user_avatar' => $user->getAvatar($results->data[$n]->author_id, '../', 30),
-				'user_style' => $user->getGroupClass($results->data[$n]->author_id),
-				'user_profile' => URL::build('/profile/' . Output::getClean($user->idToName($results->data[$n]->author_id))),
-				'content' => Output::getPurified($emojione->unicodeToImage(htmlspecialchars_decode($results->data[$n]->content))),
+				'username' => $author->getDisplayname(),
+				'user_avatar' => $author->getAvatar(),
+				'user_style' => $author->getGroupClass(),
+				'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
+				'content' => Output::getPurified($emojione->unicodeToImage(Output::getDecoded($results->data[$n]->content))),
 				'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language->getTimeLanguage()),
 				'date_full' => date('d M Y, H:i', $results->data[$n]->created),
 				'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
@@ -302,26 +309,28 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		die();
 	} else $latest_update = $latest_update[0];
 
+	$author = new User($resource->creator_id);
+
 	// Assign Smarty variables
 	$smarty->assign(array(
 		'VIEWING_RESOURCE' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_resource_x')),
 		'BACK_LINK' => URL::build('/resources'),
 		'RESOURCE_INDEX' => $resource_language->get('resources', 'resource_index'),
 		'AUTHOR' => $resource_language->get('resources', 'author'),
-		'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($user->idToName($resource->creator_id))),
-		'VIEW_OTHER_RESOURCES' => str_replace('{x}', Output::getClean($user->idToNickname($resource->creator_id)), $resource_language->get('resources', 'view_other_resources')),
-		'DESCRIPTION' => Output::getPurified(htmlspecialchars_decode($resource->description)),
+		'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
+		'VIEW_OTHER_RESOURCES' => str_replace('{x}', $author->getDisplayname(), $resource_language->get('resources', 'view_other_resources')),
+		'DESCRIPTION' => Output::getPurified(Output::getDecoded($resource->description)),
 		'CREATED' => $timeago->inWords(date('d M Y, H:i', $resource->created), $language->getTimeLanguage()),
 		'CREATED_FULL' => date('d M Y, H:i', $resource->created),
 		'REVIEWS' => $resource_language->get('resources', 'reviews'),
 		'COMMENT_ARRAY' => $comments_array,
 		'NO_REVIEWS' => $resource_language->get('resources', 'no_reviews'),
 		'NEW_REVIEW' => $resource_language->get('resources', 'new_review'),
-		'AUTHOR_NICKNAME' => Output::getClean($user->idToNickname($resource->creator_id)),
-		'AUTHOR_NAME' => Output::getClean($user->idToName($resource->creator_id)),
-		'AUTHOR_STYLE' => $user->getGroupClass($resource->creator_id),
-		'AUTHOR_AVATAR' => $user->getAvatar($resource->creator_id, '../', 75),
-		'AUTHOR_PROFILE' => URL::build('/profile/' . Output::getClean($user->idToName($resource->creator_id))),
+		'AUTHOR_NICKNAME' => $author->getDisplayname(),
+		'AUTHOR_NAME' => $author->getDisplayname(true),
+		'AUTHOR_STYLE' => $author->getGroupClass(),
+		'AUTHOR_AVATAR' => $author->getAvatar(),
+		'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
 		'RESOURCE' => $resource_language->get('resources', 'resource'),
 		'VIEWS' => str_replace('{x}', $resource->views, $resource_language->get('resources', 'x_views')),
 		'DOWNLOADS' => str_replace('{x}', $resource->downloads, $resource_language->get('resources', 'x_downloads')),
@@ -329,7 +338,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
 		'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
 		'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
-		'RELEASE_DESCRIPTION' => Output::getPurified(htmlspecialchars_decode($latest_update->release_description)),
+		'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
 		'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
 		'RELEASE_RATING' => round($latest_update->rating / 10),
 		'RELEASE_DOWNLOADS' => $latest_update->downloads,
@@ -359,77 +368,59 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		$currency = $currency[0]->value;
 
 	if($resource->type == 0){
-		// Can the user download?
-		if($user->isLoggedIn())
-			$group_id = $user->data()->group_id;
-		else
-			$group_id = 0;
-
-		$download = DB::getInstance()->query('SELECT download FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
-
-		if(count($download)){
-			if($download[0]->download == 1){
-				$smarty->assign(array(
-					'DOWNLOAD' => $resource_language->get('resources', 'download'),
-					'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
-				));
-			}
+		if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
+            $smarty->assign(array(
+                'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+            ));
 		}
 	} else {
 		// Can the user download?
 		if($user->isLoggedIn()){
-			$group_id = $user->data()->group_id;
+            if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
+                if($user->data()->id == $resource->creator_id){
+                    // Author can download their own resources
+                    $smarty->assign(array(
+                        'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                    ));
 
-			$download = DB::getInstance()->query('SELECT download FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
+                } else {
+                    // Check purchases
+                    $paid = DB::getInstance()->query('SELECT status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
 
-			if(count($download)){
-				$download = $download[0];
+                    if(count($paid)){
+                        $paid = $paid[0];
 
-				if($download->download == 1){
-					if($user->data()->id == $resource->creator_id){
-						// Author can download their own resources
-						$smarty->assign(array(
-							'DOWNLOAD' => $resource_language->get('resources', 'download'),
-							'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
-						));
+                        if($paid->status == 1){
+                            // Purchased
+                            $smarty->assign(array(
+                                'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                            ));
 
-					} else {
-						// Check purchases
-						$paid = DB::getInstance()->query('SELECT status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
+                        } else if($paid->status == 0){
+                            // Pending
+                            $smarty->assign(array(
+                                'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
+                            ));
 
-						if(count($paid)){
-							$paid = $paid[0];
+                        } else if($paid->status == 2){
+                            // Cancelled
+                            $smarty->assign(array(
+                                'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+                                'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                            ));
 
-							if($paid->status == 1){
-								// Purchased
-								$smarty->assign(array(
-									'DOWNLOAD' => $resource_language->get('resources', 'download'),
-									'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
-								));
-
-							} else if($paid->status == 0){
-								// Pending
-								$smarty->assign(array(
-									'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
-								));
-
-							} else if($paid->status == 2){
-								// Cancelled
-								$smarty->assign(array(
-									'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
-									'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
-								));
-
-							}
-						} else {
-							// Needs to purchase
-							$smarty->assign(array(
-								'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
-								'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
-							));
-						}
-					}
-				}
+                        }
+                    } else {
+                        // Needs to purchase
+                        $smarty->assign(array(
+                            'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+                            'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                        ));
+                    }
+                }
 			}
 
 		} else {
@@ -449,7 +440,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 	}
 
 	if($user->isLoggedIn()){
-		if($resource->creator_id == $user->data()->id || $resources->canEditResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+		if($resource->creator_id == $user->data()->id || $resources->canEditResources($resource->category_id, $groups)){
 			$smarty->assign(array(
 				'CAN_EDIT' => true,
 				'EDIT' => $language->get('general', 'edit'),
@@ -459,13 +450,13 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 		// Moderation
 		$moderation = array();
-		if($resources->canMoveResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+		if($resources->canMoveResources($resource->category_id, $groups)){
 			$moderation[] = array(
 				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=move'),
 				'title' => $resource_language->get('resources', 'move_resource')
 			);
 		}
-		if($resources->canDeleteResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+		if($resources->canDeleteResources($resource->category_id, $groups)){
 			$moderation[] = array(
 				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete'),
 				'title' => $resource_language->get('resources', 'delete_resource')
@@ -571,76 +562,59 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			// Ensure user has download permission
 			if($resource->type == 0){
 				// Can the user download?
-				if($user->isLoggedIn())
-					$group_id = $user->data()->group_id;
-				else
-					$group_id = 0;
-
-				$download = DB::getInstance()->query('SELECT download FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
-
-				if(count($download)){
-					if($download[0]->download == 1){
-						$smarty->assign(array(
-							'DOWNLOAD' => $resource_language->get('resources', 'download'),
-							'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
-						));
-					}
+                if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
+                    $smarty->assign(array(
+                        'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                    ));
 				}
 			} else {
 				// Can the user download?
 				if($user->isLoggedIn()){
-					$group_id = $user->data()->group_id;
+                    if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
+                        if($user->data()->id == $resource->creator_id){
+                            // Author can download their own resources
+                            $smarty->assign(array(
+                                'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                            ));
 
-					$download = DB::getInstance()->query('SELECT download FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
+                        } else {
+                            // Check purchases
+                            $paid = DB::getInstance()->query('SELECT status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
 
-					if(count($download)){
-						$download = $download[0];
+                            if(count($paid)){
+                                $paid = $paid[0];
 
-						if($download->download == 1){
-							if($user->data()->id == $resource->creator_id){
-								// Author can download their own resources
-								$smarty->assign(array(
-									'DOWNLOAD' => $resource_language->get('resources', 'download'),
-									'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
-								));
+                                if($paid->status == 1){
+                                    // Purchased
+                                    $smarty->assign(array(
+                                        'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                                    ));
 
-							} else {
-								// Check purchases
-								$paid = DB::getInstance()->query('SELECT status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
+                                } else if($paid->status == 0){
+                                    // Pending
+                                    $smarty->assign(array(
+                                        'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
+                                    ));
 
-								if(count($paid)){
-									$paid = $paid[0];
+                                } else if($paid->status == 2){
+                                    // Cancelled
+                                    $smarty->assign(array(
+                                        'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+                                        'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                    ));
 
-									if($paid->status == 1){
-										// Purchased
-										$smarty->assign(array(
-											'DOWNLOAD' => $resource_language->get('resources', 'download'),
-											'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
-										));
-
-									} else if($paid->status == 0){
-										// Pending
-										$smarty->assign(array(
-											'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
-										));
-
-									} else if($paid->status == 2){
-										// Cancelled
-										$smarty->assign(array(
-											'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
-											'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
-										));
-
-									}
-								} else {
-									// Needs to purchase
-									$smarty->assign(array(
-										'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
-										'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
-									));
-								}
-							}
-						}
+                                }
+                            } else {
+                                // Needs to purchase
+                                $smarty->assign(array(
+                                    'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+                                    'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                ));
+                            }
+                        }
 					}
 
 				} else {
@@ -678,26 +652,12 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			}
 
 			// Download permission?
-			if($user->isLoggedIn()){
-				$group_id = $user->data()->group_id;
-
-				if($user->data()->id == $resource->creator_id)
-					$can_download = true;
-			} else
-				$group_id = 0;
-
-			$permissions = DB::getInstance()->query('SELECT `view`, download, premium FROM nl2_resources_categories_permissions WHERE category_id = ? AND group_id = ?', array($resource->category_id, $group_id))->results();
-			if(!isset($can_download) && count($permissions)){
-				$permissions = $permissions[0];
-				if($permissions->view == 0 || $permissions->download == 0){
-					Redirect::to(URL::build('/resources'));
-					die();
-				}
-
-			} else if(!count($permissions)){
-				// No permission
-				Redirect::to(URL::build('/resources'));
-				die();
+			if ($user->isLoggedIn() && $user->data()->id == $resource->creator_id) {
+			    $can_download = true;
+			}
+			if (!isset($can_download) && !$resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
+                Redirect::to(URL::build('/resources'));
+                die();
 			}
 
 			if($release->download_link != 'local'){
@@ -928,10 +888,10 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 										HookHandler::executeEvent('updateResource', array(
 											'event' => 'updateResource',
-											'username' => Output::getClean($user->data()->nickname),
-											'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
+											'username' => $user->getDisplayname(),
+											'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, $user->getDisplayname()), $resource_language->get('resources', 'updated_resource_text')),
 											'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($github_query->body)),
-											'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+											'avatar_url' => $user->getAvatar(null, 128, true),
 											'title' => Output::getClean($resource->name),
 											'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
 										));
@@ -1032,10 +992,10 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 												HookHandler::executeEvent('updateResource', array(
 													'event' => 'updateResource',
-													'username' => Output::getClean($user->data()->nickname),
-													'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
+													'username' => $user->getDisplayname(),
+													'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, $user->getDisplayname()), $resource_language->get('resources', 'updated_resource_text')),
 													'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
-													'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+													'avatar_url' => $user->getAvatar(null, 128, true),
 													'title' => Output::getClean($resource->name),
 													'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
 												));
@@ -1106,10 +1066,10 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 										HookHandler::executeEvent('updateResource', array(
 											'event' => 'updateResource',
-											'username' => Output::getClean($user->data()->nickname),
-											'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'updated_resource_text')),
+											'username' => $user->getDisplayname(),
+											'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, $user->getDisplayname()), $resource_language->get('resources', 'updated_resource_text')),
 											'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
-											'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+											'avatar_url' => $user->getAvatar(null, 128, true),
 											'title' => Output::getClean($resource->name),
 											'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
 										));
@@ -1323,7 +1283,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				Redirect::to(URL::build('/resources'));
 				die();
 			}
-			if($resource->creator_id == $user->data()->id || $resources->canEditResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+			if($resource->creator_id == $user->data()->id || $resources->canEditResources($resource->category_id, $groups)){
 				// Can edit
 				$errors = array();
 
@@ -1474,7 +1434,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				Redirect::to(URL::build('/resources'));
 				die();
 			}
-			if($resources->canMoveResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+			if($resources->canMoveResources($resource->category_id, $groups)){
 				$errors = array();
 
 				// Get categories
@@ -1543,7 +1503,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				Redirect::to(URL::build('/resources'));
 				die();
 			}
-			if($resources->canDeleteResources($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+			if($resources->canDeleteResources($resource->category_id, $groups)){
 				$errors = array();
 
 				if(Input::exists()){
@@ -1593,7 +1553,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				Redirect::to(URL::build('/resources'));
 				die();
 			}
-			if($resources->canDeleteReviews($resource->category_id, $user->data()->group_id, $user->data()->secondary_groups)){
+			if($resources->canDeleteReviews($resource->category_id, $groups)){
 				if(!isset($_GET['review']) || !is_numeric($_GET['review'])){
 					Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
 					die();

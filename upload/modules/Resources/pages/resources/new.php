@@ -15,10 +15,18 @@ require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
 require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
 $emojione = new Emojione\Client(new Emojione\Ruleset());
 
+require(ROOT_PATH . '/modules/Resources/classes/Resources.php');
+$resources = new Resources();
+
 // Ensure user is logged in
 if(!$user->isLoggedIn()){
 	Redirect::to(URL::build('/resources'));
 	die();
+}
+
+$groups = array();
+foreach ($user->getGroups() as $group) {
+    $groups[] = $group->id;
 }
 
 // Handle input
@@ -49,17 +57,7 @@ if(Input::exists()){
 
 			if($validation->passed()){
 				// Check permissions
-				$permissions = $queries->getWhere('resources_categories_permissions', array('category_id', '=', $_POST['category']));
-				if(!count($permissions)){
-					Redirect::to(URL::build('/resources'));
-					die();
-				}
-
-				foreach($permissions as $permission){
-					if($permission->group_id == $user->data()->group_id && $permission->post == 1)
-						$has_permission = 1;
-				}
-				if(!isset($has_permission)){
+				if (!$resources->canPostResourceInCategory($groups, $_POST['category'])) {
 					Redirect::to(URL::build('/resources'));
 					die();
 				}
@@ -238,17 +236,7 @@ if(Input::exists()){
 				}
 
 				// Check permissions
-				$permissions = $queries->getWhere('resources_categories_permissions', array('category_id', '=', $_SESSION['new_resource']['category']));
-				if(!count($permissions)){
-					Redirect::to(URL::build('/resources'));
-					die();
-				}
-
-				foreach($permissions as $permission){
-					if($permission->group_id == $user->data()->group_id && $permission->post == 1)
-						$has_permission = 1;
-				}
-				if(!isset($has_permission)){
+				if (!$resources->canPostResourceInCategory($groups, $_SESSION['new_resource']['category'])) {
 					Redirect::to(URL::build('/resources'));
 					die();
 				}
@@ -325,8 +313,8 @@ if(Input::exists()){
 							'event' => 'newResource',
 							'username' => Output::getClean($user->data()->nickname),
 							'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
-							'content_full' => str_replace('&nbsp;', '', strip_tags(htmlspecialchars_decode($content))),
-							'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+							'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
+							'avatar_url' => $user->getAvatar(null, 128, true),
 							'title' => Output::getClean($_SESSION['new_resource']['name']),
 							'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
 						));
@@ -356,14 +344,14 @@ if(Input::exists()){
 				}
 				$category = $category[0];
 
-				$has_permission = DB::getInstance()->query('SELECT post, premium FROM nl2_resources_categories_permissions WHERE group_id = ? AND category_id = ?', array($user->data()->group_id, $category->id))->results();
+                $permission = $resources->getAvailableResourceTypes($groups, $category->id);
 
-				if(!count($has_permission) || $has_permission[0]->post != 1){
+				if(!$permission->post){
 					Redirect::to(URL::build('/resources/new'));
 					die();
 				}
 
-				if($has_permission[0]->premium != 1){
+				if(!$permission->premium){
 					Redirect::to(URL::build('/resources/new/', 'step=upload'));
 					die();
 				}
@@ -417,9 +405,9 @@ if(Input::exists()){
 				}
 				$category = $category[0];
 
-				$has_permission = DB::getInstance()->query('SELECT post, premium FROM nl2_resources_categories_permissions WHERE group_id = ? AND category_id = ?', array($user->data()->group_id, $category->id))->results();
+				$permission = $resources->getAvailableResourceTypes($groups, $category->id);
 
-				if(!count($has_permission) || $has_permission[0]->post != 1){
+				if(!$permission->post){
 					Redirect::to(URL::build('/resources/new'));
 					die();
 				}
@@ -549,10 +537,10 @@ if(Input::exists()){
 
 								HookHandler::executeEvent('newResource', array(
 									'event' => 'newResource',
-									'username' => Output::getClean($user->data()->nickname),
+									'username' => $user->getDisplayname(),
 									'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
-									'content_full' => str_replace('&nbsp;', '', strip_tags(htmlspecialchars_decode($content))),
-									'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+									'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
+									'avatar_url' => $user->getAvatar(null, 128, true),
 									'title' => Output::getClean($_SESSION['new_resource']['name']),
 									'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
 								));
@@ -649,10 +637,10 @@ if(Input::exists()){
 
 						HookHandler::executeEvent('newResource', array(
 							'event' => 'newResource',
-							'username' => Output::getClean($user->data()->nickname),
+							'username' => $user->getDisplayname(),
 							'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
-							'content_full' => str_replace('&nbsp;', '', strip_tags(htmlspecialchars_decode($content))),
-							'avatar_url' => $user->getAvatar($user->data()->id, null, 128, true),
+							'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
+							'avatar_url' => $user->getAvatar(null, 128, true),
 							'title' => Output::getClean($_SESSION['new_resource']['name']),
 							'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
 						));
@@ -678,21 +666,15 @@ $page_title = $resource_language->get('resources', 'new_resource');
 require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
 if(!isset($_GET['step'])){
-	// Obtain categories + permissions from database
-	$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
-	$permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user->data()->group_id));
+	$categories = $resources->getCategories($groups);
 
 	// Assign to Smarty array
 	$categories_array = array();
 	foreach($categories as $category){
-	  // Check permissions
-	  foreach($permissions as $permission){
-		if($permission->category_id == $category->id && $permission->post == 1)
-			$categories_array[] = array(
-				'name' => Output::getClean($category->name),
-				'id' => $category->id
-			);
-	  }
+        $categories_array[] = array(
+            'name' => Output::getClean($category->name),
+            'id' => $category->id
+        );
 	}
 	$categories = null;
 
@@ -777,14 +759,14 @@ if(!isset($_GET['step'])){
 			}
 			$category = $category[0];
 
-			$has_permission = DB::getInstance()->query('SELECT post, premium FROM nl2_resources_categories_permissions WHERE group_id = ? AND category_id = ?', array($user->data()->group_id, $category->id))->results();
+			$permission = $resources->getAvailableResourceTypes($groups, $category->id);
 
-			if(!count($has_permission) || $has_permission[0]->post != 1){
+			if (!$permission->post) {
 				Redirect::to(URL::build('/resources/new'));
 				die();
 			}
 
-			if($has_permission[0]->premium != 1){
+			if (!$permission->premium) {
 				Redirect::to(URL::build('/resources/new/', 'step=upload'));
 				die();
 			}

@@ -17,11 +17,16 @@ if(!$user->isLoggedIn()){
 	die();
 }
 
+$groups = array();
+foreach ($user->getGroups() as $group) {
+    $groups[] = $group->id;
+}
+
 // Get resource
 $rid = explode('/', $route);
 $rid = $rid[count($rid) - 1];
 
-if(!isset($rid[count($rid) - 1])){
+if (!strlen($rid)) {
 	Redirect::to(URL::build('/resources'));
 	die();
 }
@@ -46,9 +51,11 @@ if($user->data()->id == $resource->creator_id || $resource->type == 0){
 	die();
 }
 
+require(ROOT_PATH . '/modules/Resources/classes/Resources.php');
+$resources = new Resources();
+
 // Check permissions
-$permissions = DB::getInstance()->query('SELECT `view`, download FROM nl2_resources_categories_permissions WHERE group_id = ? AND category_id = ?', array($user->data()->group_id, $resource->category_id))->results();
-if(!count($permissions) || $permissions[0]->view != 1 || $permissions[0]->download != 1){
+if (!$resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
 	// Can't view
 	Redirect::to(URL::build('/resources'));
 	die();

@@ -118,7 +118,7 @@ class Resources_Module extends Module {
 				Core_Module::addNotice(URL::build('/panel/resources/settings'), $this->_resource_language->get('resources', 'upload_directory_not_writable'));
 			}
 
-			if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources')){
+			if($user->getMainGroup()->id == 2 || $user->hasPermission('admincp.resources')){
 				$cache->setCache('panel_sidebar');
 				if(!$cache->isCached('resources_order')){
 					$order = 20;
@@ -129,7 +129,7 @@ class Resources_Module extends Module {
 
 				$navs[2]->add('resources_divider', mb_strtoupper($this->_resource_language->get('resources', 'resources')), 'divider', 'top', null, $order, '');
 
-				if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources.categories')){
+				if($user->getMainGroup()->id == 2 || $user->hasPermission('admincp.resources.categories')){
 					if(!$cache->isCached('resources_categories_icon')){
 						$icon = '<i class="nav-icon fa fa-list" aria-hidden="true"></i>';
 						$cache->store('resources_categories_icon', $icon);
@@ -139,7 +139,7 @@ class Resources_Module extends Module {
 					$navs[2]->add('resources_categories', $this->_resource_language->get('resources', 'categories'), URL::build('/panel/resources/categories'), 'top', null, ($order + 0.1), $icon);
 				}
 
-				if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources.download')){
+				if($user->getMainGroup()->id == 2 || $user->hasPermission('admincp.resources.download')){
 					if(!$cache->isCached('resources_downloads_icon')){
 						$icon = '<i class="nav-icon fa fa-download" aria-hidden="true"></i>';
 						$cache->store('resources_downloads_icon', $icon);
@@ -149,7 +149,7 @@ class Resources_Module extends Module {
 					$navs[2]->add('resources_downloads', $this->_resource_language->get('resources', 'downloads'), URL::build('/panel/resources/downloads'), 'top', null, ($order + 0.2), $icon);
 				}
 
-				if($user->data()->group_id == 2 || $user->hasPermission('admincp.resources.settings')){
+				if($user->getMainGroup()->id == 2 || $user->hasPermission('admincp.resources.settings')){
 					if(!$cache->isCached('resources_settings_icon')){
 						$icon = '<i class="nav-icon fa fa-cog" aria-hidden="true"></i>';
 						$cache->store('resources_settings_icon', $icon);

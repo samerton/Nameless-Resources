@@ -35,32 +35,31 @@ if(isset($_GET['p'])){
 	$p = 1;
 }
 
-// Get user group ID
-if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group = 0;
+if ($user->isLoggedIn()) {
+    $groups = array();
+    foreach ($user->getGroups() as $group) {
+        $groups[] = $group->id;
+    }
+} else {
+    $groups = array(0);
+}
 
 $page_title = $resource_language->get('resources', 'resources') . ' - ' . str_replace('{x}', $p, $language->get('general', 'page_x'));
 require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
-// Obtain categories + permissions from database
-$categories = $queries->orderWhere('resources_categories', 'id <> 0', 'display_order');
-$permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user_group));
-
+$categories = $resources->getCategories($groups);
 // Assign to Smarty array
 $category_array = array();
 foreach($categories as $category){
-  // Check permissions
-  foreach($permissions as $permission){
-	if($permission->category_id == $category->id && $permission->view == 1)
-		$category_array[] = array(
-			'name' => Output::getClean($category->name),
-			'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name))
-		);
-  }
+    $category_array[] = array(
+        'name' => Output::getClean($category->name),
+        'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name))
+    );
 }
 $categories = null;
 
 // Get latest releases
-$latest_releases = DB::getInstance()->query('SELECT * FROM nl2_resources WHERE category_id IN (SELECT category_id FROM nl2_resources_categories_permissions WHERE group_id = ? AND view = 1) ORDER BY updated DESC', array($user_group))->results();
+$latest_releases = $resources->getLatestResources($groups);
 
 // Pagination
 $paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
@@ -76,7 +75,7 @@ if(count($latest_releases)){
 	// Display the correct number of resources
 	$n = 0;
 
-	while($n < count($results->data) && isset($results->data[$n]->id)){
+	while ($n < count($results->data)) {
 		// Get actual resource info
 		$resource = $results->data[$n];
 
@@ -89,14 +88,15 @@ if(count($latest_releases)){
 		}
 
 		if(!isset($releases_array[$resource->id])){
+			$resource_author = new User($resource->creator_id);
 			$releases_array[$resource->id] = array(
 				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'name' => Output::getClean($resource->name),
-				'description' => mb_substr(strip_tags(htmlspecialchars_decode($resource->description)), 0, 60) . '...',
-				'author' => Output::getClean($user->idToNickname($resource->creator_id)),
-				'author_style' => $user->getGroupClass($resource->creator_id),
-				'author_profile' => URL::build('/profile/' . Output::getClean($user->idToName($resource->creator_id))),
-				'author_avatar' => $user->getAvatar($resource->creator_id, '../', 30),
+				'description' => mb_substr(strip_tags(Output::getDecoded($resource->description)), 0, 60) . '...',
+				'author' => Output::getClean($resource_author->getDisplayname()),
+				'author_style' => $resource_author->getGroupClass(),
+				'author_profile' => URL::build('/profile/' . Output::getClean($resource_author->getDisplayname(true))),
+				'author_avatar' => $resource_author->getAvatar(),
 				'downloads' => str_replace('{x}', $resource->downloads, $resource_language->get('resources', 'x_downloads')),
 				'views' => str_replace('{x}', $resource->views, $resource_language->get('resources', 'x_views')),
 				'rating' => round($resource->rating / 10),
@@ -124,7 +124,7 @@ $smarty->assign(array(
 	'AUTHOR' => $resource_language->get('resources', 'author')
 ));
 
-if($user->isLoggedIn() && $resources->canPostResourceInAnyCategory($user->data()->group_id, $user->data()->secondary_groups)){
+if($user->isLoggedIn() && $resources->canPostResourceInAnyCategory($groups)){
 	$smarty->assign(array(
 		'NEW_RESOURCE_LINK' => URL::build('/resources/new'),
 		'NEW_RESOURCE' => $resource_language->get('resources', 'new_resource')

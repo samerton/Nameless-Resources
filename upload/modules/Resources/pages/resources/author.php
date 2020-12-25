@@ -29,14 +29,11 @@ if(isset($_GET['p'])){
     $p = 1;
 }
 
-// Get user group ID
-if($user->isLoggedIn()) $user_group = $user->data()->group_id; else $user_group = 0;
-
 // Get author
 $aid = explode('/', $route);
 $aid = $aid[count($aid) - 1];
 
-if(!isset($aid[count($aid) - 1])){
+if(!strlen($aid)){
     Redirect::to(URL::build('/resources'));
     die();
 }
@@ -48,60 +45,55 @@ if(!is_numeric($aid[0])){
 }
 $aid = $aid[0];
 
-$author = $queries->getWhere('users', array('id', '=', $aid));
-if(!count($author)){
+$author = new User($aid);
+if(!$author){
     Redirect::to(URL::build('/resources'));
     die();
 }
-$author = $author[0];
 
-$page_title = str_replace('{x}', Output::getClean($user->idToName($author->id)), $resource_language->get('resources', 'viewing_resources_by_x'));
+$page_title = str_replace('{x}', $author->getDisplayname(), $resource_language->get('resources', 'viewing_resources_by_x'));
 require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
 // Obtain categories + permissions from database
-$categories = $queries->getWhere('resources_categories', array('id', '<>', 0));
-$permissions = $queries->getWhere('resources_categories_permissions', array('group_id', '=', $user_group));
+if ($user->isLoggedIn()) {
+    $groups = array();
+    foreach ($user->getGroups() as $group) {
+        $groups[] = $group->id;
+    }
+} else {
+    $groups = array(0);
+}
+$categories = $resources->getCategories($groups);
 
 // Assign to Smarty array
 $category_array = array();
 foreach($categories as $category){
-    // Check permissions
-    foreach($permissions as $permission){
-        if($permission->category_id == $category->id && $permission->view == 1) {
-            $to_array = array(
-                'name' => Output::getClean($category->name),
-                'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name))
-            );
-            $category_array[] = $to_array;
-        }
-    }
+    $to_array = array(
+        'name' => Output::getClean($category->name),
+        'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name))
+    );
+    $category_array[] = $to_array;
 }
 $categories = null;
 
 // Get latest releases
-$latest_releases = $queries->orderWhere('resources', 'creator_id =' . $author->id, 'updated', 'DESC');
+$latest_releases = $resources->getAuthorLatestResources($aid, $groups);
 
 // Pagination
 $paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
 $results = $paginator->getLimited($latest_releases, 10, $p, count($latest_releases));
-$pagination = $paginator->generate(7, URL::build('/resources/author/' . $author->id . '-' . Util::stringToURL($author->username) . '/', true));
+$pagination = $paginator->generate(7, URL::build('/resources/author/' . $author->data()->id . '-' . Util::stringToURL($author->getDisplayname(true)) . '/', true));
 
 $smarty->assign('PAGINATION', $pagination);
 
 // Array to pass to template
 $releases_array = array();
 
-if(count($latest_releases)){
+if (count($latest_releases)) {
     // Display the correct number of resources
     $n = 0;
 
-    while($n < count($results->data) && isset($results->data[$n]->id)){
-        // Check permissions
-        if(!$resources->canViewCategory($results->data[$n]->category_id, $user_group, ($user->isLoggedIn() ? $user->data()->secondary_groups : null))){
-            $n++;
-            continue;
-        }
-
+    while ($n < count($results->data)) {
         // Get category
         $category = $queries->getWhere('resources_categories', array('id', '=', $results->data[$n]->category_id));
         if(count($category)){
@@ -110,15 +102,15 @@ if(count($latest_releases)){
             $category = 'n/a';
         }
 
-        if(!isset($releases_array[$results->data[$n]->id])){
+        if (!isset($releases_array[$results->data[$n]->id])) {
             $releases_array[$results->data[$n]->id] = array(
                 'link' => URL::build('/resources/resource/' . $results->data[$n]->id . '-' . Util::stringToURL($results->data[$n]->name)),
                 'name' => Output::getClean($results->data[$n]->name),
-                'description' => mb_substr(strip_tags(htmlspecialchars_decode($results->data[$n]->description)), 0, 50) . '...',
-                'author' => Output::getClean($author->nickname),
-                'author_style' => $user->getGroupClass($author->id),
-                'author_profile' => URL::build('/profile/' . Output::getClean($author->username)),
-                'author_avatar' => $user->getAvatar($author->id, '../', 30),
+                'description' => mb_substr(strip_tags(Output::getDecoded($results->data[$n]->description)), 0, 50) . '...',
+                'author' => Output::getClean($author->getDisplayname()),
+                'author_style' => $author->getGroupClass(),
+                'author_profile' => URL::build('/profile/' . Output::getClean($author->getDisplayname(true))),
+                'author_avatar' => $author->getAvatar(),
                 'downloads' => str_replace('{x}', $results->data[$n]->downloads, $resource_language->get('resources', 'x_downloads')),
                 'views' => str_replace('{x}', $results->data[$n]->views, $resource_language->get('resources', 'x_views')),
                 'rating' => round($results->data[$n]->rating / 10),
@@ -138,7 +130,7 @@ $smarty->assign(array(
     'RESOURCES' => $resource_language->get('resources', 'resources'),
     'CATEGORIES_TITLE' => $resource_language->get('resources', 'categories'),
     'CATEGORIES' => $category_array,
-    'VIEWING_RESOURCES_BY' => str_replace('{x}', Output::getClean($user->idToName($author->id)), $resource_language->get('resources', 'viewing_resources_by_x')),
+    'VIEWING_RESOURCES_BY' => str_replace('{x}', Output::getClean($author->getDisplayname()), $resource_language->get('resources', 'viewing_resources_by_x')),
     'LATEST_RESOURCES' => $releases_array,
     'PAGINATION' => $pagination,
     'NO_RESOURCES' => $resource_language->get('resources', 'no_resources'),
