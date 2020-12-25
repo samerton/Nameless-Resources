@@ -456,7 +456,7 @@ if(Input::exists()){
 								$filesize = '2048';
 						}
 
-						if($_FILES['resourceFile']['size'] > ($filesize * 1000)){
+						if($_FILES['resourceFile']['size'] > ($filesize * 1000) || $_FILES['resourceFile']['size'] == 0){
 							$error = str_replace('{x}', Output::getClean($filesize), $resource_language->get('resources', 'filesize_max_x'));
 
 						} else {
