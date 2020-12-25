@@ -18,8 +18,8 @@ class Resources_Module extends Module {
 
 		$name = 'Resources';
 		$author = '<a href="https://samerton.me" target="_blank">Samerton</a>';
-		$module_version = '1.1.1';
-		$nameless_version = '2.0.0-pr7';
+		$module_version = '1.2.0';
+		$nameless_version = '2.0.0-pr8';
 
 		parent::__construct($this, $name, $author, $module_version, $nameless_version);
 
