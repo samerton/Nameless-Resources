@@ -41,7 +41,7 @@ class Resources {
             $group_ids = implode(',', $group_ids);
         }
 
-        return $this->_db->query('SELECT `view`, `download` FROM nl2_resources_categories_permissions WHERE category_id = ? AND `download` = 1 AND group_id IN (' . $group_ids . ')', array($cat_id))->count() ? true : false;
+        return $this->_db->query('SELECT `view`, `download` FROM nl2_resources_categories_permissions WHERE category_id = ? AND `download` = 1 AND `view` = ` AND group_id IN (' . $group_ids . ')', array($cat_id))->count() ? true : false;
     }
 
     // Get which resource types a user can post in a category
