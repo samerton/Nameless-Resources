@@ -74,6 +74,12 @@
 				</div>
 				<div class="four wide column">
 					{include file='resources/categories.tpl'}
+                    
+					{if count($WIDGETS_RIGHT)}
+						{foreach from=$WIDGETS_RIGHT item=widget}
+							{$widget}
+						{/foreach}
+					{/if}
 				</div>
 			</div>
 		</div>
