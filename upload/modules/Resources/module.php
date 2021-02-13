@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr6
+ *  NamelessMC version 2.0.0-pr9
  *
  *  License: MIT
  *
@@ -31,8 +31,8 @@ class Resources_Module extends Module {
 		$pages->add('Resources', '/panel/resources/categories', 'pages/panel/categories.php');
 		$pages->add('Resources', '/panel/resources/downloads', 'pages/panel/downloads.php');
 		$pages->add('Resources', '/panel/resources/settings', 'pages/panel/settings.php');
-		$pages->add('Resources', '/resources', 'pages/resources/index.php');
-		$pages->add('Resources', '/resources/category', 'pages/resources/category.php');
+		$pages->add('Resources', '/resources', 'pages/resources/index.php', 'resources', true);
+		$pages->add('Resources', '/resources/category', 'pages/resources/category.php', 'resources', true);
 		$pages->add('Resources', '/resources/resource', 'pages/resources/resource.php');
 		$pages->add('Resources', '/resources/new', 'pages/resources/new.php');
 		$pages->add('Resources', '/resources/author', 'pages/resources/author.php');

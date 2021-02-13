@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr5
+ *  NamelessMC version 2.0.0-pr9
  *
  *  License: MIT
  *
@@ -74,13 +74,15 @@ $purchased_resources = DB::getInstance()->query('SELECT nl2_resources.id as id, 
 $template_array = array();
 if(count($purchased_resources)){
 	foreach($purchased_resources as $resource){
+        $author = new User($resource->author);
+        
 		$template_array[] = array(
 			'name' => Output::getClean($resource->name),
-			'author_username' => Output::getClean($user->idToName($resource->author)),
-			'author_nickname' => Output::getClean($user->idToNickname($resource->author)),
-			'author_avatar' => $user->getAvatar($resource->author, '', 256),
-			'author_style' => $user->getGroupClass($resource->author),
-			'author_link' => URL::build('/profile/' . Output::getClean($user->idToName($resource->author))),
+			'author_username' => $author->getDisplayname(true),
+			'author_nickname' => $author->getDisplayname(),
+			'author_avatar' => $author->getAvatar('', 256),
+			'author_style' => $author->getGroupClass(),
+			'author_link' => $author->getProfileURL(),
 			'latest_version' => Output::getClean($resource->version),
 			'updated' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $language->getTimeLanguage()),
 			'updated_full' => date('d M Y, H:i', $resource->updated),
