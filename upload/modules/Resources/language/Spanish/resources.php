@@ -109,6 +109,7 @@ $language = array(
     'log_in_to_download' => 'Inicia sesión para descargar',
 	'external_download' => 'Descarga externa',
     'external_link' => 'Enlace externo',
+    'invalid_review' => 'Invalid review. Please enter text and leave a rating.',
 
     // Admin
     'permissions' => 'Permisos',

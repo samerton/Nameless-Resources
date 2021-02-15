@@ -125,6 +125,11 @@
 
 	  {if $CAN_REVIEW == true && !isset($PAYMENT_PENDING) && !isset($PURCHASE_FOR_PRICE)}
 	  <h4>{$NEW_REVIEW}</h4>
+	  {if isset($ERROR)}
+		<div class="ui negative message">
+			{$ERROR}
+		</div>
+	  {/if}
 	  <form action="" method="post" class="ui form">
 	    <div class="form-group">
 		  <div class="star-rating set">

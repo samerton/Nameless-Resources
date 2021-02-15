@@ -111,6 +111,7 @@ $language = array(
     'log_in_to_download' => '登录以开始下载',
 	'external_download' => '外链下载',
     'external_link' => '外部链接',
+    'invalid_review' => 'Invalid review. Please enter text and leave a rating.',
 
     // Admin
     'permissions' => '权限',
