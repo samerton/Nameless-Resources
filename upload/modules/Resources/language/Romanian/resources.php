@@ -101,6 +101,7 @@ $language = array(
 	'purchase' => 'Cumpără',
 	'purchasing_resource_x' => 'Achiziționați {x}', // Don't replace {x}
 	'payment_pending' => 'Plata in asteptare',
+    'update_title' => 'Update Title',
 	'update_information' => 'Actualizați informațiile',
 	'paypal_not_configured' => 'Integrarea PayPal nu a fost încă configurată! Contactați un administrator.',
 	'error_while_purchasing' => 'Ne pare rău! A apărut o eroare la achiziționarea acestei resurse. Contactați un administrator.',

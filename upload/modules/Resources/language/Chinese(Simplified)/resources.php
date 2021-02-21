@@ -101,6 +101,7 @@ $language = array(
 	'purchase' => '确认购买',
     'purchasing_resource_x' => '购买资源 {x} 中', // Don't replace {x}
 	'payment_pending' => '等待支付中',
+    'update_title' => 'Update Title',
     'update_information' => '更新信息',
 	'paypal_not_configured' => 'PayPal集成尚未配置！ 请与管理员联系。',
 	'error_while_purchasing' => '非常抱歉!在购买此资源时发生错误。请联系管理员。',

@@ -3,7 +3,7 @@
 
 <div class="ui container">
     <div class="ui padded segment">
-        <h2 style="display:inline;">{$UPDATE_RESOURCE}</h2>
+        <h2 style="display:inline;">{$NEW_RESOURCE}</h2>
 
         <div class="res right floated">
             <a href="{$CANCEL_LINK}" class="ui red button" onclick="return confirm('{$CONFIRM_CANCEL}');">{$CANCEL}</a>
@@ -16,12 +16,10 @@
             </div>
         {/if}
 
-        <form action="" method="post" enctype="multipart/form-data" class="ui form">
+        <form action="" method="post" class="ui form">
             <div class="field">
-                <input type="file" class="inputFile" name="resourceFile" id="uploadFileButton" accept=".zip,application/zip" hidden onchange="$('#fileName').html(this.files[0].name)" />
-                <label class="ui icon labeled default button" for="uploadFileButton">
-                    <i class="ui cloud upload icon"></i> <span id="fileName">{$CHOOSE_FILE} ({$ZIP_ONLY})</span>
-                </label>
+                <label for="inputLink">{$EXTERNAL_LINK}</label>
+                <input type="text" name="link" id="inputLink" placeholder="{$EXTERNAL_LINK}">
             </div>
 
             <div class="field">
@@ -33,7 +31,7 @@
                 <label for="inputTitle">{$UPDATE_TITLE}</label>
                 <input type="text" name="title" id="inputTitle" value="{$TITLE_VALUE}">
             </div>
-
+            
             <div class="field">
                 <label for="{if isset($MARKDOWN)}markdown{else}content{/if}">{$UPDATE_INFORMATION}</label>
                 {if !isset($MARKDOWN)}

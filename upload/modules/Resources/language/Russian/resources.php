@@ -99,6 +99,7 @@ $language = array(
 	'purchase' => 'Купить',
     'purchasing_resource_x' => 'Покупка {x}', // Don't replace {x}
 	'payment_pending' => 'Payment Pending',
+    'update_title' => 'Update Title',
     'update_information' => 'Обновить информацию',
 	'paypal_not_configured' => 'Интеграция PayPal еще не настроена! Пожалуйста, свяжитесь с администратором.',
 	'error_while_purchasing' => 'Прости! При покупке этого ресурса произошла ошибка. Пожалуйста, свяжитесь с администратором.',

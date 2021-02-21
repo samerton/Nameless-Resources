@@ -959,7 +959,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 											$queries->create('resources_releases', array(
 												'resource_id' => $resource->id,
 												'category_id' => $resource->category_id,
-												'release_title' => Output::getClean($version),
+												'release_title' => Output::getClean((empty($_POST['title']) ? $version : $_POST['title'])),
 												'release_description' => $content,
 												'release_tag' => Output::getClean($version),
 												'created' => date('U'),
@@ -1022,6 +1022,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 											'required' => true,
 											'min' => 4,
 											'max' => 256
+										),
+                                        'title' => array(
+											'max' => 128
 										)
 									));
 
@@ -1036,9 +1039,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 										$formatting = $cache->retrieve('formatting');
 
 										if($formatting == 'markdown'){
-											$content = Michelf\Markdown::defaultTransform($_SESSION['new_resource']['content']);
+											$content = Michelf\Markdown::defaultTransform($_POST['content']);
 											$content = Output::getClean($content);
-										} else $content = Output::getClean($_SESSION['new_resource']['content']);
+										} else $content = Output::getClean($_POST['content']);
 
 										$queries->update('resources', $resource->id, array(
 											'updated' => date('U'),
@@ -1048,7 +1051,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 										$queries->create('resources_releases', array(
 											'resource_id' => $resource->id,
 											'category_id' => $resource->category_id,
-											'release_title' => Output::getClean($version),
+											'release_title' => Output::getClean((empty($_POST['title']) ? $version : $_POST['title'])),
 											'release_description' => $content,
 											'release_tag' => Output::getClean($version),
 											'created' => date('U'),
@@ -1166,6 +1169,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 							'VERSION_TAG' => $resource_language->get('resources', 'version_tag'),
 							'SUBMIT' => $language->get('general', 'submit'),
 							'TOKEN' => Token::get(),
+                            'UPDATE_TITLE' => $resource_language->get('resources', 'update_title'),
 							'UPDATE_INFORMATION' => $resource_language->get('resources', 'update_information')
 						));
 
@@ -1226,6 +1230,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 							'VERSION_TAG' => $resource_language->get('resources', 'version_tag'),
 							'SUBMIT' => $language->get('general', 'submit'),
 							'TOKEN' => Token::get(),
+                            'UPDATE_TITLE' => $resource_language->get('resources', 'update_title'),
 							'UPDATE_INFORMATION' => $resource_language->get('resources', 'update_information')
 						));
 
@@ -1264,10 +1269,10 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/tinymce.min.js' => array()
 							));
 
-							$template->addJSScript(Input::createTinyEditor($language, 'content'));
+							$template->addJSScript(Input::createTinyEditor($language, 'editor'));
 						}
 
-						$template_file = 'resources/new_resource_external_link.tpl';
+						$template_file = 'resources/update_resource_external_link.tpl';
 
 					}
 				}

@@ -99,6 +99,7 @@ $language = array(
 	'purchase' => 'Köp',
     'purchasing_resource_x' => 'Köper {x}', // Don't replace {x}
 	'payment_pending' => 'Betalning Behandlas',
+    'update_title' => 'Update Title',
     'update_information' => 'Uppdatera information',
 	'paypal_not_configured' => 'PayPal integrationen har inte konfigurerats än! Vänligen kontakta en administratör.',
 	'error_while_purchasing' => 'Ett fel uppstod under köp av denna resurs. Vänligen kontakta en administratör.',

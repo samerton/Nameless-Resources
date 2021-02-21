@@ -100,6 +100,7 @@ $language = array(
 	'purchase' => 'Zakoupit',
     'purchasing_resource_x' => 'Nákup souboru {x}', // Don't replace {x}
 	'payment_pending' => 'Čekající platba',
+    'update_title' => 'Update Title',
     'update_information' => 'Aktualizovat informace',
 	'paypal_not_configured' => 'Integrace PayPalu ještě nebyla nastavena! Kontaktujte administrátora.',
 	'error_while_purchasing' => 'Omlouváme se! Při zakupování tohoto souboru se vyskytla chyba. Kontaktujte administrátora.',

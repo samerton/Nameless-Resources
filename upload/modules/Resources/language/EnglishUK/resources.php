@@ -99,6 +99,7 @@ $language = array(
 	'purchase' => 'Purchase',
     'purchasing_resource_x' => 'Purchasing {x}', // Don't replace {x}
 	'payment_pending' => 'Payment Pending',
+    'update_title' => 'Update Title',
     'update_information' => 'Update Information',
 	'paypal_not_configured' => 'PayPal integration hasn\'t been configured yet! Please contact an administrator.',
 	'error_while_purchasing' => 'Sorry! There was an error whilst purchasing this resource. Please contact an administrator.',
