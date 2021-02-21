@@ -952,9 +952,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 											$formatting = $cache->retrieve('formatting');
 
 											if($formatting == 'markdown'){
-												$content = Michelf\Markdown::defaultTransform($_SESSION['new_resource']['content']);
+												$content = Michelf\Markdown::defaultTransform($_POST['content']);
 												$content = Output::getClean($content);
-											} else $content = Output::getClean($_SESSION['new_resource']['content']);
+											} else $content = Output::getClean($_POST['content']);
 
 											$queries->create('resources_releases', array(
 												'resource_id' => $resource->id,
