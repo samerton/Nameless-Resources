@@ -565,7 +565,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
                 if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
                     $smarty->assign(array(
                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
                     ));
 				}
 			} else {
@@ -576,7 +576,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
                             // Author can download their own resources
                             $smarty->assign(array(
                                 'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
                             ));
 
                         } else {
@@ -590,7 +590,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
                                     // Purchased
                                     $smarty->assign(array(
                                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
                                     ));
 
                                 } else if($paid->status == 0){
