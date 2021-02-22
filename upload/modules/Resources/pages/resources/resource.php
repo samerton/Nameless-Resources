@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr5
+ *  NamelessMC version 2.0.0-pr9
  *
  *  License: MIT
  *
@@ -825,99 +825,36 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				if(Input::exists()){
 					if(Token::check(Input::get('token'))){
 						// Validate release
-						if($resource->type == 0 && $resource->github_url != 'none'){
-							try {
-								// Use cURL
-								$ch = curl_init();
+                        
+						require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
+						require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
+						$emojione = new Emojione\Client(new Emojione\Ruleset());
+                            
+						// Format description
+						$cache->setCache('post_formatting');
+						$formatting = $cache->retrieve('formatting');
 
-								curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-									'Accept: application/vnd.github.v3+json',
-									'User-Agent: NamelessMC-App'
-								));
-								curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-								curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-								curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases/' . Output::getClean($_POST['release']));
-
-								if(!$github_query = curl_exec($ch)){
-									$error = curl_error($ch);
-								}
-
-								curl_close($ch);
-
-								$github_query = json_decode($github_query);
-
-								if(!isset($github_query->id)) $error = str_replace('{x}', Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name), $resource_language->get('resources', 'unable_to_get_repo'));
-								else {
-									// Valid response
-									// Check update doesn't already exist
-									$exists = $queries->getWhere('resources_releases', array('release_tag', '=', Output::getClean($github_query->tag_name)));
-									if(count($exists)){
-										foreach($exists as $item){
-											if($item->resource_id == $resource->id){
-												$update_exists = true;
-											}
-										}
-									}
-
-									if(isset($update_exists)){
-										$error = $resource_language->get('resources', 'update_already_exists');
-									} else {
-										$queries->update('resources', $resource->id, array(
-											'updated' => date('U'),
-											'latest_version' => Output::getClean($github_query->tag_name)
-										));
-
-										$queries->create('resources_releases', array(
-											'resource_id' => $resource->id,
-											'category_id' => $resource->category_id,
-											'release_title' => Output::getClean($github_query->name),
-											'release_description' => Output::getPurified($github_query->body),
-											'release_tag' => Output::getClean($github_query->tag_name),
-											'created' => date('U'),
-											'download_link' => Output::getClean($github_query->html_url)
-										));
-
-										// Hook
-										$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
-
-										if(count($new_resource_category))
-											$new_resource_category = Output::getClean($new_resource_category[0]->name);
-
-										else
-											$new_resource_category = 'Unknown';
-
-										HookHandler::executeEvent('updateResource', array(
-											'event' => 'updateResource',
-											'username' => $user->getDisplayname(),
-											'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, $user->getDisplayname()), $resource_language->get('resources', 'updated_resource_text')),
-											'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($github_query->body)),
-											'avatar_url' => $user->getAvatar(null, 128, true),
-											'title' => Output::getClean($resource->name),
-											'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
-										));
-
-										Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
-										die();
-									}
-								}
-
-							} catch(Exception $e){
-								$error = $e->getMessage();
-							}
-
-						} else {
-							if($latest_release->download_link == 'local'){
-								// Upload zip
-								require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
-								require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
-								$emojione = new Emojione\Client(new Emojione\Ruleset());
-
+						if($formatting == 'markdown'){
+							$content = Michelf\Markdown::defaultTransform($_POST['content']);
+							$content = Output::getClean($content);
+						} else $content = Output::getClean($_POST['content']);
+                        
+                        // Release type
+                        switch(strtolower($_POST['type'])) {
+                            case 'local':
+                                // Upload zip
 								if(!isset($_POST['version']))
 									$version = '1.0.0';
 								else
 									$version = $_POST['version'];
 
-								$user_dir = ROOT_PATH . '/uploads/resources/' . $user->data()->id . DIRECTORY_SEPARATOR . $resource->id;
+                                $user_dir = ROOT_PATH . '/uploads/resources/' . $user->data()->id;
+
+                                if(!is_dir($user_dir)){
+                                    if(!mkdir($user_dir)){
+                                        $error = $resource_language->get('resources', 'upload_directory_not_writable');
+                                    }
+                                }
 
 								if(isset($_FILES['resourceFile'])){
 									$filename = $_FILES['resourceFile']['name'];
@@ -947,14 +884,6 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 										} else {
 											// Create release
-											// Format description
-											$cache->setCache('post_formatting');
-											$formatting = $cache->retrieve('formatting');
-
-											if($formatting == 'markdown'){
-												$content = Michelf\Markdown::defaultTransform($_POST['content']);
-												$content = Output::getClean($content);
-											} else $content = Output::getClean($_POST['content']);
 
 											$queries->create('resources_releases', array(
 												'resource_id' => $resource->id,
@@ -967,42 +896,28 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 											));
 
 											$release_id = $queries->getLastId();
+                                            
+                                            $uploadPath = $user_dir . DIRECTORY_SEPARATOR . $resource->id;
 
-											$uploadPath = $user_dir . DIRECTORY_SEPARATOR . $release_id;
+                                            if(!is_dir($uploadPath))
+                                                mkdir($uploadPath);
 
-											if(!is_dir($uploadPath))
-												mkdir($uploadPath);
+                                            $uploadPath .= DIRECTORY_SEPARATOR . $release_id;
 
-											$uploadPath .= DIRECTORY_SEPARATOR . basename($_FILES['resourceFile']['name']);
+                                            if(!is_dir($uploadPath))
+                                                mkdir($uploadPath);
+
+                                            $uploadPath .= DIRECTORY_SEPARATOR . basename($_FILES['resourceFile']['name']);
 
 											if(move_uploaded_file($_FILES['resourceFile']['tmp_name'], $uploadPath)){
 												// File uploaded
-												$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
-
-												if(count($new_resource_category))
-													$new_resource_category = Output::getClean($new_resource_category[0]->name);
-
-												else
-													$new_resource_category = 'Unknown';
 
 												$queries->update('resources', $resource->id, array(
 													'updated' => date('U'),
 													'latest_version' => Output::getClean($version)
 												));
-
-												HookHandler::executeEvent('updateResource', array(
-													'event' => 'updateResource',
-													'username' => $user->getDisplayname(),
-													'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, $user->getDisplayname()), $resource_language->get('resources', 'updated_resource_text')),
-													'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
-													'avatar_url' => $user->getAvatar(null, 128, true),
-													'title' => Output::getClean($resource->name),
-													'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
-												));
-
-												Redirect::to(URL::build('/resources/resource/' . $resource->id));
-												die();
-
+                                                
+                                                $success = true;
 											} else {
 												// Unable to upload file
 												$error = str_replace('{x}', $_FILES['resourceFile']['error'], $resource_language->get('resources', 'file_upload_failed'));
@@ -1012,87 +927,149 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 										}
 									}
 								}
-							} else {
-								// Update link
-								if(Token::check(Input::get('token'))){
-									// Validate link
-									$validate = new Validate();
-									$validation = $validate->check($_POST, array(
-										'link' => array(
-											'required' => true,
-											'min' => 4,
-											'max' => 256
-										),
-                                        'title' => array(
-											'max' => 128
-										)
+                            break;
+                            case 'github':
+                                // Github release
+                                if($resource->type == 0 && $resource->github_url != 'none'){
+                                    try {
+                                        // Use cURL
+                                        $ch = curl_init();
+
+                                        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                                            'Accept: application/vnd.github.v3+json',
+                                            'User-Agent: NamelessMC-App'
+                                        ));
+                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                                        curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases/' . Output::getClean($_POST['release']));
+
+                                        if(!$github_query = curl_exec($ch)){
+                                            $error = curl_error($ch);
+                                        }
+
+                                        curl_close($ch);
+
+                                        $github_query = json_decode($github_query);
+
+                                        if(!isset($github_query->id)) $error = str_replace('{x}', Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name), $resource_language->get('resources', 'unable_to_get_repo'));
+                                        else {
+                                            // Valid response
+                                            // Check update doesn't already exist
+                                            $exists = $queries->getWhere('resources_releases', array('release_tag', '=', Output::getClean($github_query->tag_name)));
+                                            if(count($exists)){
+                                                foreach($exists as $item){
+                                                    if($item->resource_id == $resource->id){
+                                                        $update_exists = true;
+                                                    }
+                                                }
+                                            }
+
+                                            if(isset($update_exists)){
+                                                $error = $resource_language->get('resources', 'update_already_exists');
+                                            } else {
+                                                // Content is empty, Load from github instead
+                                                if(empty($content)) {
+                                                    $content = $github_query->body;
+                                                }
+                                                
+                                                $queries->update('resources', $resource->id, array(
+                                                    'updated' => date('U'),
+                                                    'latest_version' => Output::getClean($github_query->tag_name)
+                                                ));
+
+                                                $queries->create('resources_releases', array(
+                                                    'resource_id' => $resource->id,
+                                                    'category_id' => $resource->category_id,
+                                                    'release_title' => Output::getClean((empty($_POST['title']) ? $github_query->name : $_POST['title'])),
+                                                    'release_description' => Output::getPurified($content),
+                                                    'release_tag' => Output::getClean($github_query->tag_name),
+                                                    'created' => date('U'),
+                                                    'download_link' => Output::getClean($github_query->html_url)
+                                                ));
+
+                                                $success = true;
+                                            }
+                                        }
+
+                                    } catch(Exception $e){
+                                        $error = $e->getMessage();
+                                    }
+                                }
+                            break;
+                            case 'external_link':
+                                // External link
+                                
+								// Validate link
+								$validate = new Validate();
+								$validation = $validate->check($_POST, array(
+									'link' => array(
+										'required' => true,
+										'min' => 4,
+										'max' => 256
+									),
+                                    'title' => array(
+                                        'max' => 128
+									)
+								));
+
+								if($validation->passed()){
+									if(!isset($_POST['version']))
+										$version = '1.0.0';
+									else
+										$version = $_POST['version'];
+
+									$queries->update('resources', $resource->id, array(
+										'updated' => date('U'),
+										'latest_version' => Output::getClean($version)
 									));
 
-									if($validation->passed()){
-										if(!isset($_POST['version']))
-											$version = '1.0.0';
-										else
-											$version = $_POST['version'];
-
-										// Format description
-										$cache->setCache('post_formatting');
-										$formatting = $cache->retrieve('formatting');
-
-										if($formatting == 'markdown'){
-											$content = Michelf\Markdown::defaultTransform($_POST['content']);
-											$content = Output::getClean($content);
-										} else $content = Output::getClean($_POST['content']);
-
-										$queries->update('resources', $resource->id, array(
-											'updated' => date('U'),
-											'latest_version' => Output::getClean($version)
-										));
-
-										$queries->create('resources_releases', array(
-											'resource_id' => $resource->id,
-											'category_id' => $resource->category_id,
-											'release_title' => Output::getClean((empty($_POST['title']) ? $version : $_POST['title'])),
-											'release_description' => $content,
-											'release_tag' => Output::getClean($version),
-											'created' => date('U'),
-											'download_link' => Output::getClean($_POST['link'])
-										));
-
-										// Hook
-										$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
-
-										if(count($new_resource_category))
-											$new_resource_category = Output::getClean($new_resource_category[0]->name);
-
-										else
-											$new_resource_category = 'Unknown';
-
-										HookHandler::executeEvent('updateResource', array(
-											'event' => 'updateResource',
-											'username' => $user->getDisplayname(),
-											'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, $user->getDisplayname()), $resource_language->get('resources', 'updated_resource_text')),
-											'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
-											'avatar_url' => $user->getAvatar(null, 128, true),
-											'title' => Output::getClean($resource->name),
-											'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
-										));
-
-										Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
-										die();
-
-									} else {
-										$error = $resource_language->get('resources', 'external_link_error');
-									}
+									$queries->create('resources_releases', array(
+										'resource_id' => $resource->id,
+										'category_id' => $resource->category_id,
+										'release_title' => Output::getClean((empty($_POST['title']) ? $version : $_POST['title'])),
+										'release_description' => $content,
+										'release_tag' => Output::getClean($version),
+										'created' => date('U'),
+										'download_link' => Output::getClean($_POST['link'])
+									));
+                                    
+                                    $success = true;
 								} else {
-									$error = $language->get('general', 'invalid_token');
+									$error = $resource_language->get('resources', 'external_link_error');
 								}
-							}
-						}
+                            break;
+                            default:
+                                $error = $resource_language->get('resources', 'select_release_type_error');
+                            break;
+                        }
+                        
+                        if($success) {
+							// Hook
+							$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
+                            if(count($new_resource_category))
+								$new_resource_category = Output::getClean($new_resource_category[0]->name);
+							else
+								$new_resource_category = 'Unknown';
+                            
+							HookHandler::executeEvent('updateResource', array(
+								'event' => 'updateResource',
+								'username' => $user->getDisplayname(),
+								'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, $user->getDisplayname()), $resource_language->get('resources', 'updated_resource_text')),
+								'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
+								'avatar_url' => $user->getAvatar(null, 128, true),
+								'title' => Output::getClean($resource->name),
+								'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
+							));
+
+							Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+							die();
+                        }
 					} else {
 						$error = $language->get('general', 'invalid_token');
 					}
 				}
-
+                
+                // Github Integration
 				if($resource->type == 0 && $resource->github_url != 'none'){
 					// Github API
 					try {
@@ -1132,151 +1109,80 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 							);
 						}
 					}
-
-					// Select release
-					if(isset($error)) $smarty->assign('ERROR', $error);
-
-					// Assign Smarty variables
-					$smarty->assign(array(
-						'NEW_RESOURCE' => $resource_language->get('resources', 'update'),
-						'CANCEL' => $language->get('general', 'cancel'),
-						'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
-						'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
-						'SELECT_RELEASE' => $resource_language->get('resources', 'select_release'),
-						'RELEASES' => $releases_array,
-						'SUBMIT' => $language->get('general', 'submit'),
-						'TOKEN' => Token::get()
-					));
-
-					$template_file = 'resources/new_resource_select_release.tpl';
-
-				} else {
-					if($latest_release->download_link == 'local'){
-						require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
-						require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
-						$emojione = new Emojione\Client(new Emojione\Ruleset());
-
-						// Upload new zip
-						if(isset($error)) $smarty->assign('ERROR', $error);
-
-						$smarty->assign(array(
-							'UPDATE_RESOURCE' => $resource_language->get('resources', 'update'),
-							'CANCEL' => $language->get('general', 'cancel'),
-							'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
-							'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
-							'CHOOSE_FILE' => $resource_language->get('resources', 'choose_file'),
-							'ZIP_ONLY' => $resource_language->get('resources', 'zip_only'),
-							'VERSION_TAG' => $resource_language->get('resources', 'version_tag'),
-							'SUBMIT' => $language->get('general', 'submit'),
-							'TOKEN' => Token::get(),
-                            'UPDATE_TITLE' => $resource_language->get('resources', 'update_title'),
-							'UPDATE_INFORMATION' => $resource_language->get('resources', 'update_information')
-						));
-
-						// Display either Markdown or HTML editor
-						if(!isset($formatting)){
-							$cache->setCache('post_formatting');
-							$formatting = $cache->retrieve('formatting');
-						}
-
-						$template->addJSFiles(array(
-							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array()
-						));
-
-						if($formatting == 'markdown'){
-							// Markdown
-							$smarty->assign('MARKDOWN', true);
-							$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
-
-							$template->addJSFiles(array(
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/js/emojionearea.min.js' => array()
-							));
-
-							$template->addJSScript('
-							$(document).ready(function() {
-							    var el = $("#markdown").emojioneArea({
-									pickerPosition: "bottom"
-								});
-							});
-						');
-
-						} else {
-							$template->addJSFiles(array(
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/js/spoiler.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/tinymce.min.js' => array()
-							));
-
-							$template->addJSScript(Input::createTinyEditor($language, 'editor'));
-						}
-
-						$template_file = 'resources/update_resource_upload.tpl';
-
-					} else {
-						require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
-						require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
-						$emojione = new Emojione\Client(new Emojione\Ruleset());
-
-						// Upload new zip
-						if(isset($error)) $smarty->assign('ERROR', $error);
-
-						$smarty->assign(array(
-							'NEW_RESOURCE' => $resource_language->get('resources', 'update'),
-							'CANCEL' => $language->get('general', 'cancel'),
-							'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
-							'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
-							'EXTERNAL_LINK' => $resource_language->get('resources', 'external_link'),
-							'VERSION_TAG' => $resource_language->get('resources', 'version_tag'),
-							'SUBMIT' => $language->get('general', 'submit'),
-							'TOKEN' => Token::get(),
-                            'UPDATE_TITLE' => $resource_language->get('resources', 'update_title'),
-							'UPDATE_INFORMATION' => $resource_language->get('resources', 'update_information')
-						));
-
-						// Display either Markdown or HTML editor
-						if(!isset($formatting)){
-							$cache->setCache('post_formatting');
-							$formatting = $cache->retrieve('formatting');
-						}
-
-						$template->addJSFiles(array(
-							(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array()
-						));
-
-						if($formatting == 'markdown'){
-							// Markdown
-							$smarty->assign('MARKDOWN', true);
-							$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
-
-							$template->addJSFiles(array(
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/js/emojionearea.min.js' => array()
-							));
-
-							$template->addJSScript('
-							$(document).ready(function() {
-							    var el = $("#markdown").emojioneArea({
-									pickerPosition: "bottom"
-								});
-							});
-						');
-
-						} else {
-							$template->addJSFiles(array(
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/js/spoiler.js' => array(),
-								(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/tinymce.min.js' => array()
-							));
-
-							$template->addJSScript(Input::createTinyEditor($language, 'editor'));
-						}
-
-						$template_file = 'resources/update_resource_external_link.tpl';
-
-					}
+                    
+                    // Assign Smarty variables
+                    $smarty->assign(array(
+                        'GITHUB_LINKED' => true,
+                        'GITHUB_RELEASE' => $resource_language->get('resources', 'github_release'),
+                        'RELEASES' => $releases_array
+                    ));
+				}
+                
+				require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
+				require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
+				$emojione = new Emojione\Client(new Emojione\Ruleset());
+                
+				// Upload new zip
+				if(isset($error)) $smarty->assign('ERROR', $error);
+                
+				// Assign Smarty variables
+				$smarty->assign(array(
+					'UPDATE_RESOURCE' => $resource_language->get('resources', 'update'),
+					'CANCEL' => $language->get('general', 'cancel'),
+					'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+					'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
+                    'RELEASE_TYPE' => $resource_language->get('resources', 'release_type'),
+                    'CHOOSE_FILE' => $resource_language->get('resources', 'choose_file'),
+					'ZIP_ONLY' => $resource_language->get('resources', 'zip_only'),
+                    'EXTERNAL_LINK' => $resource_language->get('resources', 'external_link'),
+					'VERSION_TAG' => $resource_language->get('resources', 'version_tag'),
+                    'ZIP_FILE' => $resource_language->get('resources', 'zip_file'),
+                    'EXTERNAL_DOWNLOAD' => $resource_language->get('resources', 'external_download'),
+                    'SUBMIT' => $language->get('general', 'submit'),
+					'TOKEN' => Token::get(),
+                    'UPDATE_TITLE' => $resource_language->get('resources', 'update_title'),
+					'UPDATE_INFORMATION' => $resource_language->get('resources', 'update_information')
+				));
+                
+				// Display either Markdown or HTML editor
+				if(!isset($formatting)){
+					$cache->setCache('post_formatting');
+					$formatting = $cache->retrieve('formatting');
 				}
 
+				$template->addJSFiles(array(
+					(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array()
+				));
+
+				if($formatting == 'markdown'){
+					// Markdown
+					$smarty->assign('MARKDOWN', true);
+					$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
+
+					$template->addJSFiles(array(
+						(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/js/emojionearea.min.js' => array()
+					));
+
+					$template->addJSScript('
+                        $(document).ready(function() {
+                            var el = $("#markdown").emojioneArea({
+                                pickerPosition: "bottom"
+                            });
+                        });
+                    ');
+
+				} else {
+					$template->addJSFiles(array(
+						(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
+						(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.js' => array(),
+						(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/js/spoiler.js' => array(),
+						(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/tinymce.min.js' => array()
+					));
+
+					$template->addJSScript(Input::createTinyEditor($language, 'editor'));
+				}
+                
+                $template_file = 'resources/update_resource.tpl';
 			} else {
 				// Can't update, redirect
 				Redirect::to(URL::build('/resources'));
