@@ -91,16 +91,16 @@ if($user->isLoggedIn() || Cookie::exists('alert-box')){
 	}
 }
 
+$category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
+if(count($category)){
+	$category = Output::getClean($category[0]->name);
+} else {
+	$category = 'Unknown';
+}
+
 // Get metadata
 $page_metadata = $queries->getWhere('page_descriptions', array('page', '=', '/resources/resource'));
 if(count($page_metadata)){
-	$category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
-	if(count($category)){
-		$category = Output::getClean($category[0]->name);
-	} else {
-		$category = 'Unknown';
-	}
-
 	$description = strip_tags(str_ireplace(array('<br />', '<br>', '<br/>', '&nbsp;'), array("\n", "\n", "\n", ' '), Output::getDecoded($resource->description)));
 
 	define('PAGE_DESCRIPTION', str_replace(array('{site}', '{title}', '{author}', '{category_title}', '{page}', '{description}'), array(SITE_NAME, Output::getClean($resource->name), Output::getClean($user->idToName($resource->creator_id)), $category, Output::getClean($p), mb_substr($description, 0, 160) . '...'), $page_metadata[0]->description));
@@ -332,13 +332,25 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		'AUTHOR_AVATAR' => $author->getAvatar(),
 		'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
 		'RESOURCE' => $resource_language->get('resources', 'resource'),
-		'VIEWS' => str_replace('{x}', $resource->views, $resource_language->get('resources', 'x_views')),
-		'DOWNLOADS' => str_replace('{x}', $resource->downloads, $resource_language->get('resources', 'x_downloads')),
-		'RATING' => round($resource->rating / 10),
+        'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
+        'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
+        'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
+        'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
+		'VIEWS' => $resource_language->get('resources', 'views'),
+        'VIEWS_VALUE' => Output::getClean($resource->views),
+        'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+		'TOTAL_DOWNLOADS' => $resource_language->get('resources', 'total_downloads'),
+        'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
+        'CATEGORY' => $resource_language->get('resources', 'category'),
+        'CATEGORY_VALUE' => Output::getClean($category),
+        'RATING' => $resource_language->get('resources', 'rating'),
+		'RATING_VALUE' => round($resource->rating / 10),
 		'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
 		'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
+        'RELEASE' => $resource_language->get('resources', 'release'),
 		'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
 		'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
+        'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
 		'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
 		'RELEASE_RATING' => round($latest_update->rating / 10),
 		'RELEASE_DOWNLOADS' => $latest_update->downloads,
