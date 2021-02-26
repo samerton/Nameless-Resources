@@ -138,7 +138,7 @@ class Resources {
         return $this->_db->query('SELECT * FROM nl2_resources_categories WHERE id IN (SELECT category_id FROM nl2_resources_categories_permissions WHERE `view` = 1 AND group_id IN (' . $group_ids . '))', array())->results();
     }
 
-    public function getLatestResources($group_ids, $category_id = null) {
+    public function getResourcesList($group_ids, $order_by, $category_id = null) {
         if (is_array($group_ids)) {
             $group_ids = implode(',', $group_ids);
         }
@@ -151,7 +151,7 @@ class Resources {
             $params[] = $category_id;
         }
 
-        return $this->_db->query('SELECT * FROM nl2_resources WHERE category_id IN (SELECT category_id FROM nl2_resources_categories_permissions WHERE `view` = 1 ' . $where . 'AND group_id IN (' . $group_ids . ')) ORDER BY `updated` DESC', $params)->results();
+        return $this->_db->query('SELECT * FROM nl2_resources WHERE category_id IN (SELECT category_id FROM nl2_resources_categories_permissions WHERE `view` = 1 ' . $where . 'AND group_id IN (' . $group_ids . ')) ORDER BY '.$order_by.' DESC', $params)->results();
     }
 
     public function getAuthorLatestResources($author_id, $group_ids) {

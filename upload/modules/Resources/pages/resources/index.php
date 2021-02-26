@@ -18,15 +18,31 @@ $resources = new Resources();
 // Initialise
 $timeago = new Timeago();
 
+$sort_types = array();
+$sort_types['updated'] = array('type' => 'updated', 'sort' => $resource_language->get('resources', 'last_updated'), 'link' => URL::build('/resources', 'sort=updated&', true));
+$sort_types['newest'] = array('type' => 'created', 'sort' => $resource_language->get('resources', 'newest'), 'link' => URL::build('/resources', 'sort=newest&', true));
+$sort_types['downloads'] = array('type' => 'downloads', 'sort' => $resource_language->get('resources', 'downloads'), 'link' => URL::build('/resources', 'sort=downloads&', true));
+
+if(isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_types)){
+    $sort_type = $_GET['sort'];
+    $sort_by = $sort_types[$sort_type]['type'];
+    $sort_by_text = $sort_types[$sort_type]['sort'];
+    $url = $sort_types[$sort_type]['link'];
+} else {
+    $sort_by = 'updated';
+    $sort_by_text = $resource_language->get('resources', 'last_updated');
+    $url = URL::build('/resources', true);
+}
+
 // Get page
 if(isset($_GET['p'])){
 	if(!is_numeric($_GET['p'])){
-		Redirect::to(URL::build('/resources'));
+		Redirect::to($url);
 		die();
 	} else {
 		if($_GET['p'] == 1){ 
 			// Avoid bug in pagination class
-			Redirect::to(URL::build('/resources'));
+			Redirect::to($url);
 			die();
 		}
 		$p = $_GET['p'];
@@ -59,12 +75,12 @@ foreach($categories as $category){
 $categories = null;
 
 // Get latest releases
-$latest_releases = $resources->getLatestResources($groups);
+$latest_releases = $resources->getResourcesList($groups, $sort_by);
 
 // Pagination
 $paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
 $results = $paginator->getLimited($latest_releases, 10, $p, count($latest_releases));
-$pagination = $paginator->generate(7, URL::build('/resources/', true));
+$pagination = $paginator->generate(7, $url);
 
 $smarty->assign('PAGINATION', $pagination);
 
@@ -121,7 +137,14 @@ $smarty->assign(array(
 	'NO_RESOURCES' => $resource_language->get('resources', 'no_resources'),
 	'RESOURCE' => $resource_language->get('resources', 'resource'),
 	'STATS' => $resource_language->get('resources', 'stats'),
-	'AUTHOR' => $resource_language->get('resources', 'author')
+	'AUTHOR' => $resource_language->get('resources', 'author'),
+    'SORT_BY' => $resource_language->get('resources', 'sort_by'),
+    'SORT_BY_VALUE' => $sort_by_text,
+    'SORT_TYPES' => $sort_types,
+    'NEWEST' => $resource_language->get('resources', 'newest'),
+    'LAST_UPDATED' => $resource_language->get('resources', 'last_updated'),
+    'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+    'RESOURCES_LINK' => URL::build('/resources'),
 ));
 
 if($user->isLoggedIn() && $resources->canPostResourceInAnyCategory($groups)){

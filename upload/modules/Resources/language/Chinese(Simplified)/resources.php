@@ -114,6 +114,9 @@ $language = array(
     'external_link' => '外部链接',
     'external_link_error' => 'Please enter a valid external link, between x and y characters long.',
     'select_release_type_error' => 'Please select a release type.',
+    'sort_by' => 'Sort By',
+    'last_updated' => 'Last Updated',
+    'newest' => 'Newest',
     
     'total_downloads' => 'Total Downloads',
     'first_release' => 'First Release',

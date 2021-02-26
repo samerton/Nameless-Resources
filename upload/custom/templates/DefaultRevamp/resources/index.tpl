@@ -9,6 +9,14 @@
 					<h1 style="display:inline">{$RESOURCES}</h1>
 
 					<span class="res right floated">
+                        <div class="ui dropdown blue button">
+                            <span class="text">{$SORT_BY} {$SORT_BY_VALUE}</span> <i class="dropdown icon"></i>
+                            <div class="menu">
+                            {foreach from=$SORT_TYPES item=item}
+                                <a rel="noopener nofollow" class="item" href="{$item.link}">{$item.sort}</a>
+                            {/foreach}
+                            </div>
+                        </div>
 				        {if isset($NEW_RESOURCE)}
 					        <a href="{$NEW_RESOURCE_LINK}" class="ui blue button">{$NEW_RESOURCE}</a>
 				        {/if}
