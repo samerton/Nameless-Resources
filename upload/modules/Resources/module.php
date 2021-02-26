@@ -139,7 +139,7 @@ class Resources_Module extends Module {
 					$navs[2]->add('resources_categories', $this->_resource_language->get('resources', 'categories'), URL::build('/panel/resources/categories'), 'top', null, ($order + 0.1), $icon);
 				}
 
-				if($user->getMainGroup()->id == 2 || $user->hasPermission('admincp.resources.download')){
+				/*if($user->getMainGroup()->id == 2 || $user->hasPermission('admincp.resources.download')){
 					if(!$cache->isCached('resources_downloads_icon')){
 						$icon = '<i class="nav-icon fa fa-download" aria-hidden="true"></i>';
 						$cache->store('resources_downloads_icon', $icon);
@@ -147,7 +147,7 @@ class Resources_Module extends Module {
 						$icon = $cache->retrieve('resources_downloads_icon');
 
 					$navs[2]->add('resources_downloads', $this->_resource_language->get('resources', 'downloads'), URL::build('/panel/resources/downloads'), 'top', null, ($order + 0.2), $icon);
-				}
+				}*/
 
 				if($user->getMainGroup()->id == 2 || $user->hasPermission('admincp.resources.settings')){
 					if(!$cache->isCached('resources_settings_icon')){
