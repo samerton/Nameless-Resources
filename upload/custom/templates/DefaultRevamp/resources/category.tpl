@@ -38,7 +38,7 @@
                             {foreach from=$LATEST_RESOURCES item=resource}
                                 <tr>
                                     <td>
-                                        <a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small><br />
+                                        <a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>{/if}<br />
                                         {$resource.description}<br />
                                         <small>{$resource.category}</small>
                                     </td>

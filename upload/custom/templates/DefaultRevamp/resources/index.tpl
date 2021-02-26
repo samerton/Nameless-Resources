@@ -38,8 +38,8 @@
 								<tr>
 									<td>
 										<h5 class="ui header">
-											<div class="content">
-												<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small>
+											<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>{/if}<br />
+                                            <div class="content">
 												<div class="sub header">
 													{$resource.description}
 													<br />{$resource.category}

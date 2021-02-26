@@ -121,11 +121,27 @@ if(count($latest_releases)){
 				'updated' => str_replace('{x}', $timeago->inWords(date('d M Y, H:i', $resource->updated), $language->getTimeLanguage()), $resource_language->get('resources', 'updated_x')),
 				'updated_full' => date('d M Y, H:i', $resource->updated)
 			);
+            
+            if($resource->type == 1 ) {
+                $releases_array[$resource->id]['price'] = Output::getClean($resource->price);
+            }
 		}
 
 		$n++;
 	}
 } else $releases_array = null;
+
+// Get currency
+$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
+if(!count($currency)){
+	$queries->create('settings', array(
+		'name' => 'resources_currency',
+		'value' => 'GBP'
+	));
+	$currency = 'GBP';
+
+} else
+	$currency = $currency[0]->value;
 
 // Assign Smarty variables
 $smarty->assign(array(
@@ -145,6 +161,7 @@ $smarty->assign(array(
     'LAST_UPDATED' => $resource_language->get('resources', 'last_updated'),
     'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
     'RESOURCES_LINK' => URL::build('/resources'),
+    'CURRENCY' => Output::getClean($currency)
 ));
 
 if($user->isLoggedIn() && $resources->canPostResourceInAnyCategory($groups)){
