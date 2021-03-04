@@ -2,11 +2,11 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr3
+ *  NamelessMC version 2.0.0-pr9
  *
  *  License: MIT
  *
- *  EnglishUK Language for Resources module
+ *  SwedishSE Language for Resources module
  */
 
 $language = array(
@@ -99,6 +99,7 @@ $language = array(
 	'purchase' => 'Köp',
     'purchasing_resource_x' => 'Köper {x}', // Don't replace {x}
 	'payment_pending' => 'Betalning Behandlas',
+    'update_title' => 'Update Title',
     'update_information' => 'Uppdatera information',
 	'paypal_not_configured' => 'PayPal integrationen har inte konfigurerats än! Vänligen kontakta en administratör.',
 	'error_while_purchasing' => 'Ett fel uppstod under köp av denna resurs. Vänligen kontakta en administratör.',
@@ -109,6 +110,20 @@ $language = array(
     'log_in_to_download' => 'Logga in för att ladda ner',
 	'external_download' => 'Extern nerladdning',
     'external_link' => 'Extern Länk',
+    'external_link_error' => 'Please enter a valid external link, between x and y characters long.',
+    'select_release_type_error' => 'Please select a release type.',
+    'sort_by' => 'Sort By',
+    'last_updated' => 'Last Updated',
+    'newest' => 'Newest',
+    
+    'total_downloads' => 'Total Downloads',
+    'first_release' => 'First Release',
+    'last_release' => 'Last Release',
+    'views' => 'Views',
+    'category' => 'Category',
+    'rating' => 'Rating',
+    'version_x' => 'Version {x}', // Don't replace {x}
+    'release' => 'Release', // Don't replace {x}
 
     // Admin
     'permissions' => 'Behörigheter',

@@ -52,6 +52,24 @@ if(!count($current_category)){
 }
 $current_category = $current_category[0];
 
+
+$sort_types = array();
+$sort_types['updated'] = array('type' => 'updated', 'sort' => $resource_language->get('resources', 'last_updated'), 'link' => URL::build('/resources/category/' . $current_category->id . '-' . Util::stringToURL($current_category->name), 'sort=updated&', true));
+$sort_types['newest'] = array('type' => 'created', 'sort' => $resource_language->get('resources', 'newest'), 'link' => URL::build('/resources/category/' . $current_category->id . '-' . Util::stringToURL($current_category->name), 'sort=newest&', true));
+$sort_types['downloads'] = array('type' => 'downloads', 'sort' => $resource_language->get('resources', 'downloads'), 'link' => URL::build('/resources/category/' . $current_category->id . '-' . Util::stringToURL($current_category->name), 'sort=downloads&', true));
+
+if(isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_types)){
+    $sort_type = $_GET['sort'];
+    $sort_by = $sort_types[$sort_type]['type'];
+    $sort_by_text = $sort_types[$sort_type]['sort'];
+    $url = $sort_types[$sort_type]['link'];
+} else {
+    $sort_by = 'updated';
+    $sort_by_text = $resource_language->get('resources', 'last_updated');
+    $url = URL::build('/resources/category/' . $current_category->id . '-' . Util::stringToURL($current_category->name), true);
+}
+
+
 if ($user->isLoggedIn()) {
     $groups = array();
     foreach ($user->getGroups() as $group) {
@@ -87,12 +105,12 @@ foreach($categories as $category){
 $categories = null;
 
 // Get latest releases
-$latest_releases = $resources->getLatestResources($groups, $cid);
+$latest_releases = $resources->getResourcesList($groups, $sort_by, $cid);
 
 // Pagination
 $paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
 $results = $paginator->getLimited($latest_releases, 10, $p, count($latest_releases));
-$pagination = $paginator->generate(7, URL::build('/resources/category/' . $current_category->id . '-' . Util::stringToURL($current_category->name) . '/', true));
+$pagination = $paginator->generate(7, $url);
 
 $smarty->assign('PAGINATION', $pagination);
 
@@ -132,11 +150,27 @@ if(count($latest_releases)){
                 'updated' => str_replace('{x}', $timeago->inWords(date('d M Y, H:i', $resource->updated), $language->getTimeLanguage()), $resource_language->get('resources', 'updated_x')),
                 'updated_full' => date('d M Y, H:i', $resource->updated)
             );
+            
+            if($resource->type == 1 ) {
+                $releases_array[$resource->id]['price'] = Output::getClean($resource->price);
+            }
         }
 
         $n++;
     }
 } else $releases_array = null;
+
+// Get currency
+$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
+if(!count($currency)){
+	$queries->create('settings', array(
+		'name' => 'resources_currency',
+		'value' => 'GBP'
+	));
+	$currency = 'GBP';
+
+} else
+	$currency = $currency[0]->value;
 
 // Assign Smarty variables
 $smarty->assign(array(
@@ -151,7 +185,14 @@ $smarty->assign(array(
     'STATS' => $resource_language->get('resources', 'stats'),
     'AUTHOR' => $resource_language->get('resources', 'author'),
     'BACK' => $language->get('general', 'back'),
-    'BACK_LINK' => URL::build('/resources')
+    'BACK_LINK' => URL::build('/resources'),
+    'SORT_BY' => $resource_language->get('resources', 'sort_by'),
+    'SORT_BY_VALUE' => $sort_by_text,
+    'SORT_TYPES' => $sort_types,
+    'NEWEST' => $resource_language->get('resources', 'newest'),
+    'LAST_UPDATED' => $resource_language->get('resources', 'last_updated'),
+    'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+    'CURRENCY' => Output::getClean($currency)
 ));
 
 if($user->isLoggedIn() && $resources->canPostResourceInAnyCategory($groups)){

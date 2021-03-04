@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr4
+ *  NamelessMC version 2.0.0-pr9
  *
  *  License: MIT
  *
@@ -101,6 +101,7 @@ $language = array(
 	'purchase' => 'Cumpără',
 	'purchasing_resource_x' => 'Achiziționați {x}', // Don't replace {x}
 	'payment_pending' => 'Plata in asteptare',
+    'update_title' => 'Update Title',
 	'update_information' => 'Actualizați informațiile',
 	'paypal_not_configured' => 'Integrarea PayPal nu a fost încă configurată! Contactați un administrator.',
 	'error_while_purchasing' => 'Ne pare rău! A apărut o eroare la achiziționarea acestei resurse. Contactați un administrator.',
@@ -111,6 +112,20 @@ $language = array(
 	'log_in_to_download' => 'Log in to download',
 	'external_download' => 'External Download',
 	'external_link' => 'External Link',
+    'external_link_error' => 'Please enter a valid external link, between x and y characters long.',
+    'select_release_type_error' => 'Please select a release type.',
+    'sort_by' => 'Sort By',
+    'last_updated' => 'Last Updated',
+    'newest' => 'Newest',
+    
+    'total_downloads' => 'Total Downloads',
+    'first_release' => 'First Release',
+    'last_release' => 'Last Release',
+    'views' => 'Views',
+    'category' => 'Category',
+    'rating' => 'Rating',
+    'version_x' => 'Version {x}', // Don't replace {x}
+    'release' => 'Release', // Don't replace {x}
 
 	// Admin
 	'permissions' => 'Permisiuni',

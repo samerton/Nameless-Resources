@@ -9,6 +9,14 @@
 					<h1 style="display:inline">{$RESOURCES}</h1>
 
 					<span class="res right floated">
+                        <div class="ui dropdown blue button">
+                            <span class="text">{$SORT_BY} {$SORT_BY_VALUE}</span> <i class="dropdown icon"></i>
+                            <div class="menu">
+                            {foreach from=$SORT_TYPES item=item}
+                                <a rel="noopener nofollow" class="item" href="{$item.link}">{$item.sort}</a>
+                            {/foreach}
+                            </div>
+                        </div>
 				        {if isset($NEW_RESOURCE)}
 					        <a href="{$NEW_RESOURCE_LINK}" class="ui blue button">{$NEW_RESOURCE}</a>
 				        {/if}
@@ -30,8 +38,8 @@
 								<tr>
 									<td>
 										<h5 class="ui header">
-											<div class="content">
-												<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small>
+											<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>{/if}<br />
+                                            <div class="content">
 												<div class="sub header">
 													{$resource.description}
 													<br />{$resource.category}

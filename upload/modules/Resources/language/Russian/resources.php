@@ -2,11 +2,11 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr3
+ *  NamelessMC version 2.0.0-pr9
  *
  *  License: MIT
  *
- *  EnglishUK Language for Resources module
+ *  Russian Language for Resources module
  */
 
 $language = array(
@@ -99,6 +99,7 @@ $language = array(
 	'purchase' => 'Купить',
     'purchasing_resource_x' => 'Покупка {x}', // Don't replace {x}
 	'payment_pending' => 'Payment Pending',
+    'update_title' => 'Update Title',
     'update_information' => 'Обновить информацию',
 	'paypal_not_configured' => 'Интеграция PayPal еще не настроена! Пожалуйста, свяжитесь с администратором.',
 	'error_while_purchasing' => 'Прости! При покупке этого ресурса произошла ошибка. Пожалуйста, свяжитесь с администратором.',
@@ -109,6 +110,20 @@ $language = array(
     'log_in_to_download' => 'Войдите, чтобы скачать',
 	'external_download' => 'Внешнее скачивание',
     'external_link' => 'Ссылка на скачивание',
+    'external_link_error' => 'Please enter a valid external link, between x and y characters long.',
+    'select_release_type_error' => 'Please select a release type.',
+    'sort_by' => 'Sort By',
+    'last_updated' => 'Last Updated',
+    'newest' => 'Newest',
+    
+    'total_downloads' => 'Total Downloads',
+    'first_release' => 'First Release',
+    'last_release' => 'Last Release',
+    'views' => 'Views',
+    'category' => 'Category',
+    'rating' => 'Rating',
+    'version_x' => 'Version {x}', // Don't replace {x}
+    'release' => 'Release', // Don't replace {x}
 
     // Admin
     'permissions' => 'Права',

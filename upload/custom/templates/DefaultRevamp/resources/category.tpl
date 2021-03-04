@@ -4,24 +4,27 @@
 <div class="ui container">
     <div class="ui padded segment">
         <div class="ui stackable grid">
-            <div class="ui row">
-                <div class="twelve wide column">
+			<div class="ui row">
+				<div class="twelve wide column">
                     <h1 style="display:inline">{$CATEGORY_NAME}</h1>
-                </div>
-                <div class="four wide column">
+
                     <span class="res right floated">
                       <a href="{$BACK_LINK}" class="ui button">{$BACK}</a>
+                        <div class="ui dropdown blue button">
+                            <span class="text">{$SORT_BY} {$SORT_BY_VALUE}</span> <i class="dropdown icon"></i>
+                            <div class="menu">
+                            {foreach from=$SORT_TYPES item=item}
+                                <a rel="noopener nofollow" class="item" href="{$item.link}">{$item.sort}</a>
+                            {/foreach}
+                            </div>
+                        </div>
                         {if isset($NEW_RESOURCE)}
                             <a href="{$NEW_RESOURCE_LINK}" class="ui blue button">{$NEW_RESOURCE}</a>
                         {/if}
 				    </span>
-                </div>
-            </div>
 
-            <div class="ui divider"></div>
+                    <div class="ui divider"></div>
 
-            <div class="ui row">
-                <div class="twelve wide column">
                     {if $LATEST_RESOURCES}
                         <table class="ui fixed single line selectable unstackable small padded res table">
                             <thead>
@@ -35,7 +38,7 @@
                             {foreach from=$LATEST_RESOURCES item=resource}
                                 <tr>
                                     <td>
-                                        <a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small><br />
+                                        <a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>{/if}<br />
                                         {$resource.description}<br />
                                         <small>{$resource.category}</small>
                                     </td>

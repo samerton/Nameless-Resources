@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr3
+ *  NamelessMC version 2.0.0-pr9
  *
  *  License: MIT
  *
@@ -99,6 +99,7 @@ $language = array(
 	'purchase' => 'Purchase',
     'purchasing_resource_x' => 'Purchasing {x}', // Don't replace {x}
 	'payment_pending' => 'Payment Pending',
+    'update_title' => 'Update Title',
     'update_information' => 'Update Information',
 	'paypal_not_configured' => 'PayPal integration hasn\'t been configured yet! Please contact an administrator.',
 	'error_while_purchasing' => 'Sorry! There was an error whilst purchasing this resource. Please contact an administrator.',
@@ -109,6 +110,20 @@ $language = array(
     'log_in_to_download' => 'Log in to download',
 	'external_download' => 'External Download',
     'external_link' => 'External Link',
+    'external_link_error' => 'Please enter a valid external link, between x and y characters long.',
+    'select_release_type_error' => 'Please select a release type.',
+    'sort_by' => 'Sort By',
+    'last_updated' => 'Last Updated',
+    'newest' => 'Newest',
+    
+    'total_downloads' => 'Total Downloads',
+    'first_release' => 'First Release',
+    'last_release' => 'Last Release',
+    'views' => 'Views',
+    'category' => 'Category',
+    'rating' => 'Rating',
+    'version_x' => 'Version {x}', // Don't replace {x}
+    'release' => 'Release', // Don't replace {x}
 
     // Admin
     'permissions' => 'Permissions',
