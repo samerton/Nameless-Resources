@@ -135,10 +135,13 @@ class Resources {
             $group_ids = implode(',', $group_ids);
         }
 
-        return $this->_db->query('SELECT * FROM nl2_resources_categories WHERE id IN (SELECT category_id FROM nl2_resources_categories_permissions WHERE `view` = 1 AND group_id IN (' . $group_ids . '))', array())->results();
+        return $this->_db->query('SELECT * FROM nl2_resources_categories WHERE id IN (SELECT category_id FROM nl2_resources_categories_permissions WHERE `view` = 1 AND group_id IN (' . $group_ids . ')) ORDER BY `display_order`', array())->results();
     }
 
     public function getResourcesList($group_ids, $order_by, $category_id = null) {
+        $sort_types = array('updated', 'created', 'downloads');
+        if (!in_array($order_by, $sort_types)) $order_by = 'updated';
+
         if (is_array($group_ids)) {
             $group_ids = implode(',', $group_ids);
         }
