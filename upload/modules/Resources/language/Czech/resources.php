@@ -111,20 +111,20 @@ $language = array(
     'log_in_to_download' => 'Přihlašte se pro stažení',
 	'external_download' => 'Externí stažení',
     'external_link' => 'Externí odkaz',
-    'external_link_error' => 'Please enter a valid external link, between x and y characters long.',
-    'select_release_type_error' => 'Please select a release type.',
-    'sort_by' => 'Sort By',
-    'last_updated' => 'Last Updated',
-    'newest' => 'Newest',
+    'external_link_error' => 'Zadejte platný externí odkaz, dlouhý x až y znaků.',
+    'select_release_type_error' => 'Vyberte typ vydání.',
+    'sort_by' => 'Řadit podle',
+    'last_updated' => 'Naposledy aktualizováno',
+    'newest' => 'Nejnovější',
     
-    'total_downloads' => 'Total Downloads',
-    'first_release' => 'First Release',
-    'last_release' => 'Last Release',
-    'views' => 'Views',
-    'category' => 'Category',
-    'rating' => 'Rating',
-    'version_x' => 'Version {x}', // Don't replace {x}
-    'release' => 'Release', // Don't replace {x}
+    'total_downloads' => 'Celkem stažení',
+    'first_release' => 'První vydání',
+    'last_release' => 'Poslední vydání',
+    'views' => 'Zobrazení',
+    'category' => 'Kategorie',
+    'rating' => 'Hodnocení',
+    'version_x' => 'Verze {x}', // Don't replace {x}
+    'release' => 'Vydání', // Don't replace {x}
 
     // Admin
     'permissions' => 'Oprávnění',
