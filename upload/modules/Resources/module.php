@@ -39,6 +39,7 @@ class Resources_Module extends Module {
 		$pages->add('Resources', '/resources/purchase', 'pages/resources/purchase.php');
 		$pages->add('Resources', '/resources/listener', 'pages/resources/listener.php');
 		$pages->add('Resources', '/user/resources', 'pages/user/resources.php');
+		$pages->add('Resources', '/resources/icon_upload', 'pages/resources/icon_upload.php');
 	}
 
 	public function onInstall(){
