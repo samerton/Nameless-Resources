@@ -154,6 +154,13 @@ if(count($latest_releases)){
             if($resource->type == 1 ) {
                 $releases_array[$resource->id]['price'] = Output::getClean($resource->price);
             }
+		
+	    // Check if resource icon uploaded
+	    if($resource->has_icon == 1 ) {
+	    	$releases_array[$resource->id]['icon'] = $resource->icon;
+	    } else {
+	    	$releases_array[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+	    }
         }
 
         $n++;
