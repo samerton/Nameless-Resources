@@ -314,6 +314,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 	// Assign Smarty variables
 	$smarty->assign(array(
 		'VIEWING_RESOURCE' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_resource_x')),
+		'UPLOAD_ICON' => $resource_language->get('resources', 'resource_upload_icon'),
 		'BACK_LINK' => URL::build('/resources'),
 		'SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 		'RESOURCE_INDEX' => $resource_language->get('resources', 'resource_index'),
@@ -457,7 +458,8 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			$smarty->assign(array(
 				'CAN_EDIT' => true,
 				'EDIT' => $language->get('general', 'edit'),
-				'EDIT_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=edit')
+				'EDIT_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=edit'),
+				'CHANGE_ICON' => $resource_language->get('resources', 'resource_change_icon')
 			));
 		}
 
