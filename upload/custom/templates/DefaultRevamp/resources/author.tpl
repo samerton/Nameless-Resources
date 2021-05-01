@@ -35,6 +35,7 @@
                             {foreach from=$LATEST_RESOURCES item=resource}
                                 <tr>
                                     <td>
+				    	<img src="{$resource.icon}" class="ui medium rounded image">
                                         <a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small><br />
                                         {$resource.description}<br />
                                         <small>{$resource.category}</small>
