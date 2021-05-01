@@ -315,6 +315,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 	$smarty->assign(array(
 		'VIEWING_RESOURCE' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_resource_x')),
 		'BACK_LINK' => URL::build('/resources'),
+		'SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 		'RESOURCE_INDEX' => $resource_language->get('resources', 'resource_index'),
 		'AUTHOR' => $resource_language->get('resources', 'author'),
 		'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
@@ -551,6 +552,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			// Assign Smarty variables
 			$smarty->assign(array(
 				'VIEWING_RELEASE' => str_replace(array('{x}', '{y}'), array(Output::getClean($release->release_title), Output::getClean($resource->name)), $resource_language->get('resources', 'viewing_release')),
+				'SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 				'BACK' => $language->get('general', 'back'),
 				'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'DOWNLOADS' => str_replace('{x}', $release->downloads, $resource_language->get('resources', 'x_downloads')),
@@ -1222,6 +1224,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 								'max' => 64,
 								'required' => true
 							),
+							'short_description' => array(
+								'min' => 2,
+								'max' => 64,
+								'required' => true
+							),
 							'description' => array(
 								'min' => 2,
 								'max' => 20000,
@@ -1249,6 +1256,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 								$queries->update('resources', $resource->id, array(
 									'name' => Output::getClean(Input::get('title')),
+									'short_description' => Output::getClean(Input::get('short_description')),
 									'description' => $content,
 									'contributors' => Output::getClean(Input::get('contributors')),
 									'price' => $price
@@ -1266,6 +1274,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 										case (strpos($item, 'name') !== false):
 											$errors[] = $resource_language->get('resources', 'name_required');
 											break;
+										case (strpos($item, 'short_description') !== false):
+											$errors[] = $resource_language->get('resources', 'short_description_required');
+											break;
 										case (strpos($item, 'description') !== false):
 											$errors[] = $resource_language->get('resources', 'content_required');
 											break;
@@ -1275,6 +1286,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 										case (strpos($item, 'name') !== false):
 											$errors[] = $resource_language->get('resources', 'name_min_2');
 											break;
+										case (strpos($item, 'short_description') !== false):
+											$errors[] = $resource_language->get('resources', 'short_description_min_2');
+											break;
 										case (strpos($item, 'description') !== false):
 											$errors[] = $resource_language->get('resources', 'content_min_2');
 											break;
@@ -1283,6 +1297,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 									switch($item){
 										case (strpos($item, 'name') !== false):
 											$errors[] = $resource_language->get('resources', 'name_max_64');
+											break;
+										case (strpos($item, 'short_description') !== false):
+											$errors[] = $resource_language->get('resources', 'short_description_max_64');
 											break;
 										case (strpos($item, 'description') !== false):
 											$errors[] = $resource_language->get('resources', 'content_max_20000');
@@ -1311,6 +1328,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			$smarty->assign(array(
 				'EDITING_RESOURCE' => $resource_language->get('resources', 'editing_resource'),
 				'NAME' => $resource_language->get('resources', 'resource_name'),
+				'SHORT_DESCRIPTION' => $resource_language->get('resources', 'resource_short_description'),
 				'DESCRIPTION' => $resource_language->get('resources', 'resource_description'),
 				'CONTRIBUTORS' => $resource_language->get('resources', 'contributors'),
 				'RESOURCE_NAME' => Output::getClean($resource->name),
