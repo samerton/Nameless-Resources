@@ -119,6 +119,14 @@ if (count($latest_releases)) {
                 'updated' => str_replace('{x}', $timeago->inWords(date('d M Y, H:i', $results->data[$n]->updated), $language->getTimeLanguage()), $resource_language->get('resources', 'updated_x')),
                 'updated_full' => date('d M Y, H:i', $results->data[$n]->updated)
             );
+            
+	        // Check if resource icon uploaded
+	        if($resource->has_icon == 1 ) {
+	    	    $releases_array[$results->data[$n]->id]['icon'] = $resource->icon;
+	        } else {
+	    	    $releases_array[$results->data[$n]->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+	        }
+            
         }
 
         $n++;
