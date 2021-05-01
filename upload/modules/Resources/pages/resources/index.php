@@ -108,7 +108,7 @@ if(count($latest_releases)){
 			$releases_array[$resource->id] = array(
 				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'name' => Output::getClean($resource->name),
-				'tag' => Output::getClean($resource->tag),
+				'short_description' => Output::getClean($resource->short_description),
 				'description' => mb_substr(strip_tags(Output::getDecoded($resource->description)), 0, 60) . '...',
 				'author' => Output::getClean($resource_author->getDisplayname()),
 				'author_style' => $resource_author->getGroupClass(),
