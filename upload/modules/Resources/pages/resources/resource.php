@@ -317,8 +317,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		'UPLOAD_ICON' => $resource_language->get('resources', 'resource_upload_icon'),
 		'BACK_LINK' => URL::build('/resources'),
 		'RESOURCE_NAME' => Output::getClean($resource->name),
-		'SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
-		'RESOURCE_NAME' => Output::getClean($resource->name),
+		'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 		'RESOURCE_ICON' => Output::getClean($resource->icon),
 		'RESOURCE_INDEX' => $resource_language->get('resources', 'resource_index'),
 		'AUTHOR' => $resource_language->get('resources', 'author'),
@@ -557,8 +556,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			// Assign Smarty variables
 			$smarty->assign(array(
 				'VIEWING_RELEASE' => str_replace(array('{x}', '{y}'), array(Output::getClean($release->release_title), Output::getClean($resource->name)), $resource_language->get('resources', 'viewing_release')),
-				'SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
+				'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 				'RESOURCE_NAME' => Output::getClean($resource->name),
+				'RELEASE_TAG' => Output::getClean($release->release_tag),
 				'RESOURCE_ICON' => Output::getClean($resource->icon),
 				'BACK' => $language->get('general', 'back'),
 				'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
@@ -1331,6 +1331,16 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			if(isset($errors) && count($errors))
 				$smarty->assign('ERRORS', $errors);
 
+			// Get latest update
+			$latest_update = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC LIMIT 1');
+
+			if(!count($latest_update)){
+				Redirect::to(URL::build('/resources'));
+				die();
+			} else $latest_update = $latest_update[0];
+
+			$author = new User($resource->creator_id);
+			
 			// Smarty variables
 			$smarty->assign(array(
 				'EDITING_RESOURCE' => $resource_language->get('resources', 'editing_resource'),
@@ -1339,6 +1349,8 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				'DESCRIPTION' => $resource_language->get('resources', 'resource_description'),
 				'CONTRIBUTORS' => $resource_language->get('resources', 'contributors'),
 				'RESOURCE_NAME' => Output::getClean($resource->name),
+				'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
+				'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 				'RESOURCE_DESCRIPTION' => Output::getPurified(htmlspecialchars_decode($resource->description)),
 				'RESOURCE_CONTRIBUTORS' => Output::getClean($resource->contributors),
 				'CANCEL' => $language->get('general', 'cancel'),
