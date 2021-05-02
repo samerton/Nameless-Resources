@@ -71,6 +71,7 @@ class Resources_Module extends Module {
 		}
 
 		mkdir(ROOT_PATH . '/uploads/resources');
+		mkdir(ROOT_PATH . '/uploads/resources_icons');
 	}
 
 	public function onUninstall(){
