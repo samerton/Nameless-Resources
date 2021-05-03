@@ -11,7 +11,7 @@
 						  <div class="item">
 							  <img class="ui rounded centered image" src="{$RESOURCE_ICON}" alt="{$RESOURCE_NAME}" style="max-height:64; max-width:64px;">
 							  <div class="content">
-								  <h2 class="header" style="display: block;">{$VIEWING_ALL_RELEASES}</h2>
+								  <h2 class="header" style="display: block;">{$VIEWING_ALL_VERSIONS}</h2>
 								  <span>[{$RELEASE_TAG}] {$RESOURCE_SHORT_DESCRIPTION}</span>
 							  </div>
 						  </div>
