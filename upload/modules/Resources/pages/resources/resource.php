@@ -315,6 +315,8 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 	$smarty->assign(array(
 		'VIEWING_RESOURCE' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_resource_x')),
 		'UPLOAD_ICON' => $resource_language->get('resources', 'resource_upload_icon'),
+		'CHANGE_ICON' => $resource_language->get('resources', 'resource_change_icon'),
+		'CHANGE_ICON_ACTION' => URL::build('/resources/icon_upload'),
 		'BACK_LINK' => URL::build('/resources'),
 		'RESOURCE_NAME' => Output::getClean($resource->name),
 		'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
@@ -362,6 +364,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		'LOGGED_IN' => ($user->isLoggedIn() ? true : false),
 		'CAN_REVIEW' => (($user->isLoggedIn() && $user->data()->id != $resource->creator_id) ? true : false),
 		'TOKEN' => Token::get(),
+		'CANCEL' => $language->get('general', 'cancel'),
 		'SUBMIT' => $language->get('general', 'submit'),
 		'CONTRIBUTORS' => str_replace('{x}', Output::getClean($resource->contributors), $resource_language->get('resources', 'contributors_x')),
 		'HAS_CONTRIBUTORS' => (strlen(trim($resource->contributors)) > 0) ? 1 : 0
