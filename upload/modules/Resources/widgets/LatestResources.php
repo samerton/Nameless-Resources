@@ -55,7 +55,7 @@ class LatestResourcesWidget extends WidgetBase {
 
 				$latestResourcesArr[] = array(
 					'name' => $resource->name,
-					'tagline' => $resource->tagline,
+					'short_description' => $resource->short_description,
 					'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 					'creator_id' => $resource->creator_id,
 					'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
