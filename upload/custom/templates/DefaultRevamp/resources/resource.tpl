@@ -35,7 +35,7 @@
 	        {$DESCRIPTION}
 	      </div>
 
-		  <br />{if $HAS_CONTRIBUTORS eq 1}{$CONTRIBUTORS} {$RESOURCE_CONTRIBUTORS}{/if}
+		  <br />{if $HAS_CONTRIBUTORS eq 1}{$CONTRIBUTORS}{/if}
 
 		  <div class="ui divider"></div>
 
