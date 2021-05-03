@@ -37,12 +37,16 @@
 							{foreach from=$LATEST_RESOURCES item=resource}
 								<tr>
 									<td>
-										<h5 class="ui header">
+										<h5 class="ui image header" style="margin: 0;">
 											<img src="{$resource.icon}" class="ui medium rounded image">
-											<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>{/if}<br />
-                                            <div class="content">
+											<div class="content">
+												<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>{/if}<br />
 												<div class="sub header">
-													{$resource.description}
+													{if $resource.tagline}
+														{$resource.tagline}
+													{else}
+														{$resource.description}
+													{/if}
 													<br />{$resource.category}
 												</div>
 											</div>
