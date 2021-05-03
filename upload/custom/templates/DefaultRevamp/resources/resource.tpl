@@ -51,7 +51,31 @@
 		  {/if}
 
 		  <span class="pull-right">
-			{if isset($CAN_EDIT)}<a href="{$EDIT_LINK}" class="ui button">{$EDIT}</a>{/if}
+			{if isset($CAN_EDIT)}
+				<a href="{$EDIT_LINK}" class="ui button">{$EDIT}</a>
+				<a data-toggle="modal" data-target="#modal-icon-upload" class="ui button">{$CHANGE_ICON}</a>
+				<div class="ui small modal" id="modal-icon-upload">
+					<div class="header">
+						{$CHANGE_ICON}
+					</div>
+					<div class="content">
+					<form action="{$CHANGE_ICON_ACTION}" method="post" enctype="multipart/form-data" class="ui form" id="form-resource-icon">
+						<div class="field">
+							<input type="file" name="file" id="uploadFileButton" hidden onchange="$('#fileName').html(this.files[0].name)" />
+							<label class="ui icon labeled default button" for="uploadFileButton">
+								<i class="ui cloud upload icon"></i> <span id="fileName">{$UPLOAD_ICON}</span>
+							</label>
+						</div>
+						<input type="hidden" name="token" value="{$TOKEN}">
+						<input type="hidden" name="resource_id" value="{$RESOURCE_ID}" />
+					</form>
+					</div>
+					<div class="actions">
+						<a class="ui negative button">{$CANCEL}</a>
+						<a class="ui positive button" onclick="$('#form-resource-icon').submit();">{$SUBMIT}</a>
+					</div>
+				</div>
+			{/if}
 			{if isset($MODERATION) && count($MODERATION)}
 				<div class="ui top right pointing dropdown small primary button" tabindex="0">
 				<span class="text">{$MODERATION_TEXT}</span>
