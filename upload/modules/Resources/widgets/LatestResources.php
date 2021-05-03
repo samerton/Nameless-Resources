@@ -53,21 +53,9 @@ class LatestResourcesWidget extends WidgetBase {
 
 				//if ($resource->updated < time() - (7 * 86400)) continue;
 
-				$exts = array('gif','png','jpg','jpeg');
-				foreach ($exts as $ext) {
-					if (file_exists(ROOT_PATH . '/uploads/resources_icons/' . $resource->id . '.' . $ext)) {
-						$resource_icon = rtrim(Util::getSelfURL(), '/') . ((defined('CONFIG_PATH')) ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/' . $resource->id . '.' . $ext;
-						break;
-					} else {
-						$resource_icon = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
-					}
-				}
-
-
 				$latestResourcesArr[] = array(
 					'name' => $resource->name,
 					'tagline' => $resource->tagline,
-					'icon' => $resource_icon,
 					'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 					'creator_id' => $resource->creator_id,
 					'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
@@ -77,8 +65,13 @@ class LatestResourcesWidget extends WidgetBase {
 					'released_full' => date('d M Y, H:i', $resource->updated),
 				);
 
-				unset($resource_icon);
-
+	        		// Check if resource icon uploaded
+	        		if($resource->has_icon == 1 ) {
+	    	    			$latestResourcesArr[$resource->id]['icon'] = $resource->icon;
+	        		} else {
+	    	    			$latestResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+	        		}
+				
 			}
 
 			$this->_cache->store('latestResources', $latestResourcesArr, 5 * 60);
