@@ -69,7 +69,8 @@ $category_array = array();
 foreach($categories as $category){
     $category_array[] = array(
         'name' => Output::getClean($category->name),
-        'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name))
+        'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
+	'count' => Output::getClean(count($categories)),
     );
 }
 $categories = null;
