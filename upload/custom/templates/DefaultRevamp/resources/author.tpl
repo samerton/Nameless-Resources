@@ -40,7 +40,7 @@
 						<div class="content">
 							<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>{/if}<br />
 							<div class="sub header">
-								{if $resource.tagline}
+								{if $resource.short_description}
 									{$resource.short_description}
 								{else}
 									{$resource.description}
