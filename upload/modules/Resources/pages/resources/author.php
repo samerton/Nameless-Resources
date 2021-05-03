@@ -106,6 +106,7 @@ if (count($latest_releases)) {
             $releases_array[$results->data[$n]->id] = array(
                 'link' => URL::build('/resources/resource/' . $results->data[$n]->id . '-' . Util::stringToURL($results->data[$n]->name)),
                 'name' => Output::getClean($results->data[$n]->name),
+                'short_description' => Output::getClean($results->data[$n]->short_description), 
                 'description' => mb_substr(strip_tags(Output::getDecoded($results->data[$n]->description)), 0, 50) . '...',
                 'author' => Output::getClean($author->getDisplayname()),
                 'author_style' => $author->getGroupClass(),
@@ -119,7 +120,11 @@ if (count($latest_releases)) {
                 'updated' => str_replace('{x}', $timeago->inWords(date('d M Y, H:i', $results->data[$n]->updated), $language->getTimeLanguage()), $resource_language->get('resources', 'updated_x')),
                 'updated_full' => date('d M Y, H:i', $results->data[$n]->updated)
             );
-            
+		
+            if($resource->type == 1 ) {
+                $releases_array[$results->data[$n]->id]['price'] = Output::getClean($resource->price);
+            }
+		
 	        // Check if resource icon uploaded
 	        if($resource->has_icon == 1 ) {
 	    	    $releases_array[$results->data[$n]->id]['icon'] = $resource->icon;
