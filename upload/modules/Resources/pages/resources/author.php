@@ -122,13 +122,13 @@ if (count($latest_releases)) {
                 'updated_full' => date('d M Y, H:i', $results->data[$n]->updated)
             );
 		
-            if($resource->type == 1 ) {
-                $releases_array[$results->data[$n]->id]['price'] = Output::getClean($resource->price);
+            if($results->data[$n]->type == 1 ) {
+                $releases_array[$results->data[$n]->id]['price'] = Output::getClean($results->data[$n]->price);
             }
 		
 	        // Check if resource icon uploaded
-	        if($resource->has_icon == 1 ) {
-	    	    $releases_array[$results->data[$n]->id]['icon'] = $resource->icon;
+	        if($results->data[$n]->has_icon == 1 ) {
+	    	    $releases_array[$results->data[$n]->id]['icon'] = $results->data[$n]->icon;
 	        } else {
 	    	    $releases_array[$results->data[$n]->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
 	        }
