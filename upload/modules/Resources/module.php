@@ -114,6 +114,17 @@ class Resources_Module extends Module {
 
 		$pages->registerSitemapMethod(ROOT_PATH . '/modules/Resources/classes/Resources_Sitemap.php', 'Resources_Sitemap::generateSitemap');
 
+		// Widgets
+		// Latest Resources
+		require_once(__DIR__ . '/widgets/LatestResources.php');
+		$latest_resources_module_pages = $widgets->getPages('Latest Resources');
+		$widgets->add(new LatestResourcesWidget($latest_resources_module_pages, $user, $this->_language, $this->_resource_language, $smarty, $cache));
+
+		// Top Resources
+		require_once(__DIR__ . '/widgets/TopResources.php');
+		$top_resources_module_pages = $widgets->getPages('Top Resources');
+		$widgets->add(new TopResourcesWidget($top_resources_module_pages, $user, $this->_language, $this->_resource_language, $smarty, $cache));
+		
 		if(defined('BACK_END')){
 			// Check if upload dir is writable
 			if(!is_writable(ROOT_PATH . '/uploads/resources')){
