@@ -76,6 +76,7 @@ if(Input::exists()){
 					}
 
                     $queries->update('resources', $resource->id, array(
+			'icon' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/'. $resource->id . '.' . $upload->getMime(),
                         'has_icon' => 1,
                         'icon_updated' => date('U')
                     ));
