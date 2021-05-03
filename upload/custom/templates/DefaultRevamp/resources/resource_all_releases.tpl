@@ -28,6 +28,12 @@
 		<div class="ui divider"></div>
 	  <div class="ui row">
 	    <div class="twelve wide column">
+		<div class="ui tabular menu">
+            		<a class="item">{$OVERVIEW_TITLE}</a>
+            		<a class="item active" href="{$OTHER_RELEASES_LINK}">{$RELEASES_TITLE}</a>
+            		<a class="item" href="{$VERSIONS_LINK}">{$VERSIONS_TITLE}</a>
+            		<a class="item" href="{$REVIEWS_LINK}">{$REVIEWS_TITLE}</a>
+        	</div>
 	  {foreach from=$RELEASES item=release}
 		  <h4 class="ui top attached header">
 			  <a href="{$release.url}">{$release.name}</a>
