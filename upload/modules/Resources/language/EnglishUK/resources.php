@@ -122,7 +122,17 @@ $language = array(
     'sort_by' => 'Sort By',
     'last_updated' => 'Last Updated',
     'newest' => 'Newest',
-    
+    'overview' => 'Overview',
+    'releases_x' => 'Releases ({x})', // Don't replace {x}
+    'versions_x' => 'Versions ({x})', // Don't replace {x}
+    'reviews_x' => 'Reviews ({x})', // Don't replace {x}
+
+    //widgets
+    'latest_resources' => 'Latest Resources',
+    'top_resources' => 'Top Resources',
+    'no_latest_resources' => 'No resources',
+    'no_top_resources' => 'No resources',
+	
     'total_downloads' => 'Total Downloads',
     'first_release' => 'First Release',
     'last_release' => 'Last Release',
