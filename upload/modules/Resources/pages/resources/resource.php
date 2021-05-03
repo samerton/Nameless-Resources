@@ -539,10 +539,23 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				);
 			}
 
+			// Get latest update
+			$latest_update = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC LIMIT 1');
+
+			if(!count($latest_update)){
+				Redirect::to(URL::build('/resources'));
+				die();
+			} else $latest_update = $latest_update[0];
+
+			$author = new User($resource->creator_id);
+			
 			// Assign Smarty variables
 			$smarty->assign(array(
 				'VIEWING_ALL_RELEASES' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_all_releases')),
 				'RELEASES' => $releases_array,
+				'RESOURCE_NAME' => Output::getClean($resource->name),
+				'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
+				'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
 				'BACK' => $language->get('general', 'back'),
 				'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name))
 			));
