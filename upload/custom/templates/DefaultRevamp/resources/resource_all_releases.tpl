@@ -24,7 +24,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
+
 		<div class="ui divider"></div>
 	  <div class="ui row">
 	    <div class="twelve wide column">
@@ -146,6 +146,7 @@
 		  </div>
 	    </div>
 	  </div>
+	</div>
   </div>
 </div>
 
