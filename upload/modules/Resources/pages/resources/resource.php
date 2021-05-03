@@ -976,6 +976,14 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 			} else $latest_update = $latest_update[0];
 
 			$author = new User($resource->creator_id);
+
+			// Get Releases Count
+			$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
+			$releases = count($releases);
+
+			// Get Reviews Count
+			$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
+			$reviews = count($reviews);
 			
 			// Assign Smarty variables
 			$smarty->assign(array(
@@ -1063,6 +1071,14 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 			} else $latest_update = $latest_update[0];
 
 			$author = new User($resource->creator_id);
+
+			// Get Releases Count
+			$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
+			$releases = count($releases);
+
+			// Get Reviews Count
+			$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
+			$reviews = count($reviews);
 			
 			// Assign Smarty variables
 			$smarty->assign(array(
