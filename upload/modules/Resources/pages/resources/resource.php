@@ -318,7 +318,6 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		'BACK_LINK' => URL::build('/resources'),
 		'RESOURCE_NAME' => Output::getClean($resource->name),
 		'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
-		'RESOURCE_ICON' => Output::getClean($resource->icon),
 		'RESOURCE_INDEX' => $resource_language->get('resources', 'resource_index'),
 		'AUTHOR' => $resource_language->get('resources', 'author'),
 		'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
@@ -371,6 +370,17 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 	if(isset($error))
 		$smarty->assign('ERROR', $error);
 
+	// Check if resource icon uploaded
+	if($resource->has_icon == 1 ) {
+        	$smarty->assign(array(
+                        'RESOURCE_ICON' => $resource->icon
+         	));
+	} else {
+        	$smarty->assign(array(
+                        'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
+         	));
+	}
+	
 	// Get currency
 	$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
 	if(!count($currency)){
@@ -537,6 +547,17 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name))
 			));
 
+			// Check if resource icon uploaded
+			if($resource->has_icon == 1 ) {
+				$smarty->assign(array(
+					'RESOURCE_ICON' => $resource->icon
+				));
+			} else {
+				$smarty->assign(array(
+					'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
+				));
+			}
+			
 			$template_file = 'resources/resource_all_releases.tpl';
 
 		} else {
@@ -559,7 +580,6 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 				'RESOURCE_NAME' => Output::getClean($resource->name),
 				'RELEASE_TAG' => Output::getClean($release->release_tag),
-				'RESOURCE_ICON' => Output::getClean($resource->icon),
 				'BACK' => $language->get('general', 'back'),
 				'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'DOWNLOADS' => str_replace('{x}', $release->downloads, $resource_language->get('resources', 'x_downloads')),
@@ -569,6 +589,17 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				'DATE_FULL' => date('d M Y, H:i', $release->created)
 			));
 
+			// Check if resource icon uploaded
+			if($resource->has_icon == 1 ) {
+				$smarty->assign(array(
+					'RESOURCE_ICON' => $resource->icon
+				));
+			} else {
+				$smarty->assign(array(
+					'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
+				));
+			}
+			
 			$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
 			if(!count($currency)){
 				$queries->create('settings', array(
