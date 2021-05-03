@@ -32,7 +32,7 @@
 	  <div class="ui row">
 	    <div class="twelve wide column">
 		<div class="ui tabular menu">
-            		<a class="item active">{$OVERVIEW_TITLE}</a>
+            		<a class="item active" href="{$OVERVIEW_LINK}">{$OVERVIEW_TITLE}</a>
             		<a class="item" href="{$OTHER_RELEASES_LINK}">{$RELEASES_TITLE}</a>
             		<a class="item" href="{$VERSIONS_LINK}">{$VERSIONS_TITLE}</a>
             		<a class="item" href="{$REVIEWS_LINK}">{$REVIEWS_TITLE}</a>
