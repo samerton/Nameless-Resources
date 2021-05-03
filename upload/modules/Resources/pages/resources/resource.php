@@ -334,6 +334,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 		'REVIEWS_TITLE' =>  str_replace('{x}', Output::getClean($reviews), $resource_language->get('resources', 'reviews_x')),
 		'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
 		'RESOURCE_NAME' => Output::getClean($resource->name),
+		'RESOURCE_ID' => Output::getClean($resource->id),
 		'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 		'RESOURCE_INDEX' => $resource_language->get('resources', 'resource_index'),
 		'AUTHOR' => $resource_language->get('resources', 'author'),
