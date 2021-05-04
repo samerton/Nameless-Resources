@@ -68,10 +68,13 @@ $categories = $resources->getCategories($groups);
 // Assign to Smarty array
 $category_array = array();
 foreach($categories as $category){
+    // Get category count
+    $category_count = $queries->getWhere('resources', array('category_id', '=', $category->id));
+    $category_count = count($category_count);
     $to_array = array(
         'name' => Output::getClean($category->name),
         'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
-	'count' => Output::getClean(count($categories))
+	'count' => Output::getClean($category_count)
     );
     $category_array[] = $to_array;
 }
