@@ -13,7 +13,15 @@
                   <h4 class="ui header">{$resource.short_description}</h4>
                   {$BY|capitalize} <a href="{$resource.creator_profile}" style="{$resource.creator_style}">{$resource.creator_username}</a> | {$resource.released_full}
                 </div>
-                <a href="{$resource.creator_profile}" style="{$resource.creator_style}" data-poload="{$USER_INFO_URL}{$resource.creator_id}">{$resource.creator_username}</a> &middot; <span data-toggle="tooltip" data-content="{$resource.released_full}">{$resource.released}</span>
+                <a href="{$resource.creator_profile}" style="{$resource.creator_style}" data-poload="{$USER_INFO_URL}{$resource.creator_id}">{$resource.creator_username}</a> &middot; 
+			          <div class="star-rating view" style="display:inline;">
+			            <span class="far fa-star" data-rating="1" style="color:gold;"></span>
+			            <span class="far fa-star" data-rating="2" style="color:gold"></span>
+			            <span class="far fa-star" data-rating="3" style="color:gold;"></span>
+			            <span class="far fa-star" data-rating="4" style="color:gold;"></span>
+			            <span class="far fa-star" data-rating="5" style="color:gold;"></span>
+			            <input type="hidden" name="rating" class="rating-value" value="{$resource.rating}">
+			          </div>
               </div>
             </div>
           </div>
