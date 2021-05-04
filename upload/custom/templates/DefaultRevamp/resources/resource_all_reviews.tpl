@@ -73,18 +73,6 @@
 					  	<div class="ui divider"></div>
 		              	<div class="description">
 		                	<div class="ui list">
-			                  	{if isset($PRICE)}
-			                  	<div class="item">
-			                    	<span class="text">{$PRICE}</span>
-			                    	<div class="description right floated"><b>{$PRICE_VALUE} {$CURRENCY}</b></div>
-			                  	</div>
-			                  	{/if}
-			                  	{if isset($PURCHASES)}
-			                  	<div class="item">
-			                    	<span class="text">{$PURCHASES}</span>
-			                    	<div class="description right floated"><b>{$PURCHASES_VALUE}</b></div>
-			                  	</div>
-			                  	{/if}
 		                  		<div class="item">
 		                    		<span class="text">{$VIEWS}</span>
 		                    		<div class="description right floated"><b>{$VIEWS_VALUE}</b></div>
