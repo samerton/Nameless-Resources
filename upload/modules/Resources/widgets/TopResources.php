@@ -62,6 +62,7 @@ class TopResourcesWidget extends WidgetBase {
 					'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
 					'creator_style' => $this->_user->getGroupClass($resource->creator_id),
 					'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
+					'rating' => $resource->rating,
 					'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
 					'released_full' => date('d M Y, H:i', $resource->updated),
 				);
