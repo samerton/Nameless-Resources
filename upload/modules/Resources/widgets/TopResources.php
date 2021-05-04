@@ -45,44 +45,32 @@ class TopResourcesWidget extends WidgetBase {
 		$topResources = $queries->orderAll('resources', 'rating', 'DESC LIMIT 5');
 		$topResourcesArr = array();
 		
-		//$this->_cache->setCache('resources');
-
-		//if (!$this->_cache->isCached('topResources')) {
-
-			foreach ($topResources as $resource) {
+		foreach ($topResources as $resource) {
 				
-				// check if resource rating > 0
-				if ($resource->rating == 0) continue;
+			// check if resource rating > 0
+			if ($resource->rating == 0) continue;
 				
-				$topResourcesArr[$resource->id] = array(
-					'name' => $resource->name,
-					'short_description' => $resource->short_description,
-					'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
-					'creator_id' => $resource->creator_id,
-					'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
-					'creator_style' => $this->_user->getGroupClass($resource->creator_id),
-					'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
-					'rating' => round($resource->rating / 10),
-					'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
-					'released_full' => date('d M Y, H:i', $resource->updated),
-				);
+			$topResourcesArr[$resource->id] = array(
+				'name' => $resource->name,
+				'short_description' => $resource->short_description,
+				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+				'creator_id' => $resource->creator_id,
+				'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
+				'creator_style' => $this->_user->getGroupClass($resource->creator_id),
+				'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
+				'rating' => round($resource->rating / 10),
+				'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
+				'released_full' => date('d M Y, H:i', $resource->updated),
+			);
 
-	        		// Check if resource icon uploaded
-	        		if($resource->has_icon == 1 ) {
-	    	    			$topResourcesArr[$resource->id]['icon'] = $resource->icon;
-	        		} else {
-	    	    			$topResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
-	        		}
+	        	// Check if resource icon uploaded
+	        	if($resource->has_icon == 1 ) {
+	    	    		$topResourcesArr[$resource->id]['icon'] = $resource->icon;
+	        	} else {
+	    	    		$topResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+	        	}
 
-			}
-
-			//$this->_cache->store('topResources', $topResourcesArr, 5 * 60);
-
-		//} else {
-
-			//$topResourcesArr = $this->_cache->retrieve('topResources');
-
-		//}
+		}
 
 		$this->_smarty->assign(array(
 			'TOP_RESOURCES_TITLE' => $this->_resources_language->get('resources', 'top_resources'),
