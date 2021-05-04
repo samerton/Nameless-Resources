@@ -6,7 +6,7 @@
         {foreach from=$TOP_RESOURCES item=resource}
           <div class="ui relaxed list">
             <div class="item">
-              <img class="ui mini circular image" src="{$resource.icon}">
+              <img class="ui mini circular image" src="{$resource.icon}" />
               <div class="content">
                 <a class="header" href="{$resource.link}" data-toggle="popup" data-position="top left">{$resource.name}</a>
                 <div class="ui wide popup">
