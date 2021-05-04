@@ -45,9 +45,9 @@ class TopResourcesWidget extends WidgetBase {
 		$topResources = $queries->orderAll('resources', 'rating', 'DESC LIMIT 5');
 		$topResourcesArr = array();
 		
-		$this->_cache->setCache('resources');
+		//$this->_cache->setCache('resources');
 
-		if (!$this->_cache->isCached('topResources')) {
+		//if (!$this->_cache->isCached('topResources')) {
 
 			foreach ($topResources as $resource) {
 				
@@ -76,13 +76,13 @@ class TopResourcesWidget extends WidgetBase {
 
 			}
 
-			$this->_cache->store('topResources', $topResourcesArr, 5 * 60);
+			//$this->_cache->store('topResources', $topResourcesArr, 5 * 60);
 
-		} else {
+		//} else {
 
-			$topResourcesArr = $this->_cache->retrieve('topResources');
+			//$topResourcesArr = $this->_cache->retrieve('topResources');
 
-		}
+		//}
 
 		$this->_smarty->assign(array(
 			'TOP_RESOURCES_TITLE' => $this->_resources_language->get('resources', 'top_resources'),
