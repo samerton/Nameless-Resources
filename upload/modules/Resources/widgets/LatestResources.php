@@ -45,41 +45,26 @@ class LatestResourcesWidget extends WidgetBase {
 		$latestResources = $queries->orderAll('resources', 'updated', 'DESC LIMIT 5');
 		$latestResourcesArr = array();
 
-		$this->_cache->setCache('resources');
+		foreach ($latestResources as $resource) {
+			$latestResourcesArr[$resource->id] = array(
+				'name' => $resource->name,
+				'short_description' => $resource->short_description,
+				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+				'creator_id' => $resource->creator_id,
+				'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
+				'creator_style' => $this->_user->getGroupClass($resource->creator_id),
+				'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
+				'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
+				'released_full' => date('d M Y, H:i', $resource->updated),
+			);
 
-		if (!$this->_cache->isCached('latestResources')) {
-
-			foreach ($latestResources as $resource) {
-
-				//if ($resource->updated < time() - (7 * 86400)) continue;
-
-				$latestResourcesArr[$resource->id] = array(
-					'name' => $resource->name,
-					'short_description' => $resource->short_description,
-					'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
-					'creator_id' => $resource->creator_id,
-					'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
-					'creator_style' => $this->_user->getGroupClass($resource->creator_id),
-					'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
-					'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
-					'released_full' => date('d M Y, H:i', $resource->updated),
-				);
-
-	        		// Check if resource icon uploaded
-	        		if($resource->has_icon == 1 ) {
-	    	    			$latestResourcesArr[$resource->id]['icon'] = $resource->icon;
-	        		} else {
-	    	    			$latestResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
-	        		}
+	        	// Check if resource icon uploaded
+	        	if($resource->has_icon == 1 ) {
+	    	    		$latestResourcesArr[$resource->id]['icon'] = $resource->icon;
+	        	} else {
+	    	    		$latestResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+	        	}
 				
-			}
-
-			$this->_cache->store('latestResources', $latestResourcesArr, 5 * 60);
-
-		} else {
-
-			$latestResourcesArr = $this->_cache->retrieve('latestResources');
-
 		}
 
 		$this->_smarty->assign(array(
