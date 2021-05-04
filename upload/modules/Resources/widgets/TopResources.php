@@ -54,7 +54,7 @@ class TopResourcesWidget extends WidgetBase {
 				// check if resource rating > 0
 				if ($resource->rating == 0) continue;
 				
-				$topResourcesArr[] = array(
+				$topResourcesArr[$resource->id] = array(
 					'name' => $resource->name,
 					'short_description' => $resource->short_description,
 					'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
