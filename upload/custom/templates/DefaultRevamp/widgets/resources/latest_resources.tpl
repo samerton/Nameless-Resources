@@ -14,7 +14,7 @@
 
             <div class="item">
 
-              <img class="ui mini circular image" src="{$resource.icon}" alt="{$resource.name}">
+              <img class="ui mini circular image" src="{$resource.icon}" alt="{$resource.name}" />
 
               <div class="content">
 
