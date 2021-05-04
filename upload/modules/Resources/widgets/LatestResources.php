@@ -53,7 +53,7 @@ class LatestResourcesWidget extends WidgetBase {
 
 				//if ($resource->updated < time() - (7 * 86400)) continue;
 
-				$latestResourcesArr[] = array(
+				$latestResourcesArr[$resource->id] = array(
 					'name' => $resource->name,
 					'short_description' => $resource->short_description,
 					'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
