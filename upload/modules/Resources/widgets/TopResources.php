@@ -51,8 +51,8 @@ class TopResourcesWidget extends WidgetBase {
 			if ($resource->rating == 0) continue;
 				
 			$topResourcesArr[$resource->id] = array(
-				'name' => $resource->name,
-				'short_description' => $resource->short_description,
+				'name' => Output::getClean($resource->name),
+				'short_description' => Output::getClean($resource->short_description),
 				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'creator_id' => $resource->creator_id,
 				'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
