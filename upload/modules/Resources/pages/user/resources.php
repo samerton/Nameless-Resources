@@ -71,12 +71,12 @@ if(isset($error))
 
 $purchased_resources = DB::getInstance()->query('SELECT nl2_resources.id as id, nl2_resources.name as name, nl2_resources.creator_id as author, nl2_resources.latest_version as version, nl2_resources.updated as updated FROM nl2_resources_payments LEFT JOIN nl2_resources ON nl2_resources.id = nl2_resources_payments.resource_id WHERE nl2_resources_payments.status = 1 AND nl2_resources_payments.user_id = ?', array($user->data()->id))->results();
 
-$template_array = array();
+$purchased_array = array();
 if(count($purchased_resources)){
 	foreach($purchased_resources as $resource){
         $author = new User($resource->author);
-        
-		$template_array[] = array(
+
+        $purchased_array[] = array(
 			'name' => Output::getClean($resource->name),
 			'author_username' => $author->getDisplayname(true),
 			'author_nickname' => $author->getDisplayname(),
@@ -91,6 +91,20 @@ if(count($purchased_resources)){
 	}
 }
 
+$premium_resources = DB::getInstance()->query('SELECT `id`, `name`, `latest_version` AS `version` FROM nl2_resources WHERE creator_id = ?', array($user->data()->id))->results();
+$premium_array = array();
+if (count($premium_resources)) {
+    foreach($premium_resources as $resource){
+        $purchase_count = DB::getInstance()->query('SELECT COUNT(*) as `count` FROM nl2_resources_payments WHERE resource_id = ? AND `status` = 1', array($resource->id))->first();
+        $premium_array[] = array(
+            'name' => Output::getClean($resource->name),
+            'latest_version' => Output::getClean($resource->version),
+            'link' => URL::build('/user/resources/licenses/' . Output::getClean($resource->id) . '-' . Util::stringToURL($resource->name)),
+            'license_count' => $purchase_count->count == 1 ? $resource_language->get('resources', '1_license') : str_replace('{x}', $purchase_count->count, $resource_language->get('resources', 'x_licenses'))
+        );
+    }
+}
+
 // Language values
 $smarty->assign(array(
 	'USER_CP' => $language->get('user', 'user_cp'),
@@ -98,11 +112,16 @@ $smarty->assign(array(
 	'MY_RESOURCES_LINK' => URL::build('/resources/author/' . Output::getClean($user->data()->id  . '-' . $user->data()->nickname)),
 	'MY_RESOURCES' => $resource_language->get('resources', 'my_resources'),
 	'PURCHASED_RESOURCES' => $resource_language->get('resources', 'purchased_resources'),
-	'PURCHASED_RESOURCES_VALUE' => $template_array,
+	'PURCHASED_RESOURCES_VALUE' => $purchased_array,
 	'NO_PURCHASED_RESOURCES' => $resource_language->get('resources', 'no_purchased_resources'),
 	'PAYPAL_EMAIL_ADDRESS' => $resource_language->get('resources', 'paypal_email_address'),
 	'PAYPAL_EMAIL_ADDRESS_INFO' => $resource_language->get('resources', 'paypal_email_address_info'),
 	'PAYPAL_EMAIL_ADDRESS_VALUE' => $paypal_address,
+	'SETTINGS' => $resource_language->get('resources', 'settings'),
+	'MANAGE_LICENSES' => $resource_language->get('resources', 'manage_licenses'),
+	'SELECT_RESOURCE' => $resource_language->get('resources', 'select_resource'),
+	'PREMIUM_RESOURCES' => $premium_array,
+	'NO_PREMIUM_RESOURCES' => $resource_language->get('resources', 'no_premium_resources'),
 	'INFO' => $language->get('general', 'info'),
 	'TOKEN' => Token::get(),
 	'SUBMIT' => $language->get('general', 'submit')

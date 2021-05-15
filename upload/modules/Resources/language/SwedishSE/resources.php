@@ -115,7 +115,33 @@ $language = array(
     'sort_by' => 'Sort By',
     'last_updated' => 'Last Updated',
     'newest' => 'Newest',
-    
+    'manage_licenses' => 'Manage Licenses',
+    'managing_licenses_for' => 'Managing licenses for {x}',
+    'no_licenses' => 'There are no licenses for this resource.',
+    'select_resource' => 'Select a resource',
+    '1_license' => '1 license',
+    'x_licenses' => '{x} licenses',
+    'no_premium_resources' => 'You haven\'t created any premium resources yet.',
+    'add_license' => 'Add License',
+    'revoke' => 'Revoke',
+    'reinstate' => 'Reinstate',
+    'unable_to_update_license' => 'Unable to update license.',
+    'unable_to_add_license_for_yourself' => 'You are unable to add a license for yourself!',
+    'user_already_has_license' => 'That user already has a license.',
+    'license_added_successfully' => 'License added successfully.',
+    'find_user' => 'Find User...',
+    'user' => 'User',
+    'purchased' => 'Purchased',
+    'status' => 'Status',
+    'actions' => 'Actions',
+
+    // Payment statuses
+    'status_pending' => 'Pending',
+    'status_complete' => 'Complete',
+    'status_refund' => 'Refund',
+    'status_cancelled' => 'Cancelled',
+    'status_unknown' => 'Unknown',
+
     'total_downloads' => 'Total Downloads',
     'first_release' => 'First Release',
     'last_release' => 'Last Release',
@@ -173,5 +199,15 @@ $language = array(
 
     // Hook
     'new_resource_text' => 'Ny resurs skapad i {x} av {y}',
-    'updated_resource_text' => 'Resurs uppdaterad i {x} av {y}'
+    'updated_resource_text' => 'Resurs uppdaterad i {x} av {y}',
+
+    // Alerts
+    'resource_purchased' => 'Resource Purchased',
+    'resource_purchased_full' => 'You have successfully purchased the resource {x}',
+    'resource_purchase' => 'Resource Purchase',
+    'resource_purchase_full' => 'The user {x} has purchased your resource {y}',
+    'resource_license_revoked' => 'Resource License Revoked',
+    'resource_license_revoked_full' => 'A license of the resource {x} for the user {y} has been revoked due to a denied, refunded or reversed payment',
+    'resource_license_cancelled' => 'Resource License Cancelled',
+    'resource_license_cancelled_full' => 'The author of the resource {x} has cancelled your license'
 );
