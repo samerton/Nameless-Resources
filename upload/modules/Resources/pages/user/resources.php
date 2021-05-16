@@ -91,7 +91,7 @@ if(count($purchased_resources)){
 	}
 }
 
-$premium_resources = DB::getInstance()->query('SELECT `id`, `name`, `latest_version` AS `version` FROM nl2_resources WHERE creator_id = ?', array($user->data()->id))->results();
+$premium_resources = DB::getInstance()->query('SELECT `id`, `name`, `latest_version` AS `version` FROM nl2_resources WHERE creator_id = ? AND `type` = 1', array($user->data()->id))->results();
 $premium_array = array();
 if (count($premium_resources)) {
     foreach($premium_resources as $resource){
