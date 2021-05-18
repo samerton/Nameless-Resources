@@ -450,7 +450,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                 'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
                             ));
 
-                        } else if($paid->status == 2){
+                        } else if($paid->status == 2 || $paid->status == 3){
                             // Cancelled
                             $smarty->assign(array(
                                 'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
@@ -508,6 +508,13 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 				'title' => $resource_language->get('resources', 'delete_resource')
 			);
 		}
+
+		if (Resources::canManageLicenses($resource->id, $user)) {
+		    $moderation[] = array(
+                'link' => URL::build('/user/resources/licenses/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                'title' => $resource_language->get('resources', 'manage_licenses')
+            );
+        }
 
 		$smarty->assign('MODERATION', $moderation);
 		$smarty->assign('MODERATION_TEXT', $resource_language->get('resources', 'moderation'));
@@ -1205,7 +1212,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                         'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
                                     ));
 
-                                } else if($paid->status == 2){
+                                } else if($paid->status == 2 || $paid->status == 3){
                                     // Cancelled
                                     $smarty->assign(array(
                                         'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),

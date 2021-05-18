@@ -18,8 +18,8 @@ class Resources_Module extends Module {
 
 		$name = 'Resources';
 		$author = '<a href="https://samerton.me" target="_blank">Samerton</a>';
-		$module_version = '1.4.0';
-		$nameless_version = '2.0.0-pr9';
+		$module_version = '1.5.0';
+		$nameless_version = '2.0.0-pr10';
 
 		parent::__construct($this, $name, $author, $module_version, $nameless_version);
 
@@ -40,6 +40,8 @@ class Resources_Module extends Module {
 		$pages->add('Resources', '/resources/listener', 'pages/resources/listener.php');
 		$pages->add('Resources', '/user/resources', 'pages/user/resources.php');
 		$pages->add('Resources', '/resources/icon_upload', 'pages/resources/icon_upload.php');
+		$pages->add('Resources', '/user/resources/licenses', 'pages/user/licenses.php');
+
 	}
 
 	public function onInstall(){
@@ -180,7 +182,8 @@ class Resources_Module extends Module {
 			'admincp.resources' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'resources'),
 			'admincp.resources.categories' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'categories'),
 			'admincp.resources.downloads' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'downloads'),
-			'admincp.resources.settings' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'settings')
+			'admincp.resources.settings' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'settings'),
+			'admincp.resources.licenses' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'manage_licenses'),
 		));
 	}
 }

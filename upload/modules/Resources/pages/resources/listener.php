@@ -9,6 +9,8 @@
  *  Resources - listener
  */
 
+require(ROOT_PATH . '/modules/Resources/classes/Resources.php');
+
 $data = $queries->getWhere('settings', array('name', '=', 'resources_paypal_hook'));
 
 if(!count($data))
@@ -57,17 +59,20 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
 			ErrorHandler::logCustomError('[PayPal] Could not find transaction ' . Output::getClean($transaction) . ' in the system.');
 			die();
 		} else
-			$transaction = $transaction[0]->id;
+			$transaction = $transaction[0];
+
+		$customer = new User($transaction->user_id);
+		$resource = DB::getInstance()->query('SELECT `name`, `creator_id` FROM nl2_resources WHERE id = ?', array($transaction->resource_id))->first();
 
 		switch($response->event_type){
 			case 'PAYMENT.SALE.COMPLETED':
 				// Grant access to a resource
-				$queries->update('resources_payments', $transaction, array(
+				$queries->update('resources_payments', $transaction->id, array(
 					'status' => 1
 				));
 
-				// TODO: alerts
-				// Alert::create();
+				Alert::create($transaction->user_id, 'resource_purchased', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{x}', 'replace_with' => $resource->name), Resources::buildURL($transaction->resource_id, $resource->name));
+				Alert::create($resource->creator_id, 'resource_purchase', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchase'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchase_full', 'replace' => array('{x}', '{y}'), 'replace_with' => array($customer->getDisplayName(), $resource->name)), $customer->getProfileURL());
 
 				break;
 
@@ -75,12 +80,11 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
 			case 'PAYMENT.SALE.REFUNDED':
 			case 'PAYMENT.SALE.REVERSED':
 				// Revoke access to a resource
-				$queries->update('resources_payments', $transaction, array(
+				$queries->update('resources_payments', $transaction->id, array(
 					'status' => 2
 				));
 
-				// TODO: alerts
-				// Alert::create();
+				Alert::create($resource->creator_id, 'resource_license_revoked', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_revoked'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_revoked_full', 'replace' => array('{x}', '{y}'), 'replace_with' => array($resource->name, $customer->getDisplayName())), $customer->getProfileURL());
 
 				break;
 
