@@ -11,7 +11,7 @@
 
 // Can the user view the panel?
 if($user->isLoggedIn()){
-	if(!$user->canViewACP()){
+	if(!$user->canViewStaffCP()){
 		// No
 		Redirect::to(URL::build('/'));
 		die();
