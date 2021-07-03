@@ -100,7 +100,7 @@ if (Input::exists()) {
             if ($license && count($license) && $license[0]->resource_id == $resource->id) {
                 switch (Input::get('action')) {
                     case 'reinstate':
-                        $queries->update('resources_payments', $resource->id, array(
+                        $queries->update('resources_payments', $license[0]->id, array(
                             'status' => 1
                         ));
 
@@ -109,7 +109,7 @@ if (Input::exists()) {
                         break;
 
                     case 'revoke':
-                        $queries->update('resources_payments', $resource->id, array(
+                        $queries->update('resources_payments', $license[0]->id, array(
                             'status' => 3
                         ));
 
