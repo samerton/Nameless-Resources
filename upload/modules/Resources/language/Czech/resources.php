@@ -1,6 +1,6 @@
 <?php 
 /*
- *	Made by Samerton
+ *  Made by Samerton
  *  Translated by Fjuro
  *  https://github.com/NamelessMC/Nameless/
  *  NamelessMC version 2.0.0-pr9
@@ -100,7 +100,7 @@ $language = array(
 	'purchase' => 'Zakoupit',
     'purchasing_resource_x' => 'Nákup souboru {x}', // Don't replace {x}
 	'payment_pending' => 'Čekající platba',
-    'update_title' => 'Update Title',
+    'update_title' => 'Upravit název',
     'update_information' => 'Aktualizovat informace',
 	'paypal_not_configured' => 'Integrace PayPalu ještě nebyla nastavena! Kontaktujte administrátora.',
 	'error_while_purchasing' => 'Omlouváme se! Při zakupování tohoto souboru se vyskytla chyba. Kontaktujte administrátora.',
@@ -113,35 +113,35 @@ $language = array(
     'external_link' => 'Externí odkaz',
     'external_link_error' => 'Zadejte platný externí odkaz, dlouhý x až y znaků.',
     'select_release_type_error' => 'Vyberte typ vydání.',
-    'sort_by' => 'Řadit podle',
+    'sort_by' => 'Řazení',
     'last_updated' => 'Naposledy aktualizováno',
     'newest' => 'Nejnovější',
-    'manage_licenses' => 'Manage Licenses',
-    'managing_licenses_for' => 'Managing licenses for {x}',
-    'no_licenses' => 'There are no licenses for this resource.',
-    'select_resource' => 'Select a resource',
-    '1_license' => '1 license',
-    'x_licenses' => '{x} licenses',
-    'no_premium_resources' => 'You haven\'t created any premium resources yet.',
-    'add_license' => 'Add License',
-    'revoke' => 'Revoke',
-    'reinstate' => 'Reinstate',
-    'unable_to_update_license' => 'Unable to update license.',
-    'unable_to_add_license_for_yourself' => 'You are unable to add a license for yourself!',
-    'user_already_has_license' => 'That user already has a license.',
-    'license_added_successfully' => 'License added successfully.',
-    'find_user' => 'Find User...',
-    'user' => 'User',
-    'purchased' => 'Purchased',
-    'status' => 'Status',
-    'actions' => 'Actions',
+    'manage_licenses' => 'Správa licencí',
+    'managing_licenses_for' => 'Správa licencí souboru {x}',
+    'no_licenses' => 'Tento soubor nemá žádné licence.',
+    'select_resource' => 'Vyberte soubor',
+    '1_license' => '1 licence',
+    'x_licenses' => '{x} licencí',
+    'no_premium_resources' => 'Zatím jste nevytvořili žádné prémiové soubory.',
+    'add_license' => 'Přidat licenci',
+    'revoke' => 'Odvolat',
+    'reinstate' => 'Obnovit',
+    'unable_to_update_license' => 'Nepodařilo se upravit licenci.',
+    'unable_to_add_license_for_yourself' => 'Nemůžete přidat licenci sami sobě!',
+    'user_already_has_license' => 'Tento uživatel již má licenci.',
+    'license_added_successfully' => 'Licence úspěšně přidána.',
+    'find_user' => 'Hledat uživatele...',
+    'user' => 'Uživatel',
+    'purchased' => 'Zakoupeno',
+    'status' => 'Stav',
+    'actions' => 'Akce',
 
     // Payment statuses
-    'status_pending' => 'Pending',
-    'status_complete' => 'Complete',
-    'status_refund' => 'Refund',
-    'status_cancelled' => 'Cancelled',
-    'status_unknown' => 'Unknown',
+    'status_pending' => 'Čekání',
+    'status_complete' => 'Dokončeno',
+    'status_refund' => 'Vrácení peněz',
+    'status_cancelled' => 'Zrušeno',
+    'status_unknown' => 'Neznámý',
 
     'total_downloads' => 'Celkem stažení',
     'first_release' => 'První vydání',
@@ -203,12 +203,12 @@ $language = array(
     'updated_resource_text' => 'Byl aktualizován soubor v {x} uživatelem {y}',
 
     // Alerts
-    'resource_purchased' => 'Resource Purchased',
-    'resource_purchased_full' => 'You have successfully purchased the resource {x}',
-    'resource_purchase' => 'Resource Purchase',
-    'resource_purchase_full' => 'The user {x} has purchased your resource {y}',
-    'resource_license_revoked' => 'Resource License Revoked',
-    'resource_license_revoked_full' => 'A license of the resource {x} for the user {y} has been revoked due to a denied, refunded or reversed payment',
-    'resource_license_cancelled' => 'Resource License Cancelled',
-    'resource_license_cancelled_full' => 'The author of the resource {x} has cancelled your license'
+    'resource_purchased' => 'Soubor zakoupen',
+    'resource_purchased_full' => 'Úspěšně jste si zakoupili soubor {x}',
+    'resource_purchase' => 'Zakoupení souboru',
+    'resource_purchase_full' => 'Uživatel {x} si zakoupil váš soubor {y}',
+    'resource_license_revoked' => 'Licence k souboru odvolána',
+    'resource_license_revoked_full' => 'Licence k souboru {x} pro uživatele {y} byla odvolána kvůli zamítnuté nebo obrácené platbě nebo kvůli vrácení peněz',
+    'resource_license_cancelled' => 'Licence k souboru zrušena',
+    'resource_license_cancelled_full' => 'Autor souboru {x} zrušil vaši licenci'
 );
