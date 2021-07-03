@@ -43,7 +43,7 @@
 		  <span class="pull-right">
 			{if isset($CAN_EDIT)}<a href="{$EDIT_LINK}" class="ui button">{$EDIT}</a>{/if}
 			{if isset($MODERATION) && count($MODERATION)}
-				<div class="ui top right pointing dropdown small primary button" tabindex="0">
+				<div class="ui pointing dropdown small primary button upward" tabindex="0">
 				<span class="text">{$MODERATION_TEXT}</span>
 					<i class="dropdown icon"></i>
 					<div class="menu" tabindex="-1">
