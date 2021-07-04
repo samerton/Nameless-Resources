@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr5
+ *  NamelessMC version 2.0.0-pr10
  *
  *  License: MIT
  *
@@ -32,17 +32,16 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
 
 	if (!function_exists('getallheaders')) {
 		function getallheaders() {
-			$headers = [];
-			foreach ($_SERVER as $name => $value) {
-				if (substr($name, 0, 5) == 'HTTP_') {
-					$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+		    	$build = array();
+		    	foreach($_SERVER as $name => $value) {
+				if (strpos($name, 'HTTP_PAYPAL') !== false) {
+					$build[str_replace('_','-', substr($name, 5))] = $value;
 				}
-			}
-			return $headers;
+            		}
+            		return $build;
 		}
-	} else {
-		$headers = getallheaders();
 	}
+	$headers = getallheaders();
 	$headers = array_change_key_case($headers, CASE_UPPER);
 
 	$signatureVerification = new \PayPal\Api\VerifyWebhookSignature();
@@ -105,9 +104,6 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
 				ErrorHandler::logCustomError('[PayPal] Unknown event type ' . Output::getClean($response->event_type));
 				break;
 		}
-
-
-
 	} catch(\PayPal\Exception\PayPalInvalidCredentialException $e){
 		// Error verifying webhook
 		ErrorHandler::logCustomError('[PayPal] ' . $e->errorMessage());
