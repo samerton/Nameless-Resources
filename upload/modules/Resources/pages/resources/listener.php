@@ -30,7 +30,17 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
 
 	$bodyReceived = file_get_contents('php://input');
 
-	$headers = getallheaders();
+	if (!function_exists('getallheaders')) {
+		function getallheaders() {
+			$headers = [];
+			foreach ($_SERVER as $name => $value) {
+				if (substr($name, 0, 5) == 'HTTP_') {
+					$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+				}
+			}
+			return $headers;
+		}
+	}
 	$headers = array_change_key_case($headers, CASE_UPPER);
 
 	$signatureVerification = new \PayPal\Api\VerifyWebhookSignature();
