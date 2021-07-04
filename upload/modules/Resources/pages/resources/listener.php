@@ -40,6 +40,8 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
 			}
 			return $headers;
 		}
+	} else {
+		$headers = getallheaders();
 	}
 	$headers = array_change_key_case($headers, CASE_UPPER);
 
