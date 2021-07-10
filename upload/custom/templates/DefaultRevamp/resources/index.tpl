@@ -2,7 +2,7 @@
 {include file='navbar.tpl'}
 
 <div class="ui container">
-	<div class="ui padded segment">
+	<div class="ui centered row">
 		<div class="ui stackable grid">
 			<div class="ui row">
 				<div class="twelve wide column">
@@ -37,11 +37,16 @@
 							{foreach from=$LATEST_RESOURCES item=resource}
 								<tr>
 									<td>
-										<h5 class="ui header">
-											<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>{/if}<br />
-                                            <div class="content">
+										<h5 class="ui image header" style="margin: 0;">
+											<img src="{$resource.icon}" class="ui medium rounded image">
+											<div class="content">
+												<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>{/if}<br />
 												<div class="sub header">
-													{$resource.description}
+													{if $resource.short_description}
+														{$resource.short_description}
+													{else}
+														{$resource.description}
+													{/if}
 													<br />{$resource.category}
 												</div>
 											</div>

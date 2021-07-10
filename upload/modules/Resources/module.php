@@ -39,7 +39,9 @@ class Resources_Module extends Module {
 		$pages->add('Resources', '/resources/purchase', 'pages/resources/purchase.php');
 		$pages->add('Resources', '/resources/listener', 'pages/resources/listener.php');
 		$pages->add('Resources', '/user/resources', 'pages/user/resources.php');
+		$pages->add('Resources', '/resources/icon_upload', 'pages/resources/icon_upload.php');
 		$pages->add('Resources', '/user/resources/licenses', 'pages/user/licenses.php');
+
 	}
 
 	public function onInstall(){
@@ -60,7 +62,7 @@ class Resources_Module extends Module {
 		$queries = new Queries();
 		try {
 			$data = $queries->createTable("resources_categories", " `id` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(32) NOT NULL, `description` text, `display_order` int(11) NOT NULL DEFAULT '0', PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
-			$data = $queries->createTable("resources", " `id` int(11) NOT NULL AUTO_INCREMENT, `category_id` int(11) NOT NULL, `creator_id` int(11) NOT NULL, `name` varchar(64) NOT NULL, `description` mediumtext NOT NULL, `contributors` text, `views` int(11) NOT NULL DEFAULT '0', `downloads` int(11) NOT NULL DEFAULT '0', `created` int(11) NOT NULL, `updated` int(11) NOT NULL, `github_url` varchar(128) DEFAULT NULL, `github_username` varchar(64) DEFAULT NULL, `github_repo_name` varchar(64) DEFAULT NULL, `rating` int(11) NOT NULL DEFAULT '0', `latest_version` varchar(32) DEFAULT NULL, `type` tinyint(1) NOT NULL DEFAULT '0', `price` varchar(16) DEFAULT NULL, `payment_email` varchar(256) DEFAULT NULL, PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
+			$data = $queries->createTable("resources", " `id` int(11) NOT NULL AUTO_INCREMENT, `category_id` int(11) NOT NULL, `creator_id` int(11) NOT NULL, `name` varchar(64) NOT NULL, `short_description` varchar(64) NOT NULL, `has_icon` tinyint(1) NOT NULL DEFAULT '0', `icon` mediumtext NOT NULL, `icon_updated` int(11) NOT NULL, `description` mediumtext NOT NULL, `contributors` text, `views` int(11) NOT NULL DEFAULT '0', `downloads` int(11) NOT NULL DEFAULT '0', `created` int(11) NOT NULL, `updated` int(11) NOT NULL, `github_url` varchar(128) DEFAULT NULL, `github_username` varchar(64) DEFAULT NULL, `github_repo_name` varchar(64) DEFAULT NULL, `rating` int(11) NOT NULL DEFAULT '0', `latest_version` varchar(32) DEFAULT NULL, `type` tinyint(1) NOT NULL DEFAULT '0', `price` varchar(16) DEFAULT NULL, `payment_email` varchar(256) DEFAULT NULL, PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
 			$data = $queries->createTable("resources_releases", " `id` int(11) NOT NULL AUTO_INCREMENT, `resource_id` int(11) NOT NULL, `category_id` int(11) NOT NULL, `release_title` varchar(128) NOT NULL, `release_description` mediumtext NOT NULL, `release_tag` varchar(16) NOT NULL, `created` int(11) NOT NULL, `downloads` int(11) NOT NULL DEFAULT '0', `rating` int(11) NOT NULL DEFAULT '0', `download_link` varchar(255) DEFAULT NULL, PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
 			$data = $queries->createTable("resources_comments", " `id` int(11) NOT NULL AUTO_INCREMENT, `resource_id` int(11) NOT NULL, `author_id` int(11) NOT NULL, `content` mediumtext NOT NULL, `release_tag` varchar(16) NOT NULL, `created` int(11) NOT NULL, `reply_id` int(11) DEFAULT NULL, `rating` int(11) NOT NULL DEFAULT '0', `hidden` tinyint(1) NOT NULL DEFAULT '0', PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
 			$data = $queries->createTable("resources_categories_permissions", " `id` int(11) NOT NULL AUTO_INCREMENT, `category_id` int(11) NOT NULL, `group_id` int(11) NOT NULL, `view` tinyint(1) NOT NULL DEFAULT '1', `post` tinyint(1) NOT NULL DEFAULT '1', `move_resource` tinyint(1) NOT NULL DEFAULT '1', `edit_resource` tinyint(1) NOT NULL DEFAULT '1', `delete_resource` tinyint(1) NOT NULL DEFAULT '1', `edit_review` tinyint(1) NOT NULL DEFAULT '1', `delete_review` tinyint(1) NOT NULL DEFAULT '1', `download` tinyint(1) NOT NULL DEFAULT '0', `premium` tinyint(1) NOT NULL DEFAULT '0', PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
@@ -71,6 +73,7 @@ class Resources_Module extends Module {
 		}
 
 		mkdir(ROOT_PATH . '/uploads/resources');
+		mkdir(ROOT_PATH . '/uploads/resources_icons');
 	}
 
 	public function onUninstall(){
@@ -113,6 +116,17 @@ class Resources_Module extends Module {
 
 		$pages->registerSitemapMethod(ROOT_PATH . '/modules/Resources/classes/Resources_Sitemap.php', 'Resources_Sitemap::generateSitemap');
 
+		// Widgets
+		// Latest Resources
+		require_once(__DIR__ . '/widgets/LatestResources.php');
+		$latest_resources_module_pages = $widgets->getPages('Latest Resources');
+		$widgets->add(new LatestResourcesWidget($latest_resources_module_pages, $user, $this->_language, $this->_resource_language, $smarty, $cache));
+
+		// Top Resources
+		require_once(__DIR__ . '/widgets/TopResources.php');
+		$top_resources_module_pages = $widgets->getPages('Top Resources');
+		$widgets->add(new TopResourcesWidget($top_resources_module_pages, $user, $this->_language, $this->_resource_language, $smarty, $cache));
+		
 		if(defined('BACK_END')){
 			// Check if upload dir is writable
 			if(!is_writable(ROOT_PATH . '/uploads/resources')){

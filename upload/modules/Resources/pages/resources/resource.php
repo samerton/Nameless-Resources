@@ -131,7 +131,7 @@ $template->addCSSStyle('
 $cache->setCache('post_formatting');
 $formatting = $cache->retrieve('formatting');
 
-if(!isset($_GET['releases']) && !isset($_GET['do'])){
+if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions']) && !isset($_GET['reviews'])){
 	// Handle input
 	if(Input::exists()){
 		if($user->isLoggedIn()){
@@ -311,10 +311,31 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 	$author = new User($resource->creator_id);
 
+	// Get Releases Count
+	$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
+	$releases = count($releases);
+
+	// Get Reviews Count
+	$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
+	$reviews = count($reviews);
+	
 	// Assign Smarty variables
 	$smarty->assign(array(
 		'VIEWING_RESOURCE' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_resource_x')),
+		'UPLOAD_ICON' => $resource_language->get('resources', 'resource_upload_icon'),
+		'CHANGE_ICON' => $resource_language->get('resources', 'resource_change_icon'),
+		'CHANGE_ICON_ACTION' => URL::build('/resources/icon_upload'),
 		'BACK_LINK' => URL::build('/resources'),
+		'OVERVIEW_TITLE' => $resource_language->get('resources', 'overview'),
+		'OVERVIEW_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+		'RELEASES_TITLE' => str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'releases_x')),
+		'VERSIONS_TITLE' =>  str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'versions_x')),
+		'VERSIONS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions'),
+		'REVIEWS_TITLE' =>  str_replace('{x}', Output::getClean($reviews), $resource_language->get('resources', 'reviews_x')),
+		'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
+		'RESOURCE_NAME' => Output::getClean($resource->name),
+		'RESOURCE_ID' => Output::getClean($resource->id),
+		'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 		'RESOURCE_INDEX' => $resource_language->get('resources', 'resource_index'),
 		'AUTHOR' => $resource_language->get('resources', 'author'),
 		'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
@@ -332,25 +353,25 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		'AUTHOR_AVATAR' => $author->getAvatar(),
 		'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
 		'RESOURCE' => $resource_language->get('resources', 'resource'),
-        'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
-        'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
-        'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
-        'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
+        	'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
+        	'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
+        	'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
+        	'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
 		'VIEWS' => $resource_language->get('resources', 'views'),
-        'VIEWS_VALUE' => Output::getClean($resource->views),
-        'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+        	'VIEWS_VALUE' => Output::getClean($resource->views),
+        	'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
 		'TOTAL_DOWNLOADS' => $resource_language->get('resources', 'total_downloads'),
-        'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
-        'CATEGORY' => $resource_language->get('resources', 'category'),
-        'CATEGORY_VALUE' => Output::getClean($category),
-        'RATING' => $resource_language->get('resources', 'rating'),
+        	'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
+        	'CATEGORY' => $resource_language->get('resources', 'category'),
+        	'CATEGORY_VALUE' => Output::getClean($category),
+        	'RATING' => $resource_language->get('resources', 'rating'),
 		'RATING_VALUE' => round($resource->rating / 10),
 		'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
 		'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
-        'RELEASE' => $resource_language->get('resources', 'release'),
+        	'RELEASE' => $resource_language->get('resources', 'release'),
 		'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
 		'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
-        'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
+        	'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
 		'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
 		'RELEASE_RATING' => round($latest_update->rating / 10),
 		'RELEASE_DOWNLOADS' => $latest_update->downloads,
@@ -359,6 +380,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 		'LOGGED_IN' => ($user->isLoggedIn() ? true : false),
 		'CAN_REVIEW' => (($user->isLoggedIn() && $user->data()->id != $resource->creator_id) ? true : false),
 		'TOKEN' => Token::get(),
+		'CANCEL' => $language->get('general', 'cancel'),
 		'SUBMIT' => $language->get('general', 'submit'),
 		'CONTRIBUTORS' => str_replace('{x}', Output::getClean($resource->contributors), $resource_language->get('resources', 'contributors_x')),
 		'HAS_CONTRIBUTORS' => (strlen(trim($resource->contributors)) > 0) ? 1 : 0
@@ -367,6 +389,17 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 	if(isset($error))
 		$smarty->assign('ERROR', $error);
 
+	// Check if resource icon uploaded
+	if($resource->has_icon == 1 ) {
+        	$smarty->assign(array(
+                        'RESOURCE_ICON' => $resource->icon
+         	));
+	} else {
+        	$smarty->assign(array(
+                        'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
+         	));
+	}
+	
 	// Get currency
 	$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
 	if(!count($currency)){
@@ -456,7 +489,8 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			$smarty->assign(array(
 				'CAN_EDIT' => true,
 				'EDIT' => $language->get('general', 'edit'),
-				'EDIT_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=edit')
+				'EDIT_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=edit'),
+				'CHANGE_ICON' => $resource_language->get('resources', 'resource_change_icon')
 			));
 		}
 
@@ -498,7 +532,425 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 	$template_file = 'resources/resource.tpl';
 
 } else {
-	if(isset($_GET['releases'])){
+	if(isset($_GET['reviews'])){
+		// Check comment cache
+		$cache->setCache('resource-comments-' . $resource->id);
+
+		if(!$cache->isCached('comments')){
+			// Get comments
+			$comments = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
+
+			// Remove replies
+			$replies_array = array();
+			foreach($comments as $key => $comment){
+				if(!is_null($comment->reply_id)){
+					$replies_array[$comment->reply_id][] = $comment;
+					unset($comments[$key]);
+				}
+			}
+
+			// Cache
+			$cache->store('comments', $comments, 120);
+
+		} else $comments = (array) $cache->retrieve('comments');
+
+		// Pagination
+		$paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
+		$results = $paginator->getLimited($comments, 10, $p, count($comments));
+		$pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews=all&amp;'));
+
+		if(count($comments))
+			$smarty->assign('PAGINATION', $pagination);
+		else
+			$smarty->assign('PAGINATION', '');
+
+		// Array to pass to template
+		$comments_array = array();
+
+		if(count($comments)){
+			// Display the correct number of comments
+			$n = 0;
+
+			// Get post formatting type (HTML or Markdown)
+			$cache->setCache('post_formatting');
+			$formatting = $cache->retrieve('formatting');
+
+			while($n < count($results->data)){
+			    $author = new User($results->data[$n]->author_id);
+				$comments_array[] = array(
+					'username' => $author->getDisplayname(),
+					'user_avatar' => $author->getAvatar(),
+					'user_style' => $author->getGroupClass(),
+					'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
+					'content' => Output::getPurified($emojione->unicodeToImage(Output::getDecoded($results->data[$n]->content))),
+					'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language->getTimeLanguage()),
+					'date_full' => date('d M Y, H:i', $results->data[$n]->created),
+					'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
+					'rating' => $results->data[$n]->rating,
+					'release_tag' => Output::getClean($results->data[$n]->release_tag),
+					'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
+				);
+				$n++;
+			}
+		} else $comments_array = null;
+
+		// Get latest update
+		$latest_update = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC LIMIT 1');
+
+		if(!count($latest_update)){
+			Redirect::to(URL::build('/resources'));
+			die();
+		} else $latest_update = $latest_update[0];
+
+		$author = new User($resource->creator_id);
+
+		// Get Releases Count
+		$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
+		$releases = count($releases);
+
+		// Get Reviews Count
+		$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
+		$reviews = count($reviews);
+
+		if ($resource->type == 1) {
+			$resources_payments = $queries->getWhere('resources_payments', array('resource_id', '=', $resource->id));
+			$resource_purchases = count($resources_payments);
+			$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
+			$currency = $currency[0]->value;
+			$smarty->assign(array(
+	        	'PURCHASES' => $resource_language->get('resources', 'purchases'),
+	        	'PURCHASES_VALUE' => $resource_purchases,
+				'PRICE' => $resource_language->get('resources', 'price'),
+				'PRICE_VALUE' => Output::getClean($resource->price),
+				'CURRENCY' => $currency,
+			));
+		}
+
+		// Assign Smarty variables
+		$smarty->assign(array(
+			'VIEWING_ALL_REVIEWS' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_all_reviews')),
+			'RESOURCE_NAME' => Output::getClean($resource->name),
+			'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
+			'COMMENT_ARRAY' => $comments_array,
+			'AUTHOR' => $resource_language->get('resources', 'author'),
+			'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
+			'VIEW_OTHER_RESOURCES' => str_replace('{x}', $author->getDisplayname(), $resource_language->get('resources', 'view_other_resources')),
+			'AUTHOR_NICKNAME' => $author->getDisplayname(),
+			'AUTHOR_NAME' => $author->getDisplayname(true),
+			'AUTHOR_STYLE' => $author->getGroupClass(),
+			'AUTHOR_AVATAR' => $author->getAvatar(),
+			'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
+			'NO_REVIEWS' => $resource_language->get('resources', 'no_reviews'),
+			'BACK' => $language->get('general', 'back'),
+			'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+			'OVERVIEW_TITLE' => $resource_language->get('resources', 'overview'),
+			'OVERVIEW_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+			'RELEASES_TITLE' => str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'releases_x')),
+			'VERSIONS_TITLE' =>  str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'versions_x')),
+			'VERSIONS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions'),
+			'REVIEWS_TITLE' =>  str_replace('{x}', Output::getClean($reviews), $resource_language->get('resources', 'reviews_x')),
+			'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
+			'RESOURCE' => $resource_language->get('resources', 'resource'),
+		   	'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
+		    	'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
+		    	'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
+		   	'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
+			'VIEWS' => $resource_language->get('resources', 'views'),
+		    	'VIEWS_VALUE' => Output::getClean($resource->views),
+		    	'DOWNLOAD' => $resource_language->get('resources', 'download'),
+		    	'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+			'TOTAL_DOWNLOADS' => $resource_language->get('resources', 'total_downloads'),
+		    	'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
+		    	'CATEGORY' => $resource_language->get('resources', 'category'),
+		    	'CATEGORY_VALUE' => Output::getClean($category),
+		    	'RATING' => $resource_language->get('resources', 'rating'),
+			'RATING_VALUE' => round($resource->rating / 10),
+			'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
+			'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
+		    	'RELEASE' => $resource_language->get('resources', 'release'),
+			'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
+			'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
+		    	'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
+			'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
+			'RELEASE_RATING' => round($latest_update->rating / 10),
+			'RELEASE_DOWNLOADS' => $latest_update->downloads,
+			'RELEASE_DATE' => $timeago->inWords(date('d M Y, H:i', $latest_update->created), $language->getTimeLanguage()),
+			'RELEASE_DATE_FULL' => date('d M Y, H:i', $latest_update->created),
+		));
+
+		// Check if resource icon uploaded
+		if($resource->has_icon == 1 ) {
+			$smarty->assign(array(
+				'RESOURCE_ICON' => $resource->icon
+			));
+		} else {
+			$smarty->assign(array(
+				'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
+			));
+		}
+		
+			// Ensure user has download permission
+			if($resource->type == 0){
+				// Can the user download?
+                if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
+                    $smarty->assign(array(
+                        'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                    ));
+				}
+			} else {
+				// Can the user download?
+				if($user->isLoggedIn()){
+                    if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
+                        if($user->data()->id == $resource->creator_id){
+                            // Author can download their own resources
+                            $smarty->assign(array(
+                                'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                            ));
+
+                        } else {
+                            // Check purchases
+                            $paid = DB::getInstance()->query('SELECT status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
+
+                            if(count($paid)){
+                                $paid = $paid[0];
+
+                                if($paid->status == 1){
+                                    // Purchased
+                                    $smarty->assign(array(
+                                        'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                                    ));
+
+                                } else if($paid->status == 0){
+                                    // Pending
+                                    $smarty->assign(array(
+                                        'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
+                                    ));
+
+                                } else if($paid->status == 2){
+                                    // Cancelled
+                                    $smarty->assign(array(
+                                        'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+                                        'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                    ));
+
+                                }
+                            } else {
+                                // Needs to purchase
+                                $smarty->assign(array(
+                                    'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+                                    'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                ));
+                            }
+                        }
+					}
+
+				} else {
+					$smarty->assign(array(
+						'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . $currency, $resource_language->get('resources', 'purchase_for_x'))
+					));
+				}
+			}
+
+		$template_file = 'resources/resource_all_reviews.tpl';
+
+	} else if(isset($_GET['versions'])){
+		// Display list of all versions
+		$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
+
+		if(!count($releases)){
+			Redirect::to('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name));
+			die();
+		}
+
+		// Pagination
+		$paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
+		$results = $paginator->getLimited($releases, 10, $p, count($releases));
+		$pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions=all&amp;'));
+
+		$smarty->assign('PAGINATION', $pagination);
+
+		// Assign releases to new array for Smarty
+		$releases_array = array();
+		foreach($releases as $release){
+			$releases_array[] = array(
+				'id' => $release->id,
+				'url' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=' . $release->id),
+				'download_url' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id),
+				'tag' => Output::getClean($release->release_tag),
+				'name' => Output::getClean($release->release_title),
+				'description' => Output::getPurified(nl2br(Output::getDecoded($release->release_description))),
+				'date' => $timeago->inWords(date('d M Y, H:i', $release->created), $language->getTimeLanguage()),
+				'date_full' => date('d M Y, H:i', $release->created),
+				'rating' => round($release->rating / 10),
+				'downloads' => str_replace('{x}', $release->downloads, $resource_language->get('resources', 'x_downloads'))
+			);
+		}
+
+		// Get latest update
+		$latest_update = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC LIMIT 1');
+
+		if(!count($latest_update)){
+			Redirect::to(URL::build('/resources'));
+			die();
+		} else $latest_update = $latest_update[0];
+
+		$author = new User($resource->creator_id);
+
+		// Get Releases Count
+		$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
+		$releases = count($releases);
+
+		// Get Reviews Count
+		$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
+		$reviews = count($reviews);
+
+		if ($resource->type == 1) {
+			$resources_payments = $queries->getWhere('resources_payments', array('resource_id', '=', $resource->id));
+			$resource_purchases = count($resources_payments);
+			$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
+			$currency = $currency[0]->value;
+			$smarty->assign(array(
+	        	'PURCHASES' => $resource_language->get('resources', 'purchases'),
+	        	'PURCHASES_VALUE' => $resource_purchases,
+				'PRICE' => $resource_language->get('resources', 'price'),
+				'PRICE_VALUE' => Output::getClean($resource->price),
+				'CURRENCY' => $currency,
+			));
+		}
+
+		// Assign Smarty variables
+		$smarty->assign(array(
+			'VIEWING_ALL_VERSIONS' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_all_versions')),
+			'RESOURCE_NAME' => Output::getClean($resource->name),
+			'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
+			'AUTHOR' => $resource_language->get('resources', 'author'),
+			'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
+			'VIEW_OTHER_RESOURCES' => str_replace('{x}', $author->getDisplayname(), $resource_language->get('resources', 'view_other_resources')),
+			'AUTHOR_NICKNAME' => $author->getDisplayname(),
+			'AUTHOR_NAME' => $author->getDisplayname(true),
+			'AUTHOR_STYLE' => $author->getGroupClass(),
+			'AUTHOR_AVATAR' => $author->getAvatar(),
+			'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
+			'RELEASES' => $releases_array,
+			'BACK' => $language->get('general', 'back'),
+			'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+			'OVERVIEW_TITLE' => $resource_language->get('resources', 'overview'),
+			'OVERVIEW_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+			'RELEASES_TITLE' => str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'releases_x')),
+			'VERSIONS_TITLE' =>  str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'versions_x')),
+			'VERSIONS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions'),
+			'REVIEWS_TITLE' =>  str_replace('{x}', Output::getClean($reviews), $resource_language->get('resources', 'reviews_x')),
+			'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
+			'RESOURCE' => $resource_language->get('resources', 'resource'),
+		    	'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
+		    	'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
+		    	'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
+		    	'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
+			'VIEWS' => $resource_language->get('resources', 'views'),
+		    	'VIEWS_VALUE' => Output::getClean($resource->views),
+		    	'DOWNLOAD' => $resource_language->get('resources', 'download'),
+		    	'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+			'TOTAL_DOWNLOADS' => $resource_language->get('resources', 'total_downloads'),
+		    	'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
+		    	'CATEGORY' => $resource_language->get('resources', 'category'),
+		    	'CATEGORY_VALUE' => Output::getClean($category),
+		    	'RATING' => $resource_language->get('resources', 'rating'),
+			'RATING_VALUE' => round($resource->rating / 10),
+			'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
+			'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
+		    	'RELEASE' => $resource_language->get('resources', 'release'),
+			'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
+			'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
+		    	'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
+			'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
+			'RELEASE_RATING' => round($latest_update->rating / 10),
+			'RELEASE_DOWNLOADS' => $latest_update->downloads,
+			'RELEASE_DATE' => $timeago->inWords(date('d M Y, H:i', $latest_update->created), $language->getTimeLanguage()),
+			'RELEASE_DATE_FULL' => date('d M Y, H:i', $latest_update->created),
+		));
+
+		// Check if resource icon uploaded
+		if($resource->has_icon == 1 ) {
+			$smarty->assign(array(
+				'RESOURCE_ICON' => $resource->icon
+			));
+		} else {
+			$smarty->assign(array(
+				'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
+			));
+		}
+		
+			// Ensure user has download permission
+			if($resource->type == 0){
+				// Can the user download?
+                if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
+                    $smarty->assign(array(
+                        'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                    ));
+				}
+			} else {
+				// Can the user download?
+				if($user->isLoggedIn()){
+                    if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
+                        if($user->data()->id == $resource->creator_id){
+                            // Author can download their own resources
+                            $smarty->assign(array(
+                                'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                            ));
+
+                        } else {
+                            // Check purchases
+                            $paid = DB::getInstance()->query('SELECT status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
+
+                            if(count($paid)){
+                                $paid = $paid[0];
+
+                                if($paid->status == 1){
+                                    // Purchased
+                                    $smarty->assign(array(
+                                        'DOWNLOAD' => $resource_language->get('resources', 'download'),
+                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                                    ));
+
+                                } else if($paid->status == 0){
+                                    // Pending
+                                    $smarty->assign(array(
+                                        'PAYMENT_PENDING' => $resource_language->get('resources', 'payment_pending')
+                                    ));
+
+                                } else if($paid->status == 2){
+                                    // Cancelled
+                                    $smarty->assign(array(
+                                        'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+                                        'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                    ));
+
+                                }
+                            } else {
+                                // Needs to purchase
+                                $smarty->assign(array(
+                                    'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . Output::getClean($currency), $resource_language->get('resources', 'purchase_for_x')),
+                                    'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                ));
+                            }
+                        }
+					}
+
+				} else {
+					$smarty->assign(array(
+						'PURCHASE_FOR_PRICE' => str_replace('{x}', Output::getClean($resource->price) . ' ' . $currency, $resource_language->get('resources', 'purchase_for_x'))
+					));
+				}
+			}
+
+		$template_file = 'resources/resource_all_versions.tpl';
+		
+	} else if(isset($_GET['releases'])){
 		if($_GET['releases'] == 'all'){
 			// Display list of all releases
 			$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
@@ -531,14 +983,85 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				);
 			}
 
+			// Get latest update
+			$latest_update = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC LIMIT 1');
+
+			if(!count($latest_update)){
+				Redirect::to(URL::build('/resources'));
+				die();
+			} else $latest_update = $latest_update[0];
+
+			$author = new User($resource->creator_id);
+
+			// Get Releases Count
+			$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
+			$releases = count($releases);
+
+			// Get Reviews Count
+			$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
+			$reviews = count($reviews);
+			
 			// Assign Smarty variables
 			$smarty->assign(array(
 				'VIEWING_ALL_RELEASES' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_all_releases')),
 				'RELEASES' => $releases_array,
+				'RESOURCE_NAME' => Output::getClean($resource->name),
+				'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
+				'AUTHOR' => $resource_language->get('resources', 'author'),
+				'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
+				'VIEW_OTHER_RESOURCES' => str_replace('{x}', $author->getDisplayname(), $resource_language->get('resources', 'view_other_resources')),
+				'AUTHOR_NICKNAME' => $author->getDisplayname(),
+				'AUTHOR_NAME' => $author->getDisplayname(true),
+				'AUTHOR_STYLE' => $author->getGroupClass(),
+				'AUTHOR_AVATAR' => $author->getAvatar(),
+				'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
+				'OVERVIEW_TITLE' => $resource_language->get('resources', 'overview'),
+				'OVERVIEW_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+				'RELEASES_TITLE' => str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'releases_x')),
+				'VERSIONS_TITLE' =>  str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'versions_x')),
+				'VERSIONS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions'),
+				'REVIEWS_TITLE' =>  str_replace('{x}', Output::getClean($reviews), $resource_language->get('resources', 'reviews_x')),
+				'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
+				'RESOURCE' => $resource_language->get('resources', 'resource'),
+				'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
+				'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
+				'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
+				'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
+				'VIEWS' => $resource_language->get('resources', 'views'),
+				'VIEWS_VALUE' => Output::getClean($resource->views),
+				'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+				'TOTAL_DOWNLOADS' => $resource_language->get('resources', 'total_downloads'),
+				'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
+				'CATEGORY' => $resource_language->get('resources', 'category'),
+				'CATEGORY_VALUE' => Output::getClean($category),
+				'RATING' => $resource_language->get('resources', 'rating'),
+				'RATING_VALUE' => round($resource->rating / 10),
+				'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
+				'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
+				'RELEASE' => $resource_language->get('resources', 'release'),
+				'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
+				'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
+				'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
+				'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
+				'RELEASE_RATING' => round($latest_update->rating / 10),
+				'RELEASE_DOWNLOADS' => $latest_update->downloads,
+				'RELEASE_DATE' => $timeago->inWords(date('d M Y, H:i', $latest_update->created), $language->getTimeLanguage()),
+				'RELEASE_DATE_FULL' => date('d M Y, H:i', $latest_update->created),
 				'BACK' => $language->get('general', 'back'),
 				'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name))
 			));
 
+			// Check if resource icon uploaded
+			if($resource->has_icon == 1 ) {
+				$smarty->assign(array(
+					'RESOURCE_ICON' => $resource->icon
+				));
+			} else {
+				$smarty->assign(array(
+					'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
+				));
+			}
+			
 			$template_file = 'resources/resource_all_releases.tpl';
 
 		} else {
@@ -555,18 +1078,89 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 				die();
 			} else $release = $release[0];
 
+			// Get latest update
+			$latest_update = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC LIMIT 1');
+
+			if(!count($latest_update)){
+				Redirect::to(URL::build('/resources'));
+				die();
+			} else $latest_update = $latest_update[0];
+
+			$author = new User($resource->creator_id);
+
+			// Get Releases Count
+			$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
+			$releases = count($releases);
+
+			// Get Reviews Count
+			$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
+			$reviews = count($reviews);
+			
 			// Assign Smarty variables
 			$smarty->assign(array(
 				'VIEWING_RELEASE' => str_replace(array('{x}', '{y}'), array(Output::getClean($release->release_title), Output::getClean($resource->name)), $resource_language->get('resources', 'viewing_release')),
+				'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
+				'RESOURCE_NAME' => Output::getClean($resource->name),
 				'BACK' => $language->get('general', 'back'),
 				'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+				'OVERVIEW_TITLE' => $resource_language->get('resources', 'overview'),
+				'OVERVIEW_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+				'RELEASES_TITLE' => str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'releases_x')),
+				'VERSIONS_TITLE' =>  str_replace('{x}', Output::getClean($releases), $resource_language->get('resources', 'versions_x')),
+				'VERSIONS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions'),
+				'REVIEWS_TITLE' =>  str_replace('{x}', Output::getClean($reviews), $resource_language->get('resources', 'reviews_x')),
+				'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
 				'DOWNLOADS' => str_replace('{x}', $release->downloads, $resource_language->get('resources', 'x_downloads')),
 				'RATING' => round($release->rating / 10),
 				'DESCRIPTION' => Output::getPurified(nl2br(Output::getDecoded($release->release_description))),
+				'AUTHOR' => $resource_language->get('resources', 'author'),
+				'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
+				'VIEW_OTHER_RESOURCES' => str_replace('{x}', $author->getDisplayname(), $resource_language->get('resources', 'view_other_resources')),
+				'AUTHOR_NICKNAME' => $author->getDisplayname(),
+				'AUTHOR_NAME' => $author->getDisplayname(true),
+				'AUTHOR_STYLE' => $author->getGroupClass(),
+				'AUTHOR_AVATAR' => $author->getAvatar(),
+				'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
+				'RESOURCE' => $resource_language->get('resources', 'resource'),
+				'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
+				'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
+				'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
+				'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
+				'VIEWS' => $resource_language->get('resources', 'views'),
+				'VIEWS_VALUE' => Output::getClean($resource->views),
+				'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+				'TOTAL_DOWNLOADS' => $resource_language->get('resources', 'total_downloads'),
+				'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
+				'CATEGORY' => $resource_language->get('resources', 'category'),
+				'CATEGORY_VALUE' => Output::getClean($category),
+				'RATING' => $resource_language->get('resources', 'rating'),
+				'RATING_VALUE' => round($resource->rating / 10),
+				'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
+				'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
+				'RELEASE' => $resource_language->get('resources', 'release'),
+				'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
+				'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
+				'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
+				'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
+				'RELEASE_RATING' => round($latest_update->rating / 10),
+				'RELEASE_DOWNLOADS' => $latest_update->downloads,
+				'RELEASE_DATE' => $timeago->inWords(date('d M Y, H:i', $latest_update->created), $language->getTimeLanguage()),
+				'RELEASE_DATE_FULL' => date('d M Y, H:i', $latest_update->created),
 				'DATE' => $timeago->inWords(date('d M Y, H:i', $release->created), $language->getTimeLanguage()),
 				'DATE_FULL' => date('d M Y, H:i', $release->created)
 			));
 
+			// Check if resource icon uploaded
+			if($resource->has_icon == 1 ) {
+				$smarty->assign(array(
+					'RESOURCE_ICON' => $resource->icon
+				));
+			} else {
+				$smarty->assign(array(
+					'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
+				));
+			}
+			
 			$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
 			if(!count($currency)){
 				$queries->create('settings', array(
@@ -1229,6 +1823,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 								'max' => 64,
 								'required' => true
 							),
+							'short_description' => array(
+								'min' => 2,
+								'max' => 64,
+								'required' => true
+							),
 							'description' => array(
 								'min' => 2,
 								'max' => 20000,
@@ -1256,6 +1855,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 
 								$queries->update('resources', $resource->id, array(
 									'name' => Output::getClean(Input::get('title')),
+									'short_description' => Output::getClean(Input::get('short_description')),
 									'description' => $content,
 									'contributors' => Output::getClean(Input::get('contributors')),
 									'price' => $price
@@ -1273,6 +1873,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 										case (strpos($item, 'name') !== false):
 											$errors[] = $resource_language->get('resources', 'name_required');
 											break;
+										case (strpos($item, 'short_description') !== false):
+											$errors[] = $resource_language->get('resources', 'short_description_required');
+											break;
 										case (strpos($item, 'description') !== false):
 											$errors[] = $resource_language->get('resources', 'content_required');
 											break;
@@ -1282,6 +1885,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 										case (strpos($item, 'name') !== false):
 											$errors[] = $resource_language->get('resources', 'name_min_2');
 											break;
+										case (strpos($item, 'short_description') !== false):
+											$errors[] = $resource_language->get('resources', 'short_description_min_2');
+											break;
 										case (strpos($item, 'description') !== false):
 											$errors[] = $resource_language->get('resources', 'content_min_2');
 											break;
@@ -1290,6 +1896,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 									switch($item){
 										case (strpos($item, 'name') !== false):
 											$errors[] = $resource_language->get('resources', 'name_max_64');
+											break;
+										case (strpos($item, 'short_description') !== false):
+											$errors[] = $resource_language->get('resources', 'short_description_max_64');
 											break;
 										case (strpos($item, 'description') !== false):
 											$errors[] = $resource_language->get('resources', 'content_max_20000');
@@ -1314,13 +1923,26 @@ if(!isset($_GET['releases']) && !isset($_GET['do'])){
 			if(isset($errors) && count($errors))
 				$smarty->assign('ERRORS', $errors);
 
+			// Get latest update
+			$latest_update = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC LIMIT 1');
+
+			if(!count($latest_update)){
+				Redirect::to(URL::build('/resources'));
+				die();
+			} else $latest_update = $latest_update[0];
+
+			$author = new User($resource->creator_id);
+			
 			// Smarty variables
 			$smarty->assign(array(
 				'EDITING_RESOURCE' => $resource_language->get('resources', 'editing_resource'),
 				'NAME' => $resource_language->get('resources', 'resource_name'),
+				'SHORT_DESCRIPTION' => $resource_language->get('resources', 'resource_short_description'),
 				'DESCRIPTION' => $resource_language->get('resources', 'resource_description'),
 				'CONTRIBUTORS' => $resource_language->get('resources', 'contributors'),
 				'RESOURCE_NAME' => Output::getClean($resource->name),
+				'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
+				'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
 				'RESOURCE_DESCRIPTION' => Output::getPurified(htmlspecialchars_decode($resource->description)),
 				'RESOURCE_CONTRIBUTORS' => Output::getClean($resource->contributors),
 				'CANCEL' => $language->get('general', 'cancel'),

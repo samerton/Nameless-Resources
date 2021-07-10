@@ -42,6 +42,11 @@ if(Input::exists()){
 					'min' => 2,
 					'max' => 64
 				),
+				'short_description' => array(
+					'required' => true,
+					'min' => 2,
+					'max' => 64
+				),
 				'category' => array(
 					'required' => true
 				),
@@ -82,6 +87,9 @@ if(Input::exists()){
 							case (strpos($item, 'name') !== false):
 								$errors[] = $resource_language->get('resources', 'name_required');
 								break;
+							case (strpos($item, 'short_description') !== false):
+								$errors[] = $resource_language->get('resources', 'short_description_required');
+								break;
 							case (strpos($item, 'content') !== false):
 								$errors[] = $resource_language->get('resources', 'content_required');
 								break;
@@ -94,6 +102,9 @@ if(Input::exists()){
 							case (strpos($item, 'name') !== false):
 								$errors[] = $resource_language->get('resources', 'name_min_2');
 								break;
+							case (strpos($item, 'short_description') !== false):
+								$errors[] = $resource_language->get('resources', 'short_description_min_2');
+								break;
 							case (strpos($item, 'content') !== false):
 								$errors[] = $resource_language->get('resources', 'content_min_2');
 								break;
@@ -102,6 +113,9 @@ if(Input::exists()){
 						switch($item){
 							case (strpos($item, 'name') !== false):
 								$errors[] = $resource_language->get('resources', 'name_max_64');
+								break;
+							case (strpos($item, 'short_description') !== false):
+								$errors[] = $resource_language->get('resources', 'short_description_max_64');
 								break;
 							case (strpos($item, 'content') !== false):
 								$errors[] = $resource_language->get('resources', 'content_max_20000');
@@ -169,7 +183,8 @@ if(Input::exists()){
 								$releases_array[] = array(
 									'id' => $release['id'],
 									'tag' => Output::getClean($release['tag_name']),
-									'name' => Output::getClean($release['name'])
+									'name' => Output::getClean($release['name']),
+									'short_description' => Output::getClean($release['short_description'])
 								);
 							}
 
@@ -278,6 +293,7 @@ if(Input::exists()){
 							'category_id' => $_SESSION['new_resource']['category'],
 							'creator_id' => $user->data()->id,
 							'name' => Output::getClean($_SESSION['new_resource']['name']),
+							'short_description' => Output::getClean($_SESSION['new_resource']['short_description']),
 							'description' => $content,
 							'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? Output::getClean($_SESSION['new_resource']['contributors']) : null),
 							'created' => date('U'),
@@ -486,6 +502,7 @@ if(Input::exists()){
 								'category_id' => $_SESSION['new_resource']['category'],
 								'creator_id' => $user->data()->id,
 								'name' => Output::getClean($_SESSION['new_resource']['name']),
+								'short_description' => Output::getClean($_SESSION['new_resource']['short_description']),
 								'description' => $content,
 								'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? Output::getClean($_SESSION['new_resource']['contributors']) : null),
 								'created' => date('U'),
@@ -602,6 +619,7 @@ if(Input::exists()){
 							'category_id' => $_SESSION['new_resource']['category'],
 							'creator_id' => $user->data()->id,
 							'name' => Output::getClean($_SESSION['new_resource']['name']),
+							'short_description' => Output::getClean($_SESSION['new_resource']['short_description']),
 							'description' => $content,
 							'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? Output::getClean($_SESSION['new_resource']['contributors']) : null),
 							'created' => date('U'),
@@ -702,6 +720,7 @@ if(!isset($_GET['step'])){
 		'SELECT_CATEGORY' => $resource_language->get('resources', 'select_category'),
 		'REQUIRED' => $resource_language->get('resources', 'required'),
 		'RESOURCE_NAME' => $resource_language->get('resources', 'resource_name'),
+		'RESOURCE_SHORT_DESCRIPTION' => $resource_language->get('resources', 'resource_short_description'),
 		'RESOURCE_DESCRIPTION' => $resource_language->get('resources', 'resource_description'),
 		'CONTRIBUTORS' => $resource_language->get('resources', 'contributors'),
 		'RELEASE_TYPE' => $resource_language->get('resources', 'release_type'),

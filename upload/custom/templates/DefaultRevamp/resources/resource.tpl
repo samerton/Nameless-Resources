@@ -6,7 +6,17 @@
     <div class="ui stackable grid">
 	    <div class="ui row">
 		    <div class="ui ten wide column">
-			    <h2 style="display:inline;">{$VIEWING_RESOURCE}</h2> {$RELEASE_TAG}
+			<div class="description">
+				<div class="ui relaxed list">
+					<div class="item">
+						<img class="ui rounded centered image" src="{$RESOURCE_ICON}" alt="{$RESOURCE_NAME}" style="max-height:64; max-width:64px;">
+						<div class="content">
+							<h2 class="header" style="display: block;">{$VIEWING_RESOURCE}</h2>
+							<span>[{$RELEASE_TAG}] {$RESOURCE_SHORT_DESCRIPTION}</span>
+						</div>
+					</div>
+				</div>
+			</div>
 		    </div>
 		    <div class="ui six wide column">
 			    <div class="res right floated">
@@ -21,11 +31,17 @@
 
 	  <div class="ui row">
 	    <div class="twelve wide column">
+		<div class="ui tabular menu">
+            		<a class="item active" href="{$OVERVIEW_LINK}">{$OVERVIEW_TITLE}</a>
+            		<a class="item" href="{$OTHER_RELEASES_LINK}">{$RELEASES_TITLE}</a>
+            		<a class="item" href="{$VERSIONS_LINK}">{$VERSIONS_TITLE}</a>
+            		<a class="item" href="{$REVIEWS_LINK}">{$REVIEWS_TITLE}</a>
+        	</div>
 	      <div class="forum_post">
 	        {$DESCRIPTION}
 	      </div>
 
-		  <br />{if $HAS_CONTRIBUTORS eq 1}{$CONTRIBUTORS} {$RESOURCE_CONTRIBUTORS}{/if}
+		  <br />{if $HAS_CONTRIBUTORS eq 1}{$CONTRIBUTORS}{/if}
 
 		  <div class="ui divider"></div>
 
@@ -41,7 +57,31 @@
 		  {/if}
 
 		  <span class="pull-right">
-			{if isset($CAN_EDIT)}<a href="{$EDIT_LINK}" class="ui button">{$EDIT}</a>{/if}
+			{if isset($CAN_EDIT)}
+				<a href="{$EDIT_LINK}" class="ui button">{$EDIT}</a>
+				<a data-toggle="modal" data-target="#modal-icon-upload" class="ui button">{$CHANGE_ICON}</a>
+				<div class="ui small modal" id="modal-icon-upload">
+					<div class="header">
+						{$CHANGE_ICON}
+					</div>
+					<div class="content">
+					<form action="{$CHANGE_ICON_ACTION}" method="post" enctype="multipart/form-data" class="ui form" id="form-resource-icon">
+						<div class="field">
+							<input type="file" name="file" id="uploadFileButton" hidden onchange="$('#fileName').html(this.files[0].name)" />
+							<label class="ui icon labeled default button" for="uploadFileButton">
+								<i class="ui cloud upload icon"></i> <span id="fileName">{$UPLOAD_ICON}</span>
+							</label>
+						</div>
+						<input type="hidden" name="token" value="{$TOKEN}">
+						<input type="hidden" name="resource_id" value="{$RESOURCE_ID}" />
+					</form>
+					</div>
+					<div class="actions">
+						<a class="ui negative button">{$CANCEL}</a>
+						<a class="ui positive button" onclick="$('#form-resource-icon').submit();">{$SUBMIT}</a>
+					</div>
+				</div>
+			{/if}
 			{if isset($MODERATION) && count($MODERATION)}
 				<div class="ui pointing dropdown small primary button upward" tabindex="0">
 				<span class="text">{$MODERATION_TEXT}</span>
