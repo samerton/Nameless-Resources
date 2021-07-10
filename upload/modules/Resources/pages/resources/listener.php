@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr5
+ *  NamelessMC version 2.0.0-pr10
  *
  *  License: MIT
  *
@@ -30,6 +30,17 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
 
 	$bodyReceived = file_get_contents('php://input');
 
+	if (!function_exists('getallheaders')) {
+		function getallheaders() {
+		    	$build = array();
+		    	foreach($_SERVER as $name => $value) {
+				if (strpos($name, 'HTTP_PAYPAL') !== false) {
+					$build[str_replace('_','-', substr($name, 5))] = $value;
+				}
+            		}
+            		return $build;
+		}
+	}
 	$headers = getallheaders();
 	$headers = array_change_key_case($headers, CASE_UPPER);
 
@@ -93,9 +104,6 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
 				ErrorHandler::logCustomError('[PayPal] Unknown event type ' . Output::getClean($response->event_type));
 				break;
 		}
-
-
-
 	} catch(\PayPal\Exception\PayPalInvalidCredentialException $e){
 		// Error verifying webhook
 		ErrorHandler::logCustomError('[PayPal] ' . $e->errorMessage());
