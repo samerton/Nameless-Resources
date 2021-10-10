@@ -754,23 +754,26 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
 	} else if(isset($_GET['versions'])){
 		// Display list of all versions
-		$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
+        $releases = DB::getInstance()->query('SELECT * FROM nl2_resources_releases WHERE resource_id = ? ORDER BY `created` DESC', array($resource->id));
+        $release_count = $releases->count();
 
-		if(!count($releases)){
+		if (!$release_count) {
 			Redirect::to('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name));
 			die();
 		}
 
+		$releases = $releases->results();
+
 		// Pagination
 		$paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
-		$results = $paginator->getLimited($releases, 10, $p, count($releases));
+		$results = $paginator->getLimited($releases, 10, $p, $release_count);
 		$pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions=all&amp;'));
 
 		$smarty->assign('PAGINATION', $pagination);
 
 		// Assign releases to new array for Smarty
 		$releases_array = array();
-		foreach($releases as $release){
+		foreach($results->data as $release){
 			$releases_array[] = array(
 				'id' => $release->id,
 				'url' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=' . $release->id),
