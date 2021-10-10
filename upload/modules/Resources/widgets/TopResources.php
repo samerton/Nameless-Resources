@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr9
+ *  NamelessMC version 2.0.0-pr12
  *
  *  License: MIT
  *
@@ -46,10 +46,10 @@ class TopResourcesWidget extends WidgetBase {
 		$topResourcesArr = array();
 		
 		foreach ($topResources as $resource) {
-				
+
 			// check if resource rating > 0
 			if ($resource->rating == 0) continue;
-				
+
 			$topResourcesArr[$resource->id] = array(
 				'name' => Output::getClean($resource->name),
 				'short_description' => Output::getClean($resource->short_description),
@@ -63,13 +63,12 @@ class TopResourcesWidget extends WidgetBase {
 				'released_full' => date('d M Y, H:i', $resource->updated),
 			);
 
-	        	// Check if resource icon uploaded
-	        	if($resource->has_icon == 1 ) {
-	    	    		$topResourcesArr[$resource->id]['icon'] = $resource->icon;
-	        	} else {
-	    	    		$topResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
-	        	}
-
+			// Check if resource icon uploaded
+			if($resource->has_icon == 1 ) {
+				$topResourcesArr[$resource->id]['icon'] = Output::getClean($resource->icon);
+			} else {
+				$topResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+			}
 		}
 
 		$this->_smarty->assign(array(
@@ -79,7 +78,5 @@ class TopResourcesWidget extends WidgetBase {
 		));
 
 		$this->_content = $this->_smarty->fetch('widgets/resources/top_resources.tpl');
-		
-
     }
 }

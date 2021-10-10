@@ -312,13 +312,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 	$author = new User($resource->creator_id);
 
 	// Get Releases Count
-	$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
-	$releases = count($releases);
+    $releases = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_releases WHERE resource_id = ?', array($resource->id))->first()->c;
 
 	// Get Reviews Count
-	$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
-	$reviews = count($reviews);
-	
+    $reviews = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_comments WHERE resource_id = ? AND hidden = 0', array($resource->id))->first()->c;
+
 	// Assign Smarty variables
 	$smarty->assign(array(
 		'VIEWING_RESOURCE' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_resource_x')),
@@ -353,25 +351,25 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 		'AUTHOR_AVATAR' => $author->getAvatar(),
 		'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
 		'RESOURCE' => $resource_language->get('resources', 'resource'),
-        	'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
-        	'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
-        	'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
-        	'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
+		'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
+		'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
+		'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
+		'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
 		'VIEWS' => $resource_language->get('resources', 'views'),
-        	'VIEWS_VALUE' => Output::getClean($resource->views),
-        	'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+		'VIEWS_VALUE' => Output::getClean($resource->views),
+		'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
 		'TOTAL_DOWNLOADS' => $resource_language->get('resources', 'total_downloads'),
-        	'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
-        	'CATEGORY' => $resource_language->get('resources', 'category'),
-        	'CATEGORY_VALUE' => Output::getClean($category),
-        	'RATING' => $resource_language->get('resources', 'rating'),
+		'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
+		'CATEGORY' => $resource_language->get('resources', 'category'),
+		'CATEGORY_VALUE' => Output::getClean($category),
+		'RATING' => $resource_language->get('resources', 'rating'),
 		'RATING_VALUE' => round($resource->rating / 10),
 		'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
 		'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
-        	'RELEASE' => $resource_language->get('resources', 'release'),
+		'RELEASE' => $resource_language->get('resources', 'release'),
 		'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
 		'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
-        	'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
+		'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
 		'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
 		'RELEASE_RATING' => round($latest_update->rating / 10),
 		'RELEASE_DOWNLOADS' => $latest_update->downloads,
@@ -391,15 +389,15 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
 	// Check if resource icon uploaded
 	if($resource->has_icon == 1 ) {
-        	$smarty->assign(array(
-                        'RESOURCE_ICON' => $resource->icon
-         	));
+		$smarty->assign(array(
+			'RESOURCE_ICON' => $resource->icon
+		));
 	} else {
-        	$smarty->assign(array(
-                        'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
-         	));
+		$smarty->assign(array(
+			'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
+		));
 	}
-	
+
 	// Get currency
 	$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
 	if(!count($currency)){
@@ -532,19 +530,19 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 	$template_file = 'resources/resource.tpl';
 
 } else {
-	if(isset($_GET['reviews'])){
+	if (isset($_GET['reviews'])) {
 		// Check comment cache
 		$cache->setCache('resource-comments-' . $resource->id);
 
-		if(!$cache->isCached('comments')){
+		if (!$cache->isCached('comments')) {
 			// Get comments
 			$comments = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
 
 			// Remove replies
 			$replies_array = array();
-			foreach($comments as $key => $comment){
-				if(!is_null($comment->reply_id)){
-					$replies_array[$comment->reply_id][] = $comment;
+			foreach ($comments as $key => $comment) {
+				if (!is_null($comment->reply_id)) {
+					$replies_array[$comment->reply_id][] = Output::getPurified($comment);
 					unset($comments[$key]);
 				}
 			}
@@ -567,7 +565,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 		// Array to pass to template
 		$comments_array = array();
 
-		if(count($comments)){
+		if (count($comments)) {
 			// Display the correct number of comments
 			$n = 0;
 
@@ -605,18 +603,16 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 		$author = new User($resource->creator_id);
 
 		// Get Releases Count
-		$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
-		$releases = count($releases);
+        $releases = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_releases WHERE resource_id = ?', array($resource->id))->first()->c;
 
 		// Get Reviews Count
-		$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
-		$reviews = count($reviews);
+        $reviews = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_comments WHERE resource_id = ? AND hidden = 0', array($resource->id))->first()->c;
 
 		if ($resource->type == 1) {
 			$resources_payments = $queries->getWhere('resources_payments', array('resource_id', '=', $resource->id));
 			$resource_purchases = count($resources_payments);
 			$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
-			$currency = $currency[0]->value;
+			$currency = Output::getClean($currency[0]->value);
 			$smarty->assign(array(
 	        	'PURCHASES' => $resource_language->get('resources', 'purchases'),
 	        	'PURCHASES_VALUE' => $resource_purchases,
@@ -652,25 +648,25 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 			'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
 			'RESOURCE' => $resource_language->get('resources', 'resource'),
 		   	'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
-		    	'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
-		    	'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
+		   	'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
+		   	'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
 		   	'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
 			'VIEWS' => $resource_language->get('resources', 'views'),
-		    	'VIEWS_VALUE' => Output::getClean($resource->views),
-		    	'DOWNLOAD' => $resource_language->get('resources', 'download'),
-		    	'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+		   	'VIEWS_VALUE' => Output::getClean($resource->views),
+		   	'DOWNLOAD' => $resource_language->get('resources', 'download'),
+		   	'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
 			'TOTAL_DOWNLOADS' => $resource_language->get('resources', 'total_downloads'),
-		    	'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
-		    	'CATEGORY' => $resource_language->get('resources', 'category'),
-		    	'CATEGORY_VALUE' => Output::getClean($category),
-		    	'RATING' => $resource_language->get('resources', 'rating'),
+		   	'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
+		   	'CATEGORY' => $resource_language->get('resources', 'category'),
+		   	'CATEGORY_VALUE' => Output::getClean($category),
+		   	'RATING' => $resource_language->get('resources', 'rating'),
 			'RATING_VALUE' => round($resource->rating / 10),
 			'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
 			'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
-		    	'RELEASE' => $resource_language->get('resources', 'release'),
+		   	'RELEASE' => $resource_language->get('resources', 'release'),
 			'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
 			'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
-		    	'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
+		   	'RELEASE_VERSION' => str_replace('{x}', Output::getClean($latest_update->release_tag), $resource_language->get('resources', 'version_x')),
 			'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
 			'RELEASE_RATING' => round($latest_update->rating / 10),
 			'RELEASE_DOWNLOADS' => $latest_update->downloads,
@@ -800,12 +796,10 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 		$author = new User($resource->creator_id);
 
 		// Get Releases Count
-		$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
-		$releases = count($releases);
+        $releases = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_releases WHERE resource_id = ?', array($resource->id))->first()->c;
 
 		// Get Reviews Count
-		$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
-		$reviews = count($reviews);
+        $reviews = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_comments WHERE resource_id = ? AND hidden = 0', array($resource->id))->first()->c;
 
 		if ($resource->type == 1) {
 			$resources_payments = $queries->getWhere('resources_payments', array('resource_id', '=', $resource->id));
@@ -994,13 +988,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 			$author = new User($resource->creator_id);
 
 			// Get Releases Count
-			$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
-			$releases = count($releases);
+            $releases = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_releases WHERE resource_id = ?', array($resource->id))->first()->c;
 
 			// Get Reviews Count
-			$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
-			$reviews = count($reviews);
-			
+            $reviews = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_comments WHERE resource_id = ? AND hidden = 0', array($resource->id))->first()->c;
+
 			// Assign Smarty variables
 			$smarty->assign(array(
 				'VIEWING_ALL_RELEASES' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'viewing_all_releases')),
@@ -1089,13 +1081,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 			$author = new User($resource->creator_id);
 
 			// Get Releases Count
-			$releases = $queries->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC');
-			$releases = count($releases);
+            $releases = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_releases WHERE resource_id = ?', array($resource->id))->first()->c;
 
 			// Get Reviews Count
-			$reviews = $queries->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC');
-			$reviews = count($reviews);
-			
+            $reviews = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_comments WHERE resource_id = ? AND hidden = 0', array($resource->id))->first()->c;
+
 			// Assign Smarty variables
 			$smarty->assign(array(
 				'VIEWING_RELEASE' => str_replace(array('{x}', '{y}'), array(Output::getClean($release->release_title), Output::getClean($resource->name)), $resource_language->get('resources', 'viewing_release')),
@@ -1669,7 +1659,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 								'username' => $user->getDisplayname(),
 								'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, $user->getDisplayname()), $resource_language->get('resources', 'updated_resource_text')),
 								'content_full' => str_replace(array('&amp', '&nbsp;', '&#39;'), array('&', '', '\''), strip_tags($content)),
-								'avatar_url' => $user->getAvatar(null, 128, true),
+								'avatar_url' => $user->getAvatar(128, true),
 								'title' => Output::getClean($resource->name),
 								'url' => Util::getSelfURL() . ltrim(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)), '/')
 							));

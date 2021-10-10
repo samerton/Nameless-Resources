@@ -126,7 +126,7 @@ if(count($latest_releases)){
 				'updated' => str_replace('{x}', $timeago->inWords(date('d M Y, H:i', $resource->updated), $language->getTimeLanguage()), $resource_language->get('resources', 'updated_x')),
 				'updated_full' => date('d M Y, H:i', $resource->updated)
 			);
-            
+
             if($resource->type == 1 ) {
                 $releases_array[$resource->id]['price'] = Output::getClean($resource->price);
             }

@@ -6,7 +6,7 @@
         <div class="ui stackable grid">
             <div class="ui row">
                 <div class="twelve wide column">
-                    <h1 style="display:inline">{$VIEWING_RESOURCES_BY}</h1>
+                    <h1 style="display:inline" class="white">{$VIEWING_RESOURCES_BY}</h1>
                 </div>
                 <div class="four wide column">
                     <span class="res right floated">

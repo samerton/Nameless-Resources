@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
@@ -25,21 +25,28 @@ $language = array(
 	'link_to_github_repo' => '链接至 GitHub 仓库',
 	'required' => '必要的',
 	'resource_name' => '资源名称',
+	'resource_icon' => 'Resource Icon',
+	'resource_upload_icon' => 'Upload Icon',
+	'resource_change_icon' => 'Change Icon',
+	'resource_short_description' => 'Short description',
 	'resource_description' => '概述',
 	'version_tag' => '版本标签',
 	'version_tag_help' => '这必须与你的 GitHub Release 的版本号相同',
 	'contributors' => '贡献者',
 	'name_required' => '请输入一个资源名称',
+	'short_description_required' => 'Please enter a short description',
 	'content_required' => '请为该资源添加概述',
 	'github_username_required' => '请输入你的 GitHub 用户名',
 	'github_repo_required' => '请输入你的 GitHub 仓库名',
 	'version_tag_required' => '请输入该资源的版本标签',
 	'category_required' => '请选择一个库来作为你的资源',
 	'name_min_2' => ' 资源名称 必须最少有2个字节',
+	'short_description_min_2' => 'The short description must be a minimum of 2 characters',
 	'content_min_2' => ' 概述 必须最少有2个字节',
 	'github_username_min_2' => '你的 GitHub 用户名 必须最少有2个字节',
 	'github_repo_min_2' => '你的 GitHub 仓库名 必须最少有2个字节',
 	'name_max_64' => ' 资源名称 至多有64个字节',
+	'short_description_max_64' => 'The short description must be a maximum of 64 characters',
 	'content_max_20000' => '概述 至多有20000个字节',
 	'github_username_max_32' => '你的 GitHub 用户名 至多有32个字节',
 	'github_repo_max_64' => '你的 GitHub 仓库名 至多有64个字节',
@@ -66,6 +73,8 @@ $language = array(
 	'updated_x' => '更新于 {x}', // Don't replace {x}
 	'viewing_all_releases' => '查看所有关于资源 {x} 的发行版本(Release)', // Don't replace {x}
 	'viewing_release' => '查看资源 {y} 发行版本(Release) {x} ', // Don't replace {x} or {y}
+	'viewing_all_versions' => 'Viewing all versions for resource {x}', // Don't replace {x}
+	'viewing_all_reviews' => 'Viewing all reviews for resource {x}', // Don't replace {x}
     'editing_resource' => '编辑资源',
     'contributors_x' => '贡献者: {x}', // Don't replace {x}
     'move_resource' => '转移资源',
@@ -117,6 +126,17 @@ $language = array(
     'sort_by' => 'Sort By',
     'last_updated' => 'Last Updated',
     'newest' => 'Newest',
+    'overview' => 'Overview',
+    'releases_x' => 'Releases ({x})', // Don't replace {x}
+    'versions_x' => 'Versions ({x})', // Don't replace {x}
+    'reviews_x' => 'Reviews ({x})', // Don't replace {x}
+
+    //widgets
+    'latest_resources' => 'Latest Resources',
+    'top_resources' => 'Top Resources',
+    'no_latest_resources' => 'No resources',
+    'no_top_resources' => 'No resources',
+
     'manage_licenses' => 'Manage Licenses',
     'managing_licenses_for' => 'Managing licenses for {x}',
     'no_licenses' => 'There are no licenses for this resource.',

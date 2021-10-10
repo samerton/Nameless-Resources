@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr9
+ *  NamelessMC version 2.0.0-pr12
  *
  *  License: MIT
  *
@@ -18,8 +18,8 @@ class Resources_Module extends Module {
 
 		$name = 'Resources';
 		$author = '<a href="https://samerton.me" target="_blank">Samerton</a>';
-		$module_version = '1.5.0';
-		$nameless_version = '2.0.0-pr10';
+		$module_version = '1.6.0';
+		$nameless_version = '2.0.0-pr12';
 
 		parent::__construct($this, $name, $author, $module_version, $nameless_version);
 
@@ -62,7 +62,7 @@ class Resources_Module extends Module {
 		$queries = new Queries();
 		try {
 			$data = $queries->createTable("resources_categories", " `id` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(32) NOT NULL, `description` text, `display_order` int(11) NOT NULL DEFAULT '0', PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
-			$data = $queries->createTable("resources", " `id` int(11) NOT NULL AUTO_INCREMENT, `category_id` int(11) NOT NULL, `creator_id` int(11) NOT NULL, `name` varchar(64) NOT NULL, `short_description` varchar(64) NOT NULL, `has_icon` tinyint(1) NOT NULL DEFAULT '0', `icon` mediumtext NOT NULL, `icon_updated` int(11) NOT NULL, `description` mediumtext NOT NULL, `contributors` text, `views` int(11) NOT NULL DEFAULT '0', `downloads` int(11) NOT NULL DEFAULT '0', `created` int(11) NOT NULL, `updated` int(11) NOT NULL, `github_url` varchar(128) DEFAULT NULL, `github_username` varchar(64) DEFAULT NULL, `github_repo_name` varchar(64) DEFAULT NULL, `rating` int(11) NOT NULL DEFAULT '0', `latest_version` varchar(32) DEFAULT NULL, `type` tinyint(1) NOT NULL DEFAULT '0', `price` varchar(16) DEFAULT NULL, `payment_email` varchar(256) DEFAULT NULL, PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
+			$data = $queries->createTable("resources", " `id` int(11) NOT NULL AUTO_INCREMENT, `category_id` int(11) NOT NULL, `creator_id` int(11) NOT NULL, `name` varchar(64) NOT NULL, `short_description` varchar(64) NULL DEFAULT NULL, `has_icon` tinyint(1) NOT NULL DEFAULT '0', `icon` varchar(512) NULL DEFAULT NULL, `icon_updated` int(11) NOT NULL, `description` mediumtext NOT NULL, `contributors` text, `views` int(11) NOT NULL DEFAULT '0', `downloads` int(11) NOT NULL DEFAULT '0', `created` int(11) NOT NULL, `updated` int(11) NOT NULL, `github_url` varchar(128) DEFAULT NULL, `github_username` varchar(64) DEFAULT NULL, `github_repo_name` varchar(64) DEFAULT NULL, `rating` int(11) NOT NULL DEFAULT '0', `latest_version` varchar(32) DEFAULT NULL, `type` tinyint(1) NOT NULL DEFAULT '0', `price` varchar(16) DEFAULT NULL, `payment_email` varchar(256) DEFAULT NULL, PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
 			$data = $queries->createTable("resources_releases", " `id` int(11) NOT NULL AUTO_INCREMENT, `resource_id` int(11) NOT NULL, `category_id` int(11) NOT NULL, `release_title` varchar(128) NOT NULL, `release_description` mediumtext NOT NULL, `release_tag` varchar(16) NOT NULL, `created` int(11) NOT NULL, `downloads` int(11) NOT NULL DEFAULT '0', `rating` int(11) NOT NULL DEFAULT '0', `download_link` varchar(255) DEFAULT NULL, PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
 			$data = $queries->createTable("resources_comments", " `id` int(11) NOT NULL AUTO_INCREMENT, `resource_id` int(11) NOT NULL, `author_id` int(11) NOT NULL, `content` mediumtext NOT NULL, `release_tag` varchar(16) NOT NULL, `created` int(11) NOT NULL, `reply_id` int(11) DEFAULT NULL, `rating` int(11) NOT NULL DEFAULT '0', `hidden` tinyint(1) NOT NULL DEFAULT '0', PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
 			$data = $queries->createTable("resources_categories_permissions", " `id` int(11) NOT NULL AUTO_INCREMENT, `category_id` int(11) NOT NULL, `group_id` int(11) NOT NULL, `view` tinyint(1) NOT NULL DEFAULT '1', `post` tinyint(1) NOT NULL DEFAULT '1', `move_resource` tinyint(1) NOT NULL DEFAULT '1', `edit_resource` tinyint(1) NOT NULL DEFAULT '1', `delete_resource` tinyint(1) NOT NULL DEFAULT '1', `edit_review` tinyint(1) NOT NULL DEFAULT '1', `delete_review` tinyint(1) NOT NULL DEFAULT '1', `download` tinyint(1) NOT NULL DEFAULT '0', `premium` tinyint(1) NOT NULL DEFAULT '0', PRIMARY KEY (`id`)", "ENGINE=$engine DEFAULT CHARSET=$charset");
@@ -95,6 +95,11 @@ class Resources_Module extends Module {
 	}
 
 	public function onPageLoad($user, $pages, $cache, $smarty, $navs, $widgets, $template){
+	    $cache->setCache('resources_cache');
+	    if (!$cache->isCached('160')) {
+	        self::updateTo160($cache);
+        }
+
 		// Add link to navbar
 		$cache->setCache('navbar_order');
 		if(!$cache->isCached('resources_order')){
@@ -186,4 +191,20 @@ class Resources_Module extends Module {
 			'admincp.resources.licenses' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'manage_licenses'),
 		));
 	}
+
+	// Update to 1.6.0
+	private static function updateTo160($cache) {
+	    try {
+	        DB::getInstance()->createQuery('ALTER TABLE `nl2_resources` ADD `short_description` varchar(64) NULL DEFAULT NULL');
+	        DB::getInstance()->createQuery('ALTER TABLE `nl2_resources` ADD `has_icon` tinyint(1) NOT NULL DEFAULT \'0\'');
+	        DB::getInstance()->createQuery('ALTER TABLE `nl2_resources` ADD `icon` varchar(512) NULL DEFAULT NULL');
+	        DB::getInstance()->createQuery('ALTER TABLE `nl2_resources` ADD `icon_updated` int(11) NOT NULL DEFAULT \'0\'');
+
+	        $cache->store('160', true);
+
+            mkdir(ROOT_PATH . '/uploads/resources_icons');
+        } catch (Exception $e) {
+	        // continue anyway
+        }
+    }
 }

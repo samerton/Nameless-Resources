@@ -99,7 +99,7 @@ foreach($categories as $category){
     $to_array = array(
         'name' => Output::getClean($category->name),
         'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
-	'count' => Output::getClean($category_count)
+        'count' => Output::getClean($category_count)
     );
     if($current_category->id == $category->id){
         $to_array['active'] = true;
@@ -141,7 +141,7 @@ if(count($latest_releases)){
             $releases_array[$resource->id] = array(
                 'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
                 'name' => Output::getClean($resource->name),
-		'short_description' => Output::getClean($resource->short_description),
+                'short_description' => Output::getClean($resource->short_description),
                 'description' => mb_substr(strip_tags(Output::getPurified(Output::getDecoded($resource->description))), 0, 50) . '...',
                 'author' => Output::getClean($resource_author->getDisplayname()),
                 'author_style' => $resource_author->getGroupClass(),

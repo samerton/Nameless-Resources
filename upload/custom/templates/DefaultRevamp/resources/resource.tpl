@@ -1,7 +1,6 @@
 {include file='header.tpl'}
 {include file='navbar.tpl'}
 
-<div class="ui container">
   <div class="ui padded segment">
     <div class="ui stackable grid">
 	    <div class="ui row">
@@ -103,7 +102,7 @@
 		  <div class="ui aligned segment">
 			  <h4 class="ui header">{$RESOURCE}</h4>
 			  <div class="ui divider"></div>
-              
+
               <div class="description">
                 <div class="ui list">
                   <div class="item">
@@ -147,7 +146,7 @@
 		  <div class="ui aligned segment">
 			  <h4 class="ui header">{$RELEASE_VERSION}</h4>
 			  <div class="ui divider"></div>
-              
+
               <div class="description">
                 <div class="ui list">
                   <div class="item">
@@ -179,7 +178,7 @@
 		  <div class="ui aligned segment">
             <h4 class="ui header">{$AUTHOR}</h4>
 			<div class="ui divider"></div>
-            
+
             <center>
 			<a href="{$AUTHOR_PROFILE}"><img src="{$AUTHOR_AVATAR}" class="ui rounded centered image" alt="{$AUTHOR_NICKNAME}" style="max-height:80px; max-width:80px;" /></a><br />
 			<a href="{$AUTHOR_PROFILE}" style="{$AUTHOR_STYLE}">{$AUTHOR_NICKNAME}</a>
@@ -252,9 +251,6 @@
 		</div>
 	  </form>
 	  {/if}
-
     </div>
-  </div>
-</div>
 
 {include file='footer.tpl'}

@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr9
+ *  NamelessMC version 2.0.0-pr12
  *
  *  License: MIT
  *
@@ -58,13 +58,12 @@ class LatestResourcesWidget extends WidgetBase {
 				'released_full' => date('d M Y, H:i', $resource->updated),
 			);
 
-	        	// Check if resource icon uploaded
-	        	if($resource->has_icon == 1 ) {
-	    	    		$latestResourcesArr[$resource->id]['icon'] = $resource->icon;
-	        	} else {
-	    	    		$latestResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
-	        	}
-				
+			// Check if resource icon uploaded
+			if($resource->has_icon == 1 ) {
+				$latestResourcesArr[$resource->id]['icon'] = Output::getClean($resource->icon);
+			} else {
+				$latestResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+			}
 		}
 
 		$this->_smarty->assign(array(
@@ -74,7 +73,5 @@ class LatestResourcesWidget extends WidgetBase {
 		));
 
 		$this->_content = $this->_smarty->fetch('widgets/resources/latest_resources.tpl');
-		
-
     }
 }

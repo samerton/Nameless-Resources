@@ -6,7 +6,7 @@
         <div class="ui stackable grid">
 			<div class="ui row">
 				<div class="twelve wide column">
-                    <h1 style="display:inline">{$CATEGORY_NAME}</h1>
+                    <h1 style="display:inline" class="white">{$CATEGORY_NAME}</h1>
 
                     <span class="res right floated">
                       <a href="{$BACK_LINK}" class="ui button">{$BACK}</a>

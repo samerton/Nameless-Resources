@@ -330,7 +330,7 @@ if(Input::exists()){
 							'username' => Output::getClean($user->data()->nickname),
 							'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
 							'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
-							'avatar_url' => $user->getAvatar(null, 128, true),
+							'avatar_url' => $user->getAvatar(128, true),
 							'title' => Output::getClean($_SESSION['new_resource']['name']),
 							'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
 						));
@@ -557,7 +557,7 @@ if(Input::exists()){
 									'username' => $user->getDisplayname(),
 									'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
 									'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
-									'avatar_url' => $user->getAvatar(null, 128, true),
+									'avatar_url' => $user->getAvatar(128, true),
 									'title' => Output::getClean($_SESSION['new_resource']['name']),
 									'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
 								));
@@ -658,7 +658,7 @@ if(Input::exists()){
 							'username' => $user->getDisplayname(),
 							'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
 							'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
-							'avatar_url' => $user->getAvatar(null, 128, true),
+							'avatar_url' => $user->getAvatar(128, true),
 							'title' => Output::getClean($_SESSION['new_resource']['name']),
 							'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
 						));
