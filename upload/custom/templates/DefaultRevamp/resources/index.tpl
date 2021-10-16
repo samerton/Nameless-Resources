@@ -27,7 +27,7 @@
 					<table class="ui fixed single line selectable unstackable small padded res table" id="sticky-threads">
 						<thead>
 						<tr>
-							<th class="eight wide"><h4>{$RESOURCE}</h4></th>
+							<th class="nine wide"><h4>{$RESOURCE}</h4></th>
 							<th class="three wide"><h4>{$STATS}</h4></th>
 							<th class="five wide"><h4>{$AUTHOR}</h4></th>
 						</tr>
@@ -36,10 +36,16 @@
 						{foreach from=$LATEST_RESOURCES item=resource}
 							<tr>
 								<td>
-									<h5 class="ui image header" style="margin: 0;">
-										<img src="{$resource.icon}" class="ui medium rounded image">
-										<div class="content">
-											<a href="{$resource.link}">{$resource.name}</a> <small>{$resource.version}</small> {if isset($resource.price)}<span class="res right floated ui mini label" style="margin-left:5px;">{$resource.price} {$CURRENCY}</span>{/if}<br />
+									<h5 class="ui image header" style="margin: 0; width: 100%;">
+										<div class="content" style="width: 100%;">
+										<img src="{$resource.icon}" class="floated ui mini rounded image">
+											<div class="title">
+												<a href="{$resource.link}">{$resource.name}</a> <span class="version"><small>{$resource.version}</small></span>
+												{if isset($resource.price)}
+													<span class="res right floated ui mini label" style="margin-left:5px;">{$resource.price} {$CURRENCY}</span>
+												{/if}
+												<br />
+											</div>
 											<div class="sub header">
 												{if $resource.short_description}
 													{$resource.short_description}
