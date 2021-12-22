@@ -5,7 +5,7 @@
 	<div class="ui stackable grid">
 		<div class="ui row">
 			<div class="twelve wide column">
-				<h1 style="display:inline" class="white">{$RESOURCES}</h1>
+				<h2 style="display:inline" class="white">{$RESOURCES}</h1>
 
 				<span class="res right floated">
                     <div class="ui dropdown blue button">
