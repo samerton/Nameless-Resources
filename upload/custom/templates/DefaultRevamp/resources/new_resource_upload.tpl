@@ -11,14 +11,15 @@
         <div class="ui divider"></div>
 
         {if isset($ERROR)}
-            <div class="ui negative message">
-                {$ERROR}
-            </div>
+        <div class="ui negative message">
+            {$ERROR}
+        </div>
         {/if}
 
         <form action="" method="post" enctype="multipart/form-data" class="ui form">
             <div class="field">
-                <input type="file" class="inputFile" name="resourceFile" id="uploadFileButton" accept=".zip,application/zip" hidden onchange="$('#fileName').html(this.files[0].name)" />
+                <input type="file" class="inputFile" name="resourceFile" id="uploadFileButton"
+                    accept=".zip,application/zip" hidden onchange="$('#fileName').html(this.files[0].name)" />
                 <label class="ui icon labeled default button" for="uploadFileButton">
                     <i class="ui cloud upload icon"></i> <span id="fileName">{$CHOOSE_FILE} ({$ZIP_ONLY})</span>
                 </label>

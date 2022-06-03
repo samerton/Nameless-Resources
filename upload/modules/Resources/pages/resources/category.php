@@ -1,6 +1,6 @@
 <?php
 /*
- *	Made by Samerton
+ *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
  *  NamelessMC version 2.0.0-pr9
  *
@@ -169,13 +169,13 @@ if(count($latest_releases)){
 $currency = DB::getInstance()->get('settings', array('name', '=', 'resources_currency'));
 if (!$currency->count()) {
     DB::getInstance()->insert('settings', array(
-		'name' => 'resources_currency',
-		'value' => 'GBP'
-	));
-	$currency = 'GBP';
+        'name' => 'resources_currency',
+        'value' => 'GBP'
+    ));
+    $currency = 'GBP';
 
 } else
-	$currency = Output::getClean($currency->first()->value);
+    $currency = Output::getClean($currency->first()->value);
 
 // Assign Smarty variables
 $smarty->assign(array(

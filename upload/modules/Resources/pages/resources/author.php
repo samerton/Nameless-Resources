@@ -1,6 +1,6 @@
 <?php
 /*
- *	Made by Samerton
+ *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
  *  NamelessMC version 2.0.0-pr5
  *
@@ -74,7 +74,7 @@ foreach($categories as $category){
     $to_array = array(
         'name' => Output::getClean($category->name),
         'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
-	'count' => Output::getClean($category_count)
+    'count' => Output::getClean($category_count)
     );
     $category_array[] = $to_array;
 }
@@ -124,17 +124,17 @@ if (count($latest_releases)) {
                 'updated' => $resource_language->get('resources', 'updated_x', ['updated' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->updated), $language)]),
                 'updated_full' => date('d M Y, H:i', $results->data[$n]->updated)
             );
-		
+        
             if($results->data[$n]->type == 1 ) {
                 $releases_array[$results->data[$n]->id]['price'] = Output::getClean($results->data[$n]->price);
             }
-		
-	        // Check if resource icon uploaded
-	        if($results->data[$n]->has_icon == 1 ) {
-	    	    $releases_array[$results->data[$n]->id]['icon'] = $results->data[$n]->icon;
-	        } else {
-	    	    $releases_array[$results->data[$n]->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
-	        }
+        
+            // Check if resource icon uploaded
+            if($results->data[$n]->has_icon == 1 ) {
+                $releases_array[$results->data[$n]->id]['icon'] = $results->data[$n]->icon;
+            } else {
+                $releases_array[$results->data[$n]->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+            }
             
         }
 

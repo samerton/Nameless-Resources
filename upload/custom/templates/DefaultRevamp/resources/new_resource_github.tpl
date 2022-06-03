@@ -12,9 +12,9 @@
         <div class="ui divider"></div>
 
         {if isset($ERROR)}
-            <div class="ui negative message">
-                {$ERROR}
-            </div>
+        <div class="ui negative message">
+            {$ERROR}
+        </div>
         {/if}
 
         <form action="" method="post" class="ui form">
