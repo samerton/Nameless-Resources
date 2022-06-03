@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr12
+ *  NamelessMC version 2.0.0-pr13
  *
  *  License: MIT
  *
@@ -18,14 +18,14 @@ class Resources_Module extends Module {
 
 		$name = 'Resources';
 		$author = '<a href="https://samerton.me" target="_blank">Samerton</a>';
-		$module_version = '1.6.0';
-		$nameless_version = '2.0.0-pr12';
+		$module_version = '1.7.0';
+		$nameless_version = '2.0.0-pr13';
 
 		parent::__construct($this, $name, $author, $module_version, $nameless_version);
 
 		// Hooks
-		HookHandler::registerEvent('newResource', $resource_language->get('resources', 'new_resource'));
-		HookHandler::registerEvent('updateResource', $resource_language->get('resources', 'update'));
+		EventHandler::registerEvent('newResource', $resource_language->get('resources', 'new_resource'));
+		EventHandler::registerEvent('updateResource', $resource_language->get('resources', 'update'));
 
 		// Define URLs which belong to this module
 		$pages->add('Resources', '/panel/resources/categories', 'pages/panel/categories.php');
@@ -119,18 +119,16 @@ class Resources_Module extends Module {
 		$navs[0]->add('resources', $this->_resource_language->get('resources', 'resources'), URL::build('/resources'), 'top', null, $resources_order, $icon);
 		$navs[1]->add('resources_settings', $this->_resource_language->get('resources', 'resources'), URL::build('/user/resources'), 'top', null, 10);
 
-		$pages->registerSitemapMethod(ROOT_PATH . '/modules/Resources/classes/Resources_Sitemap.php', 'Resources_Sitemap::generateSitemap');
+		$pages->registerSitemapMethod([Resources_Sitemap::class, 'generateSitemap']);
 
 		// Widgets
 		// Latest Resources
 		require_once(__DIR__ . '/widgets/LatestResources.php');
-		$latest_resources_module_pages = $widgets->getPages('Latest Resources');
-		$widgets->add(new LatestResourcesWidget($latest_resources_module_pages, $user, $this->_language, $this->_resource_language, $smarty, $cache));
+		$widgets->add(new LatestResourcesWidget($user, $this->_language, $this->_resource_language, $smarty, $cache));
 
 		// Top Resources
 		require_once(__DIR__ . '/widgets/TopResources.php');
-		$top_resources_module_pages = $widgets->getPages('Top Resources');
-		$widgets->add(new TopResourcesWidget($top_resources_module_pages, $user, $this->_language, $this->_resource_language, $smarty, $cache));
+		$widgets->add(new TopResourcesWidget($user, $this->_language, $this->_resource_language, $smarty, $cache));
 		
 		if(defined('BACK_END')){
 			// Check if upload dir is writable
@@ -206,5 +204,9 @@ class Resources_Module extends Module {
         } catch (Exception $e) {
 	        // continue anyway
         }
+    }
+
+    public function getDebugInfo(): array {
+        return [];
     }
 }

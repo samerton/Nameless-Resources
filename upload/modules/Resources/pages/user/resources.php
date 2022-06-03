@@ -34,16 +34,16 @@ if(Input::exists()){
 		}
 
 		if(!isset($error)){
-			$user_id = $queries->getWhere('resources_users_premium_details', array('user_id', '=', $user->data()->id));
-			if(count($user_id)){
-				$user_id = $user_id[0]->id;
+			$user_id = DB::getInstance()->get('resources_users_premium_details', array('user_id', '=', $user->data()->id));
+			if ($user_id->count()) {
+				$user_id = $user_id->first()->id;
 
-				$queries->update('resources_users_premium_details', $user_id, array(
+				DB::getInstance()->update('resources_users_premium_details', $user_id, array(
 					'paypal_email' => $paypal_address
 				));
 
 			} else {
-				$queries->create('resources_users_premium_details', array(
+				DB::getInstance()->insert('resources_users_premium_details', array(
 					'user_id' => $user->data()->id,
 					'paypal_email' => $paypal_address
 				));
@@ -57,9 +57,9 @@ if(Input::exists()){
 		$error = $language->get('general', 'invalid_token');
 }
 
-$paypal_address_query = $queries->getWhere('resources_users_premium_details', array('user_id', '=', $user->data()->id));
-if(count($paypal_address_query))
-	$paypal_address = Output::getClean($paypal_address_query[0]->paypal_email);
+$paypal_address_query = DB::getInstance()->get('resources_users_premium_details', array('user_id', '=', $user->data()->id));
+if ($paypal_address_query->count())
+	$paypal_address = Output::getClean($paypal_address_query->first()->paypal_email);
 else
 	$paypal_address = '';
 
@@ -81,10 +81,10 @@ if(count($purchased_resources)){
 			'author_username' => $author->getDisplayname(true),
 			'author_nickname' => $author->getDisplayname(),
 			'author_avatar' => $author->getAvatar('', 256),
-			'author_style' => $author->getGroupClass(),
+			'author_style' => $author->getGroupStyle(),
 			'author_link' => $author->getProfileURL(),
 			'latest_version' => Output::getClean($resource->version),
-			'updated' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $language->getTimeLanguage()),
+			'updated' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $language),
 			'updated_full' => date('d M Y, H:i', $resource->updated),
 			'link' => URL::build('/resources/resource/' . Output::getClean($resource->id) . '-' . Util::stringToURL($resource->name))
 		);
@@ -100,7 +100,7 @@ if (count($premium_resources)) {
             'name' => Output::getClean($resource->name),
             'latest_version' => Output::getClean($resource->version),
             'link' => URL::build('/user/resources/licenses/' . Output::getClean($resource->id) . '-' . Util::stringToURL($resource->name)),
-            'license_count' => $purchase_count->count == 1 ? $resource_language->get('resources', '1_license') : str_replace('{x}', $purchase_count->count, $resource_language->get('resources', 'x_licenses'))
+            'license_count' => $purchase_count->count == 1 ? $resource_language->get('resources', '1_license') : $resource_language->get('resources', 'x_licenses', ['count' => $purchase_count->count])
         );
     }
 }
@@ -128,7 +128,7 @@ $smarty->assign(array(
 ));
 
 // Load modules + template
-Module::loadPage($user, $pages, $cache, $smarty, array($navigation, $cc_nav, $mod_nav), $widgets);
+Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);
 
 require(ROOT_PATH . '/core/templates/cc_navbar.php');
 

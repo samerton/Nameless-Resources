@@ -18,8 +18,8 @@ $apiContext->setConfig(
 );
 
 try {
-	$data = $queries->getWhere('settings', array('name', '=', 'resources_paypal_hook'));
-	if(!count($data)){
+	$data = DB::getInstance()->get('settings', array('name', '=', 'resources_paypal_hook'));
+	if (!$data->count()) {
 		$key = md5(uniqid());
 
 		// Create API webhook
@@ -36,12 +36,12 @@ try {
 		$output = $webhook->create($apiContext);
 		$id = $output->getId();
 
-		$queries->create('settings', array(
+		DB::getInstance()->insert('settings', array(
 			'name' => 'resources_paypal_hook_id',
 			'value' => $id
 		));
-		
-		$queries->create('settings', array(
+
+        DB::getInstance()->insert('settings', array(
 			'name' => 'resources_paypal_hook',
 			'value' => $key
 		));

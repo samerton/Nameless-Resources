@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr9
+ *  NamelessMC version 2.0.0-pr13
  *
  *  License: MIT
  *
@@ -16,12 +16,12 @@ require(ROOT_PATH . '/modules/Resources/classes/Resources.php');
 $resources = new Resources();
 
 // Initialise
-$timeago = new Timeago();
+$timeago = new TimeAgo(TIMEZONE);
 
 $sort_types = array();
-$sort_types['updated'] = array('type' => 'updated', 'sort' => $resource_language->get('resources', 'last_updated'), 'link' => URL::build('/resources', 'sort=updated&', true));
-$sort_types['newest'] = array('type' => 'created', 'sort' => $resource_language->get('resources', 'newest'), 'link' => URL::build('/resources', 'sort=newest&', true));
-$sort_types['downloads'] = array('type' => 'downloads', 'sort' => $resource_language->get('resources', 'downloads'), 'link' => URL::build('/resources', 'sort=downloads&', true));
+$sort_types['updated'] = array('type' => 'updated', 'sort' => $resource_language->get('resources', 'last_updated'), 'link' => URL::build('/resources', 'sort=updated&'));
+$sort_types['newest'] = array('type' => 'created', 'sort' => $resource_language->get('resources', 'newest'), 'link' => URL::build('/resources', 'sort=newest&'));
+$sort_types['downloads'] = array('type' => 'downloads', 'sort' => $resource_language->get('resources', 'downloads'), 'link' => URL::build('/resources', 'sort=downloads&'));
 
 if(isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_types)){
     $sort_type = $_GET['sort'];
@@ -38,12 +38,10 @@ if(isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_types)){
 if(isset($_GET['p'])){
 	if(!is_numeric($_GET['p'])){
 		Redirect::to($url);
-		die();
 	} else {
 		if($_GET['p'] == 1){ 
 			// Avoid bug in pagination class
 			Redirect::to($url);
-			die();
 		}
 		$p = $_GET['p'];
 	}
@@ -60,7 +58,7 @@ if ($user->isLoggedIn()) {
     $groups = array(0);
 }
 
-$page_title = $resource_language->get('resources', 'resources') . ' - ' . str_replace('{x}', $p, $language->get('general', 'page_x'));
+$page_title = $resource_language->get('resources', 'resources') . ' - ' . $language->get('general', 'page_x', ['page' => $p]);
 require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
 $categories = $resources->getCategories($groups);
@@ -68,12 +66,12 @@ $categories = $resources->getCategories($groups);
 $category_array = array();
 foreach($categories as $category){
     // Get category count
-    $category_count = $queries->getWhere('resources', array('category_id', '=', $category->id));
-    $category_count = count($category_count);
+    $category_count = DB::getInstance()->get('resources', array('category_id', '=', $category->id));
+    $category_count = $category_count->count();
     $category_array[] = array(
         'name' => Output::getClean($category->name),
         'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
-	'count' => Output::getClean($category_count)
+        'count' => Output::getClean($category_count)
     );
 }
 $categories = null;
@@ -100,9 +98,9 @@ if(count($latest_releases)){
 		$resource = $results->data[$n];
 
 		// Get category
-		$category = $queries->getWhere('resources_categories', array('id', '=', $resource->category_id));
-		if(count($category)){
-			  $category = Output::getClean($category[0]->name);
+		$category = DB::getInstance()->get('resources_categories', array('id', '=', $resource->category_id));
+		if ($category->count()){
+			  $category = Output::getClean($category->first()->name);
 		} else {
 			  $category = 'n/a';
 		}
@@ -115,23 +113,23 @@ if(count($latest_releases)){
 				'short_description' => Output::getClean($resource->short_description),
 				'description' => mb_substr(strip_tags(Output::getDecoded($resource->description)), 0, 60) . '...',
 				'author' => Output::getClean($resource_author->getDisplayname()),
-				'author_style' => $resource_author->getGroupClass(),
+				'author_style' => $resource_author->getGroupStyle(),
 				'author_profile' => URL::build('/profile/' . Output::getClean($resource_author->getDisplayname(true))),
 				'author_avatar' => $resource_author->getAvatar(),
-				'downloads' => str_replace('{x}', $resource->downloads, $resource_language->get('resources', 'x_downloads')),
-				'views' => str_replace('{x}', $resource->views, $resource_language->get('resources', 'x_views')),
+				'downloads' => $resource_language->get('resources', 'x_downloads', ['count' => $resource->downloads]),
+				'views' => $resource_language->get('resources', 'x_views', ['count' => $resource->views]),
 				'rating' => round($resource->rating / 10),
 				'version' => $resource->latest_version,
-				'category' => str_replace('{x}', $category, $resource_language->get('resources', 'in_category_x')),
-				'updated' => str_replace('{x}', $timeago->inWords(date('d M Y, H:i', $resource->updated), $language->getTimeLanguage()), $resource_language->get('resources', 'updated_x')),
+				'category' => $resource_language->get('resources', 'in_category_x', ['category' => $category]),
+				'updated' => $resource_language->get('resources', 'updated_x', ['updated' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $language)]),
 				'updated_full' => date('d M Y, H:i', $resource->updated)
 			);
 
-            if($resource->type == 1 ) {
+            if ($resource->type == 1) {
                 $releases_array[$resource->id]['price'] = Output::getClean($resource->price);
             }
 	  		// Check if resource icon uploaded
-			if($resource->has_icon == 1 ) {
+			if ($resource->has_icon == 1) {
 				$releases_array[$resource->id]['icon'] = $resource->icon;
 			} else {
 				$releases_array[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
@@ -143,16 +141,16 @@ if(count($latest_releases)){
 } else $releases_array = null;
 
 // Get currency
-$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
-if(!count($currency)){
-	$queries->create('settings', array(
+$currency = DB::getInstance()->get('settings', array('name', '=', 'resources_currency'));
+if (!$currency->count()) {
+	DB::getInstance()->insert('settings', array(
 		'name' => 'resources_currency',
 		'value' => 'GBP'
 	));
 	$currency = 'GBP';
 
 } else
-	$currency = $currency[0]->value;
+	$currency = $currency->first()->value;
 
 // Assign Smarty variables
 $smarty->assign(array(
@@ -201,7 +199,7 @@ SetRatingStar();
 ');
 
 // Load modules + template
-Module::loadPage($user, $pages, $cache, $smarty, array($navigation, $cc_nav, $mod_nav), $widgets, $template);
+Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);
 
 $page_load = microtime(true) - $start;
 define('PAGE_LOAD_TIME', str_replace('{x}', round($page_load, 3), $language->get('general', 'page_loaded_in')));

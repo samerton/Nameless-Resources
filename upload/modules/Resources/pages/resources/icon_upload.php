@@ -39,8 +39,7 @@ if(Input::exists()){
 			die();
 		}
 
-		$resource = $queries->getWhere('resources', array('id', '=', $resource_id));
-		$resource = $resource[0];
+		$resource = DB::getInstance()->get('resources', array('id', '=', $resource_id))->first();
 
 		// Token valid
 		$image = new Bulletproof\Image($_FILES);
@@ -75,15 +74,14 @@ if(Input::exists()){
 						}
 					}
 
-                    $queries->update('resources', $resource->id, array(
+                    DB::getInstance()->update('resources', $resource->id, array(
                         'icon' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/'. $resource->id . '.' . $upload->getMime(),
                         'has_icon' => 1,
                         'icon_updated' => date('U')
                     ));
 
 					Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
-					die();
-			
+
                 } else {
 					http_response_code(400);
                     echo $image["error"];

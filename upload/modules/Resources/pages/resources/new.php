@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr5
+ *  NamelessMC version 2.0.0-pr13
  *
  *  License: MIT
  *
@@ -11,17 +11,12 @@
 // Always define page name
 define('PAGE', 'resources');
 
-require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
-require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
-$emojione = new Emojione\Client(new Emojione\Ruleset());
-
 require(ROOT_PATH . '/modules/Resources/classes/Resources.php');
 $resources = new Resources();
 
 // Ensure user is logged in
-if(!$user->isLoggedIn()){
+if (!$user->isLoggedIn()) {
 	Redirect::to(URL::build('/resources'));
-	die();
 }
 
 $groups = array();
@@ -30,13 +25,11 @@ foreach ($user->getGroups() as $group) {
 }
 
 // Handle input
-if(Input::exists()){
-	if(Token::check(Input::get('token'))){
-		$validate = new Validate();
-
-		if(!isset($_GET['step'])){
+if (Input::exists()) {
+	if (Token::check(Input::get('token'))) {
+		if (!isset($_GET['step'])) {
 			// Initial step
-			$validation = $validate->check($_POST, array(
+			$validation = Validate::check($_POST, array(
 				'name' => array(
 					'required' => true,
 					'min' => 2,
@@ -58,76 +51,46 @@ if(Input::exists()){
 				'contributors' => array(
 					'max' => 255
 				)
-			));
+			))->messages([
+                'name' => array(
+                    'required' => $resource_language->get('resources', 'name_required'),
+                    'min' => $resource_language->get('resources', 'name_min_2'),
+                    'max' => $resource_language->get('resources', 'name_max_64')
+                ),
+                'short_description' => array(
+                    'required' => $resource_language->get('resources', 'short_description_required'),
+                    'min' => $resource_language->get('resources', 'short_description_min_2'),
+                    'max' => $resource_language->get('resources', 'short_description_max_64')
+                ),
+                'category' => array(
+                    'required' => $resource_language->get('resources', 'category_required')
+                ),
+                'content' => array(
+                    'required' => $resource_language->get('resources', 'content_required'),
+                    'min' => $resource_language->get('resources', 'content_min_2'),
+                    'max' => $resource_language->get('resources', 'content_max_20000')
+                ),
+                'contributors' => array(
+                    'max' => $resource_language->get('resources', 'contributors_max_255')
+                )
+            ]);
 
-			if($validation->passed()){
+			if ($validation->passed()) {
 				// Check permissions
 				if (!$resources->canPostResourceInCategory($groups, $_POST['category'])) {
 					Redirect::to(URL::build('/resources'));
-					die();
 				}
 
 				$_SESSION['new_resource'] = $_POST;
 
 				if(isset($_POST['type']) && $_POST['type'] == 'github'){
 					Redirect::to(URL::build('/resources/new/', 'step=github'));
-					die();
 				} else {
 					Redirect::to(URL::build('/resources/new/', 'step=type'));
-					die();
 				}
 
 			} else {
-				// Errors
-				$errors = array();
-
-				foreach($validation->errors() as $item){
-					if(strpos($item, 'is required') !== false){
-						switch($item){
-							case (strpos($item, 'name') !== false):
-								$errors[] = $resource_language->get('resources', 'name_required');
-								break;
-							case (strpos($item, 'short_description') !== false):
-								$errors[] = $resource_language->get('resources', 'short_description_required');
-								break;
-							case (strpos($item, 'content') !== false):
-								$errors[] = $resource_language->get('resources', 'content_required');
-								break;
-							case (strpos($item, 'category') !== false):
-								$errors[] = $resource_language->get('resources', 'category_required');
-								break;
-						}
-					} else if(strpos($item, 'minimum') !== false){
-						switch($item){
-							case (strpos($item, 'name') !== false):
-								$errors[] = $resource_language->get('resources', 'name_min_2');
-								break;
-							case (strpos($item, 'short_description') !== false):
-								$errors[] = $resource_language->get('resources', 'short_description_min_2');
-								break;
-							case (strpos($item, 'content') !== false):
-								$errors[] = $resource_language->get('resources', 'content_min_2');
-								break;
-						}
-					} else if(strpos($item, 'maximum') !== false){
-						switch($item){
-							case (strpos($item, 'name') !== false):
-								$errors[] = $resource_language->get('resources', 'name_max_64');
-								break;
-							case (strpos($item, 'short_description') !== false):
-								$errors[] = $resource_language->get('resources', 'short_description_max_64');
-								break;
-							case (strpos($item, 'content') !== false):
-								$errors[] = $resource_language->get('resources', 'content_max_20000');
-								break;
-							case (strpos($item, 'contributors') !== false):
-								$errors[] = $resource_language->get('resources', 'contributors_max_255');
-								break;
-						}
-					}
-				}
-
-				$error = implode('<br />', $errors);
+				$error = implode('<br />', $validation->errors());
 			}
 
 		} else {
@@ -135,10 +98,9 @@ if(Input::exists()){
 				// GitHub repository
 				if(!isset($_SESSION['new_resource']) || !isset($_SESSION['new_resource']['type']) || (isset($_SESSION['new_resource']['type']) && $_SESSION['new_resource']['type'] != 'github')){
 					Redirect::to(URL::build('/resources/new'));
-					die();
 				}
 
-				$validation = $validate->check($_POST, array(
+				$validation = Validate::check($_POST, array(
 					'github_username' => array(
 						'required' => true,
 						'min' => 2,
@@ -149,9 +111,20 @@ if(Input::exists()){
 						'min' => 2,
 						'max' => 64
 					),
-				));
+				))->messages([
+                    'github_username' => array(
+                        'required' => $resource_language->get('resources', 'github_username_required'),
+                        'min' => $resource_language->get('resources', 'github_username_min_2'),
+                        'max' => $resource_language->get('resources', 'github_username_max_32')
+                    ),
+                    'github_repo' => array(
+                        'required' => $resource_language->get('resources', 'github_repo_required'),
+                        'min' => $resource_language->get('resources', 'github_repo_min_2'),
+                        'max' => $resource_language->get('resources', 'github_repo_max_64')
+                    ),
+                ]);
 
-				if($validation->passed()){
+				if ($validation->passed()) {
 					// Check GitHub API
 					try {
 						// Use cURL
@@ -173,8 +146,8 @@ if(Input::exists()){
 
 						$github_query = json_decode($github_query, true);
 
-						if(!isset($github_query[0])){
-							$error = str_replace('{x}', Output::getClean($_POST['github_username']) . '/' . Output::getClean($_POST['github_repo']), $resource_language->get('resources', 'unable_to_get_repo'));
+						if (!isset($github_query[0])) {
+							$error = $resource_language->get('resources', 'unable_to_get_repo', ['repo' => Output::getClean($_POST['github_username']) . '/' . Output::getClean($_POST['github_repo'])]);
 						} else {
 							// Valid response
 							$releases_array = array();
@@ -192,7 +165,6 @@ if(Input::exists()){
 							$_SESSION['github_releases'] = $releases_array;
 
 							Redirect::to(URL::build('/resources/new/', 'step=release'));
-							die();
 
 						}
 
@@ -201,59 +173,22 @@ if(Input::exists()){
 					}
 
 				} else {
-					// Errors
-					$errors = array();
-
-					foreach($validation->errors() as $item){
-						if(strpos($item, 'is required') !== false){
-							switch($item){
-								case (strpos($item, 'github_username') !== false):
-									$errors[] = $resource_language->get('resources', 'github_username_required');
-									break;
-								case (strpos($item, 'github_repo') !== false):
-									$errors[] = $resource_language->get('resources', 'github_repo_required');
-									break;
-							}
-						} else if(strpos($item, 'minimum') !== false){
-							switch($item){
-								case (strpos($item, 'github_username') !== false):
-									$errors[] = $resource_language->get('resources', 'github_username_min_2');
-									break;
-								case (strpos($item, 'github_repo') !== false):
-									$errors[] = $resource_language->get('resources', 'github_repo_min_2');
-									break;
-							}
-						} else if(strpos($item, 'maximum') !== false){
-							switch($item){
-								case (strpos($item, 'github_username') !== false):
-									$errors[] = $resource_language->get('resources', 'github_username_max_32');
-									break;
-								case (strpos($item, 'github_repo') !== false):
-									$errors[] = $resource_language->get('resources', 'github_repo_max_64');
-									break;
-							}
-						}
-					}
-
-					$error = implode('<br />', $errors);
+					$error = implode('<br />', $validation->errors());
 				}
 
 			} else if($_GET['step'] == 'release'){
 				// Validate release
 				if(!isset($_SESSION['new_resource']) || !isset($_SESSION['new_resource']['type']) || (isset($_SESSION['new_resource']['type']) && $_SESSION['new_resource']['type'] != 'github')){
 					Redirect::to(URL::build('/resources/new'));
-					die();
 				}
 
 				if(!isset($_SESSION['github_releases']) || (isset($_SESSION['github_releases']) && !count($_SESSION['github_releases']))){
 					Redirect::to(URL::build('/resources/new/', 'step=github'));
-					die();
 				}
 
 				// Check permissions
 				if (!$resources->canPostResourceInCategory($groups, $_SESSION['new_resource']['category'])) {
 					Redirect::to(URL::build('/resources'));
-					die();
 				}
 
 				try {
@@ -276,20 +211,15 @@ if(Input::exists()){
 
 					$github_query = json_decode($github_query);
 
-					if(!isset($github_query->id)) $error = str_replace('{x}', Output::getClean($_SESSION['new_resource']['github']['github_username']) . '/' . Output::getClean($_SESSION['new_resource']['github']['github_repo']), $resource_language->get('resources', 'unable_to_get_repo'));
+					if(!isset($github_query->id)) $error = $resource_language->get('resources', 'unable_to_get_repo', ['repo' => Output::getClean($_SESSION['new_resource']['github']['github_username']) . '/' . Output::getClean($_SESSION['new_resource']['github']['github_repo'])]);
 					else {
 						// Valid response
 						// Create resource
 						// Format description
-						$cache->setCache('post_formatting');
-						$formatting = $cache->retrieve('formatting');
+                        // TODO: hooks!
+						$content = Output::getClean($_SESSION['new_resource']['content']);
 
-						if($formatting == 'markdown'){
-							$content = Michelf\Markdown::defaultTransform($_SESSION['new_resource']['content']);
-							$content = Output::getClean($content);
-						} else $content = Output::getClean($_SESSION['new_resource']['content']);
-
-						$queries->create('resources', array(
+						DB::getInstance()->insert('resources', array(
 							'category_id' => $_SESSION['new_resource']['category'],
 							'creator_id' => $user->data()->id,
 							'name' => Output::getClean($_SESSION['new_resource']['name']),
@@ -304,9 +234,9 @@ if(Input::exists()){
 							'latest_version' => Output::getClean($github_query->tag_name)
 						));
 
-						$resource_id = $queries->getLastId();
+						$resource_id = DB::getInstance()->lastId();
 
-						$queries->create('resources_releases', array(
+						DB::getInstance()->insert('resources_releases', array(
 							'resource_id' => $resource_id,
 							'category_id' => $_SESSION['new_resource']['category'],
 							'release_title' => Output::getClean($github_query->name),
@@ -317,18 +247,18 @@ if(Input::exists()){
 						));
 
 						// Hook
-						$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
+						$new_resource_category = DB::getInstance()->get('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
 
-						if(count($new_resource_category))
-							$new_resource_category = Output::getClean($new_resource_category[0]->name);
+						if ($new_resource_category->count())
+							$new_resource_category = Output::getClean($new_resource_category->first()->name);
 
 						else
 							$new_resource_category = 'Unknown';
 
-						HookHandler::executeEvent('newResource', array(
+						EventHandler::executeEvent('newResource', array(
 							'event' => 'newResource',
 							'username' => Output::getClean($user->data()->nickname),
-							'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
+							'content' => $resource_language->get('resources', 'new_resource_text', ['category' => $new_resource_category, 'user' => Output::getClean($user->data()->nickname)]),
 							'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
 							'avatar_url' => $user->getAvatar(128, true),
 							'title' => Output::getClean($_SESSION['new_resource']['name']),
@@ -339,7 +269,6 @@ if(Input::exists()){
 						unset($_SESSION['github_releases']);
 
 						Redirect::to(URL::build('/resources/resource/' . $resource_id));
-						die();
 					}
 
 				} catch(Exception $e){
@@ -350,26 +279,22 @@ if(Input::exists()){
 				// Free or premium
 				if(!isset($_SESSION['new_resource'])){
 					Redirect::to(URL::build('/resources/new'));
-					die();
 				}
 
-				$category = $queries->getWhere('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
-				if(!count($category)){
+				$category = DB::getInstance()->get('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
+				if (!$category->count()) {
 					Redirect::to(URL::build('/resources/new'));
-					die();
 				}
-				$category = $category[0];
+				$category = $category->first();
 
                 $permission = $resources->getAvailableResourceTypes($groups, $category->id);
 
 				if(!$permission->post){
 					Redirect::to(URL::build('/resources/new'));
-					die();
 				}
 
 				if(!$permission->premium){
 					Redirect::to(URL::build('/resources/new/', 'step=upload'));
-					die();
 				}
 
 				if(Input::exists()){
@@ -396,10 +321,8 @@ if(Input::exists()){
 
 							if($type == 'external'){
 								Redirect::to(URL::build('/resources/new/', 'step=link'));
-								die();
 							} else {
 								Redirect::to(URL::build('/resources/new/', 'step=upload'));
-								die();
 							}
 						}
 
@@ -411,26 +334,22 @@ if(Input::exists()){
 				// Upload zip
 				if(!isset($_SESSION['new_resource'])){
 					Redirect::to(URL::build('/resources/new'));
-					die();
 				}
 
-				$category = $queries->getWhere('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
-				if(!count($category)){
+				$category = DB::getInstance()->get('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
+				if(!$category->count()){
 					Redirect::to(URL::build('/resources/new'));
-					die();
 				}
-				$category = $category[0];
+				$category = $category->first();
 
 				$permission = $resources->getAvailableResourceTypes($groups, $category->id);
 
 				if(!$permission->post){
 					Redirect::to(URL::build('/resources/new'));
-					die();
 				}
 
 				if(!isset($_SESSION['new_resource']['type'])){
 					Redirect::to(URL::build('/resources/new/', 'step=type'));
-					die();
 				}
 
 				if(!isset($_POST['version']))
@@ -457,34 +376,29 @@ if(Input::exists()){
 						$error = $resource_language->get('resources', 'file_not_zip');
 					} else {
 						// Check file size
-						$filesize = $queries->getWhere('settings', array('name', '=', 'resources_filesize'));
-						if(!count($filesize)){
-							$queries->create('settings', array(
+						$filesize = DB::getInstance()->get('settings', array('name', '=', 'resources_filesize'));
+						if (!$filesize->count()) {
+							DB::getInstance()->insert('settings', array(
 								'name' => 'resources_filesize',
 								'value' => '2048'
 							));
 							$filesize = '2048';
 
 						} else {
-							$filesize = $filesize[0]->value;
+							$filesize = $filesize->first()->value;
 
 							if(!is_numeric($filesize))
 								$filesize = '2048';
 						}
 
 						if($_FILES['resourceFile']['size'] > ($filesize * 1000) || $_FILES['resourceFile']['size'] == 0){
-							$error = str_replace('{x}', Output::getClean($filesize), $resource_language->get('resources', 'filesize_max_x'));
+							$error = $resource_language->get('resources', 'filesize_max_x', ['filesize' => Output::getClean($filesize)]);
 
 						} else {
 							// Create resource
 							// Format description
-							$cache->setCache('post_formatting');
-							$formatting = $cache->retrieve('formatting');
-
-							if($formatting == 'markdown'){
-								$content = Michelf\Markdown::defaultTransform($_SESSION['new_resource']['content']);
-								$content = Output::getClean($content);
-							} else $content = Output::getClean($_SESSION['new_resource']['content']);
+							// TODO: hooks
+							$content = Output::getClean($_SESSION['new_resource']['content']);
 
 							$type = 0;
 							$price = null;
@@ -498,7 +412,7 @@ if(Input::exists()){
 								}
 							}
 
-							$queries->create('resources', array(
+							DB::getInstance()->insert('resources', array(
 								'category_id' => $_SESSION['new_resource']['category'],
 								'creator_id' => $user->data()->id,
 								'name' => Output::getClean($_SESSION['new_resource']['name']),
@@ -515,10 +429,10 @@ if(Input::exists()){
 								'price' => $price
 							));
 
-							$resource_id = $queries->getLastId();
+							$resource_id = DB::getInstance()->lastId();
 
 							// Create release
-							$queries->create('resources_releases', array(
+							DB::getInstance()->insert('resources_releases', array(
 								'resource_id' => $resource_id,
 								'category_id' => $_SESSION['new_resource']['category'],
 								'release_title' => Output::getClean($version),
@@ -528,7 +442,7 @@ if(Input::exists()){
 								'download_link' => 'local'
 							));
 
-							$release_id = $queries->getLastId();
+							$release_id = DB::getInstance()->lastId();
 
 							$uploadPath = $user_dir . DIRECTORY_SEPARATOR . $resource_id;
 
@@ -545,17 +459,17 @@ if(Input::exists()){
 							if(move_uploaded_file($_FILES['resourceFile']['tmp_name'], $uploadPath)){
 								// File uploaded
 								// Hook
-								$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
+								$new_resource_category = DB::getInstance()->get('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
 
-								if(count($new_resource_category))
-									$new_resource_category = Output::getClean($new_resource_category[0]->name);
+								if ($new_resource_category->count())
+									$new_resource_category = Output::getClean($new_resource_category->first()->name);
 								else
 									$new_resource_category = 'Unknown';
 
-								HookHandler::executeEvent('newResource', array(
+								EventHandler::executeEvent('newResource', array(
 									'event' => 'newResource',
 									'username' => $user->getDisplayname(),
-									'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
+									'content' => $resource_language->get('resources', 'new_resource_text', ['category' => $new_resource_category, 'user' => Output::getClean($user->data()->nickname)]),
 									'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
 									'avatar_url' => $user->getAvatar(128, true),
 									'title' => Output::getClean($_SESSION['new_resource']['name']),
@@ -565,38 +479,40 @@ if(Input::exists()){
 								unset($_SESSION['new_resource']);
 
 								Redirect::to(URL::build('/resources/resource/' . $resource_id));
-								die();
 
 							} else {
 								// Unable to upload file
-								$error = str_replace('{x}', $_FILES['resourceFile']['error'], $resource_language->get('resources', 'file_upload_failed'));
+								$error = $resource_language->get('resources', 'file_upload_failed', ['error' => Output::getClean($_FILES['resourceFile']['error'])]);
 
-								$queries->delete('resources', array('id', '=', $resource_id));
-								$queries->delete('resources_releases', array('id', '=', $release_id));
+								DB::getInstance()->delete('resources', array('id', '=', $resource_id));
+								DB::getInstance()->delete('resources_releases', array('id', '=', $release_id));
 							}
 						}
 					}
 				}
 			} else if($_GET['step'] == 'link'){
 				if(Token::check(Input::get('token'))){
+                    // TODO: better error messages
+                    $errorMessage = $resource_language->get('resources', 'external_link_error', ['min' => 4, 'max' => 256]);
+
 					// Validate link
-					$validate = new Validate();
-					$validation = $validate->check($_POST, array(
+					$validation = Validate::check($_POST, array(
 						'link' => array(
 							'required' => true,
 							'min' => 4,
 							'max' => 256
 						)
-					));
+					))->messages([
+                        'link' => array(
+                            'required' => $errorMessage,
+                            'min' => $errorMessage,
+                            'max' => $errorMessage
+                        )
+                    ]);
 
-					if($validation->passed()){
-						$cache->setCache('post_formatting');
-						$formatting = $cache->retrieve('formatting');
-
-						if($formatting == 'markdown'){
-							$content = Michelf\Markdown::defaultTransform($_SESSION['new_resource']['content']);
-							$content = Output::getClean($content);
-						} else $content = Output::getClean($_SESSION['new_resource']['content']);
+					if ($validation->passed()) {
+                        // TODO: hooks
+						Output::getClean($_SESSION['new_resource']['content']);
 
 						if(!isset($_POST['version']))
 							$version = '1.0.0';
@@ -615,7 +531,7 @@ if(Input::exists()){
 							}
 						}
 
-						$queries->create('resources', array(
+						DB::getInstance()->insert('resources', array(
 							'category_id' => $_SESSION['new_resource']['category'],
 							'creator_id' => $user->data()->id,
 							'name' => Output::getClean($_SESSION['new_resource']['name']),
@@ -632,9 +548,9 @@ if(Input::exists()){
 							'price' => $price
 						));
 
-						$resource_id = $queries->getLastId();
+						$resource_id = DB::getInstance()->lastId();
 
-						$queries->create('resources_releases', array(
+						DB::getInstance()->insert('resources_releases', array(
 							'resource_id' => $resource_id,
 							'category_id' => $_SESSION['new_resource']['category'],
 							'release_title' => Output::getClean($version),
@@ -645,18 +561,18 @@ if(Input::exists()){
 						));
 
 						// Hook
-						$new_resource_category = $queries->getWhere('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
+						$new_resource_category = DB::getInstance()->get('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
 
-						if(count($new_resource_category))
-							$new_resource_category = Output::getClean($new_resource_category[0]->name);
+						if ($new_resource_category->count())
+							$new_resource_category = Output::getClean($new_resource_category->first()->name);
 
 						else
 							$new_resource_category = 'Unknown';
 
-						HookHandler::executeEvent('newResource', array(
+						EventHandler::executeEvent('newResource', array(
 							'event' => 'newResource',
 							'username' => $user->getDisplayname(),
-							'content' => str_replace(array('{x}', '{y}'), array($new_resource_category, Output::getClean($user->data()->nickname)), $resource_language->get('resources', 'new_resource_text')),
+							'content' => $resource_language->get('resources', 'new_resource_text', ['category' => $new_resource_category, 'user' => Output::getClean($user->data()->nickname)]),
 							'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
 							'avatar_url' => $user->getAvatar(128, true),
 							'title' => Output::getClean($_SESSION['new_resource']['name']),
@@ -666,10 +582,9 @@ if(Input::exists()){
 						unset($_SESSION['new_resource']);
 
 						Redirect::to(URL::build('/resources/resource/' . $resource_id));
-						die();
 
 					} else {
-						$error = $resource_language->get('resources', 'external_link_error');
+						$error = $errorMessage;
 					}
 				} else {
 					$error = $language->get('general', 'invalid_token');
@@ -699,16 +614,6 @@ if(!isset($_GET['step'])){
 	// Assign post content if it already exists
 	if(isset($_POST['description'])) $smarty->assign('CONTENT', Output::getClean($_POST['description']));
 	else $smarty->assign('CONTENT', '');
-
-	// Markdown or HTML?
-	$cache->setCache('post_formatting');
-	$formatting = $cache->retrieve('formatting');
-
-	if($formatting == 'markdown'){
-		// Markdown
-		$smarty->assign('MARKDOWN', true);
-		$smarty->assign('MARKDOWN_HELP', $language->get('general', 'markdown_help'));
-	}
 
 	// Errors?
 	if(isset($error)) $smarty->assign('ERROR', $error);
@@ -768,38 +673,34 @@ if(!isset($_GET['step'])){
 		case 'type':
 			if(!isset($_SESSION['new_resource'])){
 				Redirect::to(URL::build('/resources/new'));
-				die();
 			}
 
-			$category = $queries->getWhere('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
-			if(!count($category)){
+			$category = DB::getInstance()->get('resources_categories', array('id', '=', $_SESSION['new_resource']['category']));
+			if (!$category->count()) {
 				Redirect::to(URL::build('/resources/new'));
-				die();
 			}
-			$category = $category[0];
+			$category = $category->first();
 
 			$permission = $resources->getAvailableResourceTypes($groups, $category->id);
 
 			if (!$permission->post) {
 				Redirect::to(URL::build('/resources/new'));
-				die();
 			}
 
 			if (!$permission->premium) {
 				Redirect::to(URL::build('/resources/new/', 'step=upload'));
-				die();
 			}
 
-			$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
-			if(!count($currency)){
-				$queries->create('settings', array(
+			$currency = DB::getInstance()->get('settings', array('name', '=', 'resources_currency'));
+			if (!$currency->count()) {
+				DB::getInstance()->insert('settings', array(
 					'name' => 'resources_currency',
 					'value' => 'GBP'
 				));
 				$currency = 'GBP';
 
 			} else
-				$currency = $currency[0]->value;
+				$currency = $currency->first()->value;
 
 			$smarty->assign(array(
 				'TYPE' => $resource_language->get('resources', 'type'),
@@ -811,8 +712,8 @@ if(!isset($_GET['step'])){
 
 			if(isset($error)) $smarty->assign('ERROR', $error);
 
-			$user_premium_details = $queries->getWhere('resources_users_premium_details', array('user_id', '=', $user->data()->id));
-			if(!count($user_premium_details) || !$user_premium_details[0]->paypal_email){
+			$user_premium_details = DB::getInstance()->get('resources_users_premium_details', array('user_id', '=', $user->data()->id));
+			if(!$user_premium_details->count() || !$user_premium_details->first()->paypal_email){
 				$smarty->assign('NO_PAYMENT_EMAIL', $resource_language->get('resources', 'no_payment_email'));
 			}
 
@@ -847,9 +748,7 @@ if(!isset($_GET['step'])){
 
 		default:
 			Redirect::to(URL::build('/resources/new'));
-			die();
 
-			break;
 	}
 
 }
@@ -863,50 +762,12 @@ $smarty->assign(array(
 	'TOKEN' => Token::get()
 ));
 
-// Display either Markdown or HTML editor
-if(!isset($formatting)){
-	$cache->setCache('post_formatting');
-	$formatting = $cache->retrieve('formatting');
-}
+$template->assets()->include(AssetTree::TINYMCE);
 
-$template->addJSFiles(array(
-	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array()
-));
-
-if($formatting == 'markdown'){
-	$template->addJSFiles(array(
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/js/emojionearea.min.js' => array()
-	));
-
-	$template->addJSScript('
-	$(document).ready(function() {
-	    var el = $("#markdown").emojioneArea({
-			pickerPosition: "bottom"
-		});
-	});
-	');
-
-} else {
-	$template->addCSSFiles(array(
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.css' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/css/spoiler.css' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/css/emojione.min.css' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/css/emojione.sprites.css' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emojionearea/css/emojionearea.min.css' => array(),
-	));
-	$template->addJSFiles(array(
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/prism/prism.js' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/plugins/spoiler/js/spoiler.js' => array(),
-		(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/tinymce/tinymce.min.js' => array()
-	));
-
-	$template->addJSScript(Input::createTinyEditor($language, 'reply'));
-}
+$template->addJSScript(Input::createTinyEditor($language, 'reply'));
 
 // Load modules + template
-Module::loadPage($user, $pages, $cache, $smarty, array($navigation, $cc_nav, $mod_nav), $widgets);
+Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);
 
 $page_load = microtime(true) - $start;
 define('PAGE_LOAD_TIME', str_replace('{x}', round($page_load, 3), $language->get('general', 'page_loaded_in')));

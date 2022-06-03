@@ -39,13 +39,16 @@ $page_title = $resource_language->get('resources', 'settings');
 require_once(ROOT_PATH . '/core/templates/backend_init.php');
 
 // Load modules + template
-Module::loadPage($user, $pages, $cache, $smarty, array($navigation, $cc_nav, $mod_nav), $widgets);
+Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);
 
-if(Input::exists()){
+if (Input::exists()) {
 	$errors = array();
-	if(Token::check(Input::get('token'))){
-		$validate = new Validate();
-		$validation = $validate->check($_POST, array(
+	if (Token::check(Input::get('token'))) {
+        $currencyMessage = $resource_language->get('resources', 'invalid_currency', ['linkStart' => '<a href="https://en.wikipedia.org/wiki/ISO_4217#Active_codes" target="_blank" rel="noopener nofollow">', 'linkEnd' => '</a>']);
+        $filesizeMessage = $resource_language->get('resources', 'invalid_filesize');
+        $infoMessage = $resource_language->get('resources', 'invalid_pre_purchase_info');
+
+		$validation = Validate::check($_POST, [
 			'currency' => array(
 				'required' => true,
 				'min' => 3,
@@ -58,34 +61,40 @@ if(Input::exists()){
 			'pre_purchase_info' => array(
 				'max' => 100000
 			)
-		));
+		])->messages([
+            'currency' => array(
+                'required' => $currencyMessage,
+                'min' => $currencyMessage,
+                'max' => $currencyMessage
+            ),
+            'filesize' => array(
+                'required' => $filesizeMessage,
+                'min' => $filesizeMessage
+            ),
+            'pre_purchase_info' => array(
+                'max' => $infoMessage
+            )
+        ]);
 
 		if($validation->passed()){
-			$currency_id = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
-			$currency_id = $currency_id[0]->id;
-
-			$queries->update('settings', $currency_id, array(
+			DB::getInstance()->update('settings', ['name', '=', 'resources_currency'], array(
 				'value' => $_POST['currency']
 			));
 
-			$filesize_id = $queries->getWhere('settings', array('name', '=', 'resources_filesize'));
-			$filesize_id = $filesize_id[0]->id;
-
-			$queries->update('settings', $filesize_id, array(
+			DB::getInstance()->update('settings', ['name', '=', 'resources_filesize'], array(
 				'value' => $_POST['filesize']
 			));
 
 			$pre_purchase_info = '';
-			if(isset($_POST['pre_purchase_info'])){
+			if (isset($_POST['pre_purchase_info'])) {
 				$pre_purchase_info = $_POST['pre_purchase_info'];
 			}
-			$pre_purchase_info_id = $queries->getWhere('privacy_terms', array('name', '=', 'resource'));
 
-			$queries->update('privacy_terms', $pre_purchase_info_id[0]->id, array(
-				'value' => $_POST['pre_purchase_info']
+			DB::getInstance()->update('privacy_terms', ['name', '=', 'resource'], array(
+				'value' => $pre_purchase_info
 			));
 
-			if(isset($_POST['client_id']) && isset($_POST['client_secret']) && strlen($_POST['client_secret']) && strlen($_POST['client_secret'])){
+			if (isset($_POST['client_id']) && isset($_POST['client_secret']) && strlen($_POST['client_id']) && strlen($_POST['client_secret'])) {
 				$to_config = file_get_contents(ROOT_PATH . '/modules/Resources/paypal_default.php');
 				$to_config = str_replace(array('{client_id}', '{client_secret}'), array($_POST['client_id'], $_POST['client_secret']), $to_config);
 
@@ -99,15 +108,7 @@ if(Input::exists()){
 			$success = $resource_language->get('resources', 'settings_updated_successfully');
 
 		} else {
-			foreach($validation->errors() as $error){
-				if(strpos($error, 'currency') !== false){
-					$errors[] = $resource_language->get('resources', 'invalid_currency');
-				} else if(strpos($error, 'filesize') !== false){
-					$errors[] = $resource_language->get('resources', 'invalid_filesize');
-				} else {
-					$errors[] = $resource_language->get('resources', 'invalid_pre_purchase_info');
-				}
-			}
+			$errors = $validation->errors();
 		}
 	} else
 		$errors[] = $language->get('general', 'invalid_token');
@@ -125,44 +126,44 @@ if(isset($errors) && count($errors))
 		'ERRORS_TITLE' => $language->get('general', 'error')
 	));
 
-$currency = $queries->getWhere('settings', array('name', '=', 'resources_currency'));
-if(!count($currency)){
-	$queries->create('settings', array(
+$currency = DB::getInstance()->get('settings', array('name', '=', 'resources_currency'));
+if (!$currency->count()) {
+	DB::getInstance()->insert('settings', array(
 		'name' => 'resources_currency',
 		'value' => 'GBP'
 	));
 	$currency = 'GBP';
 
 } else {
-	$currency = Output::getClean($currency[0]->value);
+	$currency = Output::getClean($currency->first()->value);
 }
 
-$filesize = $queries->getWhere('settings', array('name', '=', 'resources_filesize'));
-if(!count($filesize)){
-	$queries->create('settings', array(
+$filesize = DB::getInstance()->get('settings', array('name', '=', 'resources_filesize'));
+if(!$filesize->count()) {
+	DB::getInstance()->insert('settings', array(
 		'name' => 'resources_filesize',
 		'value' => '2048'
 	));
 	$filesize = '2048';
 
 } else {
-	$filesize = $filesize[0]->value;
+	$filesize = $filesize->first()->value;
 
-	if(!is_numeric($filesize))
+	if (!is_numeric($filesize))
 		$filesize = '2048';
 }
 
-$pre_purchase_info = $queries->getWhere('privacy_terms', array('name', '=', 'resource'));
-if(!count($pre_purchase_info)){
+$pre_purchase_info = DB::getInstance()->get('privacy_terms', array('name', '=', 'resource'));
+if (!$pre_purchase_info->count()) {
 	$pre_purchase_info = '<p>You will be redirected to PayPal to complete your purchase.</p><p>Access to the download will only be granted once the payment has been completed, this may take a while.</p><p>Please note, ' . SITE_NAME . ' can\'t take any responsibility for purchases that occur through our resources section. If you experience any issues with the resource, please contact the resource author directly.</p><p>If your access to ' . SITE_NAME . ' is revoked (for example, your account is banned), you will lose access to any purchased resources.</p>';
 
-	$queries->create('privacy_terms', array(
+	DB::getInstance()->insert('privacy_terms', array(
 		'name' => 'resource',
 		'value' => $pre_purchase_info
 	));
 
 } else {
-	$pre_purchase_info = $pre_purchase_info[0]->value;
+	$pre_purchase_info = $pre_purchase_info->first()->value;
 }
 
 $smarty->assign(array(
@@ -214,7 +215,11 @@ $template->addJSFiles(array(
 	(defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
 ));
 
-$template->addJSScript(Input::createEditor('inputPrePurchaseInfo', true));
+$template->assets()->include([
+    AssetTree::TINYMCE,
+]);
+
+$template->addJSScript(Input::createTinyEditor($language, 'inputPrePurchaseInfo'));
 
 $template->onPageLoad();
 

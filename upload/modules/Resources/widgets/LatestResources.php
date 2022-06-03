@@ -2,7 +2,7 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr12
+ *  NamelessMC version 2.0.0-pr13
  *
  *  License: MIT
  *
@@ -10,21 +10,22 @@
  */
 class LatestResourcesWidget extends WidgetBase {
 
-    private $_smarty, 
-            $_language, 
+    private $_language,
             $_cache, 
             $_user;
 
-    public function __construct($pages = array(), $user, $language, $resources_language, $smarty, $cache) {
+    public function __construct($user, $language, $resources_language, $smarty, $cache) {
 
     	$this->_user = $user;
 		$this->_language = $language;
 		$this->_resources_language = $resources_language;
     	$this->_smarty = $smarty;
     	$this->_cache = $cache;
-		
-        parent::__construct($pages);
-        
+
+        $widget_query = self::getData('Latest Resources');
+
+        parent::__construct(self::parsePages($widget_query));
+
         // Get widget
         $widget_query = DB::getInstance()->query('SELECT `location`, `order` FROM nl2_widgets WHERE `name` = ?', array('Latest Resources'))->first();
 
@@ -37,7 +38,7 @@ class LatestResourcesWidget extends WidgetBase {
 
     }
 
-    public function initialise() {
+    public function initialise(): void {
 
 		$queries = new Queries;
 		$timeago = new Timeago();

@@ -20,10 +20,6 @@ define('PAGE', 'resources_licenses');
 $page_title = $language->get('user', 'user_cp');
 require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
-require(ROOT_PATH . '/core/includes/emojione/autoload.php'); // Emojione
-require(ROOT_PATH . '/core/includes/markdown/tohtml/Markdown.inc.php'); // Markdown to HTML
-$emojione = new Emojione\Client(new Emojione\Ruleset());
-
 require(ROOT_PATH . '/modules/Resources/classes/Resources.php');
 $resources = new Resources();
 
@@ -33,27 +29,23 @@ $rid = $rid[count($rid) - 1];
 
 if (!strlen($rid)) {
     Redirect::to(URL::build('/user/resources'));
-    die();
 }
 
 $rid = explode('-', $rid);
 if (!is_numeric($rid[0])) {
     Redirect::to(URL::build('/user/resources'));
-    die();
 }
 $rid = $rid[0];
 
-$resource = $queries->getWhere('resources', array('id', '=', $rid));
+$resource = DB::getInstance()->get('resources', array('id', '=', $rid));
 
-if (!count($resource)) {
+if (!$resource->count()) {
     // Doesn't exist
     Redirect::to(URL::build('/user/resources'));
-    die();
-} else $resource = $resource[0];
+} else $resource = $resource->first();
 
 if (!Resources::canManageLicenses($resource->id, $user)) {
     Redirect::to(URL::build('/user/resources'));
-    die();
 }
 
 if (Input::exists()) {
@@ -69,7 +61,7 @@ if (Input::exists()) {
 
                         if ($user_exists->count()) {
                             // Add license
-                            $queries->create('resources_payments', array(
+                            DB::getInstance()->insert('resources_payments', array(
                                 'user_id' => $_POST['user'],
                                 'resource_id' => $resource->id,
                                 'transaction_id' => 'manual',
@@ -79,7 +71,7 @@ if (Input::exists()) {
                             $success = $resource_language->get('resources', 'license_added_successfully');
 
                             // Alert
-                            Alert::create($user_exists->first()->id, 'resource_purchased', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{x}', 'replace_with' => $resource->name), Resources::buildURL($resource->id, $resource->name));
+                            Alert::create($user_exists->first()->id, 'resource_purchased', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name), Resources::buildURL($resource->id, $resource->name));
 
                         } else
                             $error = $language->get('api', 'unable_to_find_user');
@@ -95,26 +87,26 @@ if (Input::exists()) {
 
         } else if (isset($_POST['license'])) {
             // Ensure license ID is for current resource
-            $license = $queries->getWhere('resources_payments', array('id', '=', $_POST['license']));
+            $license = DB::getInstance()->get('resources_payments', array('id', '=', $_POST['license']));
 
-            if ($license && count($license) && $license[0]->resource_id == $resource->id) {
+            if ($license->count() && $license->first()->resource_id == $resource->id) {
                 switch (Input::get('action')) {
                     case 'reinstate':
-                        $queries->update('resources_payments', $license[0]->id, array(
+                        DB::getInstance()->update('resources_payments', $license->first()->id, array(
                             'status' => 1
                         ));
 
                         // Alert
-                        Alert::create($license[0]->user_id, 'resource_purchased', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{x}', 'replace_with' => $resource->name), Resources::buildURL($resource->id, $resource->name));
+                        Alert::create($license->first()->user_id, 'resource_purchased', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name), Resources::buildURL($resource->id, $resource->name));
                         break;
 
                     case 'revoke':
-                        $queries->update('resources_payments', $license[0]->id, array(
+                        DB::getInstance()->update('resources_payments', $license->first()->id, array(
                             'status' => 3
                         ));
 
                         // Alert
-                        Alert::create($license[0]->user_id, 'resource_license_cancelled', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_cancelled'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_cancelled_full', 'replace' => '{x}', 'replace_with' => $resource->name), Resources::buildURL($resource->id, $resource->name));
+                        Alert::create($license->first()->user_id, 'resource_license_cancelled', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_cancelled'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_cancelled_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name), Resources::buildURL($resource->id, $resource->name));
                         break;
                 }
             } else
@@ -143,7 +135,7 @@ if (count($licenses)) {
             'username' => $customer->getDisplayName(),
             'profile' => $customer->getProfileURL(),
             'avatar' => $customer->getAvatar(),
-            'style' => $customer->getGroupClass(),
+            'style' => $customer->getGroupStyle(),
             'payment_id' => Output::getClean($license->payment_id),
             'status' => $license->status,
             'status_text' => $resource_language->get('resources', 'status_' . Resources::mapPaymentStatus($license->status)),
@@ -158,7 +150,7 @@ if (count($licenses)) {
 // Language values
 $smarty->assign(array(
     'USER_CP' => $language->get('user', 'user_cp'),
-    'MANAGING_LICENSES' => str_replace('{x}', Output::getClean($resource->name), $resource_language->get('resources', 'managing_licenses_for')),
+    'MANAGING_LICENSES' => $resource_language->get('resources', 'managing_licenses_for', ['resource' => Output::getClean($resource->name)]),
     'NO_LICENSES' => $resource_language->get('resources', 'no_licenses'),
     'LICENSES' => $licenses_array,
     'ADD_LICENSE' => $resource_language->get('resources', 'add_license'),
@@ -177,7 +169,7 @@ $smarty->assign(array(
 ));
 
 // Load modules + template
-Module::loadPage($user, $pages, $cache, $smarty, array($navigation, $cc_nav, $mod_nav), $widgets);
+Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);
 
 require(ROOT_PATH . '/core/templates/cc_navbar.php');
 

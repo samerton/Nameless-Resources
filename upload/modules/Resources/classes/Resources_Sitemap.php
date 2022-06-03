@@ -2,14 +2,17 @@
 /*
  *	Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr5
+ *  NamelessMC version 2.0.0-pr13
  *
  *  License: MIT
  *
  *  Resource module Sitemap method
  */
+
+use SitemapPHP\Sitemap;
+
 class Resources_Sitemap {
-	public static function generateSitemap($sitemap = null){
+	public static function generateSitemap(Sitemap $sitemap = null){
 		if(!$sitemap)
 			return;
 
