@@ -145,45 +145,50 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                     // Validate rating
                     $rating = round($_POST['rating']);
 
-                    // Get latest release tag
-                    $release_tag = $latest_release->release_tag;
+                    if ($rating < 1 || $rating > 5) {
+                        // Invalid rating
 
-                    // Create comment
-                    $queries->create('resources_comments', [
-                        'resource_id' => $resource->id,
-                        'author_id' => $user->data()->id,
-                        'content' => Output::getClean(Input::get('content')),
-                        'release_tag' => $release_tag,
-                        'created' => date('U'),
-                        'rating' => $rating
-                    ]);
-                    $rating_id = $queries->getLastId();
+                    } else {
+                        // Get latest release tag
+                        $release_tag = $latest_release->release_tag;
 
-                    // Calculate overall rating
-                    // Ensure user hasn't already rated, and if so, hide their rating
-                    $ratings = $queries->getWhere('resources_comments', ['resource_id', '=', $resource->id]);
-                    if(count($ratings)){
-                        $overall_rating = 0;
-                        $overall_rating_count = 0;
-                        $release_rating = 0;
-                        $release_rating_count = 0;
+                        // Create comment
+                        DB::getInstance()->insert('resources_comments', array(
+                            'resource_id' => $resource->id,
+                            'author_id' => $user->data()->id,
+                            'content' => Output::getClean(Input::get('content')),
+                            'release_tag' => $release_tag,
+                            'created' => date('U'),
+                            'rating' => $rating
+                        ));
+                        $rating_id = DB::getInstance()->lastId();
 
-                        foreach($ratings as $rating){
-                            if($rating_id != $rating->id && $rating->author_id == $user->data()->id && $rating->hidden == 0){
-                                // Hide rating
-                                $queries->update('resources_comments', $rating->id, [
-                                    'hidden' => 1
-                                ]);
-                            } else if($rating->hidden == 0){
-                                // Update rating
-                                // Overall
-                                $overall_rating = $overall_rating + $rating->rating;
-                                $overall_rating_count++;
+                        // Calculate overall rating
+                        // Ensure user hasn't already rated, and if so, hide their rating
+                        $ratings = DB::getInstance()->get('resources_comments', array('resource_id', '=', $resource->id));
+                        if ($ratings->count()) {
+                            $overall_rating = 0;
+                            $overall_rating_count = 0;
+                            $release_rating = 0;
+                            $release_rating_count = 0;
 
-                                if($rating->release_tag == $release_tag){
-                                    // Release
-                                    $release_rating = $release_rating + $rating->rating;
-                                    $release_rating_count++;
+                            foreach($ratings as $rating){
+                                if($rating_id != $rating->id && $rating->author_id == $user->data()->id && $rating->hidden == 0){
+                                    // Hide rating
+                                    DB::getInstance()->update('resources_comments', $rating->id, array(
+                                        'hidden' => 1
+                                    ));
+                                } else if($rating->hidden == 0){
+                                    // Update rating
+                                    // Overall
+                                    $overall_rating = $overall_rating + $rating->rating;
+                                    $overall_rating_count++;
+
+                                    if($rating->release_tag == $release_tag){
+                                        // Release
+                                        $release_rating = $release_rating + $rating->rating;
+                                        $release_rating_count++;
+                                    }
                                 }
                             }
 
@@ -193,12 +198,12 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             $release_rating = $release_rating / $release_rating_count;
                             $release_rating = round($release_rating * 10);
 
-                            DB::getInstance()->update('resources', $resource->id, [
+                            DB::getInstance()->update('resources', $resource->id, array(
                                 'rating' => $overall_rating
-                            ]);
-                            DB::getInstance()->update('resources_releases', $latest_release->id, [
+                            ));
+                            DB::getInstance()->update('resources_releases', $latest_release->id, array(
                                 'rating' => $release_rating
-                            ]);
+                            ));
                         }
 
                         $cache->setCache('resource-comments-' . $resource->id);
@@ -224,7 +229,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         $comments = DB::getInstance()->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC')->results();
 
         // Remove replies
-        $replies_array = [];
+        $replies_array = array();
         foreach($comments as $key => $comment){
             if(!is_null($comment->reply_id)){
                 $replies_array[$comment->reply_id][] = $comment;
@@ -238,7 +243,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
     } else $comments = (array) $cache->retrieve('comments');
 
     // Pagination
-    $paginator = new Paginator((isset($template_pagination) ? $template_pagination : []));
+    $paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
     $results = $paginator->getLimited($comments, 10, $p, count($comments));
     $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringtoURL($resource->name) . '/', true));
 
@@ -248,15 +253,15 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         $smarty->assign('PAGINATION', '');
 
     // Array to pass to template
-    $comments_array = [];
+    $comments_array = array();
 
     // Can the user delete reviews?
     if ($user->isLoggedIn() && $resources->canDeleteReviews($resource->category_id, $groups)) {
         $can_delete_reviews = true;
-        $smarty->assign([
+        $smarty->assign(array(
             'DELETE_REVIEW' => $resource_language->get('resources', 'delete_review'),
             'CONFIRM_DELETE_REVIEW' => $resource_language->get('resources', 'confirm_delete_review')
-        ]);
+        ));
     }
 
     if(count($comments)){
@@ -269,19 +274,23 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
         while($n < count($results->data)){
             $author = new User($results->data[$n]->author_id);
-            $comments_array[] = [
-                'username' => $author->getDisplayname(),
-                'user_avatar' => $author->getAvatar(),
-                'user_style' => $author->getGroupStyle(),
-                'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
-                'content' => Output::getPurified(Output::getDecoded($results->data[$n]->content)), // TODO: hooks
-                'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language),
-                'date_full' => date('d M Y, H:i', $results->data[$n]->created),
-                'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : []),
-                'rating' => $results->data[$n]->rating,
-                'release_tag' => Output::getClean($results->data[$n]->release_tag),
-                'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
-            ];
+
+            if ($author && $author->exists()) {
+                $comments_array[] = array(
+                    'username' => $author->getDisplayname(),
+                    'user_avatar' => $author->getAvatar(),
+                    'user_style' => $author->getGroupStyle(),
+                    'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
+                    'content' => Output::getPurified(Output::getDecoded($results->data[$n]->content)), // TODO: hooks
+                    'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language),
+                    'date_full' => date('d M Y, H:i', $results->data[$n]->created),
+                    'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
+                    'rating' => $results->data[$n]->rating,
+                    'release_tag' => Output::getClean($results->data[$n]->release_tag),
+                    'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
+                );
+            }
+
             $n++;
         }
     }
@@ -296,13 +305,13 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
     $author = new User($resource->creator_id);
 
     // Get Releases Count
-    $releases = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_releases WHERE resource_id = ?', [$resource->id])->first()->c;
+    $releases = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_releases WHERE resource_id = ?', array($resource->id))->first()->c;
 
     // Get Reviews Count
-    $reviews = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_comments WHERE resource_id = ? AND hidden = 0', [$resource->id])->first()->c;
+    $reviews = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_comments WHERE resource_id = ? AND hidden = 0', array($resource->id))->first()->c;
 
     // Assign Smarty variables
-    $smarty->assign([
+    $smarty->assign(array(
         'VIEWING_RESOURCE' => $resource_language->get('resources', 'viewing_resource_x', ['resource' => Output::getClean($resource->name)]),
         'UPLOAD_ICON' => $resource_language->get('resources', 'resource_upload_icon'),
         'CHANGE_ICON' => $resource_language->get('resources', 'resource_change_icon'),
@@ -366,29 +375,29 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         'SUBMIT' => $language->get('general', 'submit'),
         'CONTRIBUTORS' => $resource_language->get('resources', 'contributors_x', ['contributors' => Output::getClean($resource->contributors)]),
         'HAS_CONTRIBUTORS' => (strlen(trim($resource->contributors)) > 0) ? 1 : 0
-    ]);
+    ));
 
     if(isset($error))
         $smarty->assign('ERROR', $error);
 
     // Check if resource icon uploaded
     if($resource->has_icon == 1 ) {
-        $smarty->assign([
+        $smarty->assign(array(
             'RESOURCE_ICON' => $resource->icon
-        ]);
+        ));
     } else {
-        $smarty->assign([
+        $smarty->assign(array(
             'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
-        ]);
+        ));
     }
 
     // Get currency
-    $currency = DB::getInstance()->get('settings', ['name', '=', 'resources_currency']);
+    $currency = DB::getInstance()->get('settings', array('name', '=', 'resources_currency'));
     if (!$currency->count()) {
-        DB::getInstance()->insert('settings', [
+        DB::getInstance()->insert('settings', array(
             'name' => 'resources_currency',
             'value' => 'GBP'
-        ]);
+        ));
         $currency = 'GBP';
 
     } else
@@ -396,7 +405,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
     if ($resource->type == 0) {
         if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
-            $smarty->assign([
+            $smarty->assign(array(
                 'DOWNLOAD' => $resource_language->get('resources', 'download'),
                 'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
             ]);
@@ -516,7 +525,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             $comments = DB::getInstance()->orderWhere('resources_comments', 'resource_id = ' . $resource->id . ' AND hidden = 0', 'created', 'DESC')->results();
 
             // Remove replies
-            $replies_array = [];
+            $replies_array = array();
             foreach ($comments as $key => $comment) {
                 if (!is_null($comment->reply_id)) {
                     $replies_array[$comment->reply_id][] = Output::getPurified($comment);
@@ -530,7 +539,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         } else $comments = (array) $cache->retrieve('comments');
 
         // Pagination
-        $paginator = new Paginator((isset($template_pagination) ? $template_pagination : []));
+        $paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
         $results = $paginator->getLimited($comments, 10, $p, count($comments));
         $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews=all&amp;'));
 
@@ -540,7 +549,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             $smarty->assign('PAGINATION', '');
 
         // Array to pass to template
-        $comments_array = [];
+        $comments_array = array();
 
         if (count($comments)) {
             // Display the correct number of comments
@@ -548,19 +557,22 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
             while($n < count($results->data)){
                 $author = new User($results->data[$n]->author_id);
-                $comments_array[] = [
-                    'username' => $author->getDisplayname(),
-                    'user_avatar' => $author->getAvatar(),
-                    'user_style' => $author->getGroupStyle(),
-                    'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
-                    'content' => Output::getPurified(Output::getDecoded($results->data[$n]->content)), // TODO: hooks
-                    'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language),
-                    'date_full' => date('d M Y, H:i', $results->data[$n]->created),
-                    'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : []),
-                    'rating' => $results->data[$n]->rating,
-                    'release_tag' => Output::getClean($results->data[$n]->release_tag),
-                    'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
-                ];
+
+                if ($author && $author->exists()) {
+                    $comments_array[] = array(
+                        'username' => $author->getDisplayname(),
+                        'user_avatar' => $author->getAvatar(),
+                        'user_style' => $author->getGroupStyle(),
+                        'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
+                        'content' => Output::getPurified(Output::getDecoded($results->data[$n]->content)), // TODO: hooks
+                        'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language),
+                        'date_full' => date('d M Y, H:i', $results->data[$n]->created),
+                        'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
+                        'rating' => $results->data[$n]->rating,
+                        'release_tag' => Output::getClean($results->data[$n]->release_tag),
+                        'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
+                    );
+                }
                 $n++;
             }
         }
@@ -575,27 +587,27 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         $author = new User($resource->creator_id);
 
         // Get Releases Count
-        $releases = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_releases WHERE resource_id = ?', [$resource->id])->first()->c;
+        $releases = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_releases WHERE resource_id = ?', array($resource->id))->first()->c;
 
         // Get Reviews Count
-        $reviews = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_comments WHERE resource_id = ? AND hidden = 0', [$resource->id])->first()->c;
+        $reviews = DB::getInstance()->query('SELECT COUNT(*) AS c FROM nl2_resources_comments WHERE resource_id = ? AND hidden = 0', array($resource->id))->first()->c;
 
         if ($resource->type == 1) {
-            $resource_purchases = DB::getInstance()->get('resources_payments', ['resource_id', '=', $resource->id]); // TODO: replace with count query
+            $resource_purchases = DB::getInstance()->get('resources_payments', array('resource_id', '=', $resource->id)); // TODO: replace with count query
             $resource_purchases = $resource_purchases->count();
-            $currency = DB::getInstance()->get('settings', ['name', '=', 'resources_currency']);
+            $currency = DB::getInstance()->get('settings', array('name', '=', 'resources_currency'));
             $currency = Output::getClean($currency->first()->value);
-            $smarty->assign([
+            $smarty->assign(array(
                 'PURCHASES' => $resource_language->get('resources', 'purchases'),
                 'PURCHASES_VALUE' => $resource_purchases,
                 'PRICE' => $resource_language->get('resources', 'price'),
                 'PRICE_VALUE' => Output::getClean($resource->price),
                 'CURRENCY' => $currency,
-            ]);
+            ));
         }
 
         // Assign Smarty variables
-        $smarty->assign([
+        $smarty->assign(array(
             'VIEWING_ALL_REVIEWS' => $resource_language->get('resources', 'viewing_all_reviews', ['resource' => Output::getClean($resource->name)]),
             'RESOURCE_NAME' => Output::getClean($resource->name),
             'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
@@ -644,17 +656,17 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             'RELEASE_DOWNLOADS' => $latest_update->downloads,
             'RELEASE_DATE' => $timeago->inWords(date('d M Y, H:i', $latest_update->created), $language),
             'RELEASE_DATE_FULL' => date('d M Y, H:i', $latest_update->created),
-        ]);
+        ));
 
         // Check if resource icon uploaded
         if($resource->has_icon == 1 ) {
-            $smarty->assign([
+            $smarty->assign(array(
                 'RESOURCE_ICON' => $resource->icon
-            ]);
+            ));
         } else {
-            $smarty->assign([
+            $smarty->assign(array(
                 'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
-            ]);
+            ));
         }
         
             // Ensure user has download permission
