@@ -19,9 +19,9 @@ $resources = new Resources();
 $timeago = new TimeAgo(TIMEZONE);
 
 $sort_types = [];
-$sort_types['updated'] = ['type' => 'updated', 'sort' => $resource_language->get('resources', 'last_updated'), 'link' => URL::build('/resources', 'sort=updated&')];
-$sort_types['newest'] = ['type' => 'created', 'sort' => $resource_language->get('resources', 'newest'), 'link' => URL::build('/resources', 'sort=newest&')];
-$sort_types['downloads'] = ['type' => 'downloads', 'sort' => $resource_language->get('resources', 'downloads'), 'link' => URL::build('/resources', 'sort=downloads&')];
+$sort_types['updated'] = ['type' => 'updated', 'sort' => $resource_language->get('resources', 'last_updated'), 'link' => URL::build('/resources', 'sort=updated')];
+$sort_types['newest'] = ['type' => 'created', 'sort' => $resource_language->get('resources', 'newest'), 'link' => URL::build('/resources', 'sort=newest')];
+$sort_types['downloads'] = ['type' => 'downloads', 'sort' => $resource_language->get('resources', 'downloads'), 'link' => URL::build('/resources', 'sort=downloads')];
 
 if(isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_types)){
     $sort_type = $_GET['sort'];
