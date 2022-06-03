@@ -46,14 +46,20 @@ class LatestResourcesWidget extends WidgetBase {
 		$latestResourcesArr = array();
 
 		foreach ($latestResources->results() as $resource) {
+            $author = new User($resource->creator_id);
+
+            if (!$author->exists()) {
+                continue;
+            }
+
 			$latestResourcesArr[$resource->id] = array(
 				'name' => Output::getClean($resource->name),
 				'short_description' => Output::getClean($resource->short_description),
 				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
 				'creator_id' => $resource->creator_id,
-				'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
-				'creator_style' => $this->_user->getGroupClass($resource->creator_id),
-				'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
+				'creator_username' => $author->getDisplayname(),
+				'creator_style' => $author->getGroupStyle(),
+				'creator_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
 				'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language),
 				'released_full' => date('d M Y, H:i', $resource->updated),
 			);
