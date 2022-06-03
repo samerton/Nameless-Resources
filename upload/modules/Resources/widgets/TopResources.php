@@ -40,13 +40,12 @@ class TopResourcesWidget extends WidgetBase {
 
     public function initialise(): void {
 
-		$queries = new Queries;
-		$timeago = new Timeago();
+		$timeago = new TimeAgo(TIMEZONE);
 
-		$topResources = $queries->orderAll('resources', 'rating', 'DESC LIMIT 5');
+		$topResources = DB::getInstance()->orderAll('resources', 'rating', 'DESC LIMIT 5');
 		$topResourcesArr = array();
-		
-		foreach ($topResources as $resource) {
+
+		foreach ($topResources->results() as $resource) {
 
 			// check if resource rating > 0
 			if ($resource->rating == 0) continue;
@@ -60,7 +59,7 @@ class TopResourcesWidget extends WidgetBase {
 				'creator_style' => $this->_user->getGroupClass($resource->creator_id),
 				'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
 				'rating' => round($resource->rating / 10),
-				'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
+				'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language),
 				'released_full' => date('d M Y, H:i', $resource->updated),
 			);
 

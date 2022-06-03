@@ -40,13 +40,12 @@ class LatestResourcesWidget extends WidgetBase {
 
     public function initialise(): void {
 
-		$queries = new Queries;
-		$timeago = new Timeago();
+		$timeago = new TimeAgo(TIMEZONE);
 
-		$latestResources = $queries->orderAll('resources', 'updated', 'DESC LIMIT 5');
+		$latestResources = DB::getInstance()->orderAll('resources', 'updated', 'DESC LIMIT 5');
 		$latestResourcesArr = array();
 
-		foreach ($latestResources as $resource) {
+		foreach ($latestResources->results() as $resource) {
 			$latestResourcesArr[$resource->id] = array(
 				'name' => Output::getClean($resource->name),
 				'short_description' => Output::getClean($resource->short_description),
@@ -55,7 +54,7 @@ class LatestResourcesWidget extends WidgetBase {
 				'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
 				'creator_style' => $this->_user->getGroupClass($resource->creator_id),
 				'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
-				'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
+				'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language),
 				'released_full' => date('d M Y, H:i', $resource->updated),
 			);
 
