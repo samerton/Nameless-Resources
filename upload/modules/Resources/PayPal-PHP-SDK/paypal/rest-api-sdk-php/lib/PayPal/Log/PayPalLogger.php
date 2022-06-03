@@ -12,7 +12,7 @@ class PayPalLogger extends AbstractLogger
     /**
      * @var array Indexed list of all log levels.
      */
-    private $loggingLevels = array(
+    private $loggingLevels = [
         LogLevel::EMERGENCY,
         LogLevel::ALERT,
         LogLevel::CRITICAL,
@@ -21,7 +21,7 @@ class PayPalLogger extends AbstractLogger
         LogLevel::NOTICE,
         LogLevel::INFO,
         LogLevel::DEBUG
-    );
+    ];
 
     /**
      * Configured Logging Level
@@ -72,7 +72,7 @@ class PayPalLogger extends AbstractLogger
         }
     }
 
-    public function log($level, $message, array $context = array())
+    public function log($level, $message, array $context = [])
     {
         if ($this->isLoggingEnabled) {
             // Checks if the message is at level below configured logging level

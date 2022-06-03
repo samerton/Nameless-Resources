@@ -22,7 +22,7 @@ class Resources_Sitemap {
         $db = DB::getInstance();
 
         $resources = $db->query('SELECT id, `name`, updated, category_id, creator_id FROM nl2_resources WHERE category_id IN (SELECT category_id FROM nl2_resources_categories_permissions WHERE group_id = 0 AND `view` = 1)')->results();
-        $authors = array();
+        $authors = [];
 
         foreach($resources as $resource){
             $sitemap->addItem(URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))), 0.5, 'weekly', date('Y-m-d', $resource->updated));
@@ -33,7 +33,7 @@ class Resources_Sitemap {
         $resources = null;
 
         foreach($authors as $author){
-            $author = $db->query('SELECT id, username FROM nl2_users WHERE id = ?', array($author))->results();
+            $author = $db->query('SELECT id, username FROM nl2_users WHERE id = ?', [$author])->results();
 
             if(count($author)){
                 $author = $author[0];

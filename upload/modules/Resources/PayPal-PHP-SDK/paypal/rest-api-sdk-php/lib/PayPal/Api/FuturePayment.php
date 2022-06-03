@@ -23,11 +23,11 @@ class FuturePayment extends Payment
      */
     public function create($apiContext = null, $clientMetadataId = null, $restCall = null)
     {
-        $headers = array();
+        $headers = [];
         if ($clientMetadataId != null) {
-            $headers = array(
+            $headers = [
                 'PAYPAL-CLIENT-METADATA-ID' => $clientMetadataId
-            );
+            ];
         }
         $payLoad = $this->toJSON();
         $json = self::executeCall(

@@ -50,15 +50,15 @@ class PayPalRestCall
      * @return mixed
      * @throws \PayPal\Exception\PayPalConnectionException
      */
-    public function execute($handlers = array(), $path, $method, $data = '', $headers = array())
+    public function execute($handlers = [], $path, $method, $data = '', $headers = [])
     {
         $config = $this->apiContext->getConfig();
         $httpConfig = new PayPalHttpConfig(null, $method, $config);
-        $headers = $headers ? $headers : array();
+        $headers = $headers ? $headers : [];
         $httpConfig->setHeaders($headers +
-            array(
+            [
                 'Content-Type' => 'application/json'
-            )
+            ]
         );
 
         // if proxy set via config, add it
@@ -72,7 +72,7 @@ class PayPalRestCall
                 $fullHandler = "\\" . (string)$handler;
                 $handler = new $fullHandler($this->apiContext);
             }
-            $handler->handle($httpConfig, $data, array('path' => $path, 'apiContext' => $this->apiContext));
+            $handler->handle($httpConfig, $data, ['path' => $path, 'apiContext' => $this->apiContext]);
         }
         $connection = new PayPalHttpConnection($httpConfig, $config);
         $response = $connection->execute($data);

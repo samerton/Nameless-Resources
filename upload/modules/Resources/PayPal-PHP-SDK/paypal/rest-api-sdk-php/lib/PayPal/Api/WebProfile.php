@@ -218,7 +218,7 @@ class WebProfile extends PayPalResourceModel
     {
         ArgumentValidator::validate($this->getId(), "Id");
         ArgumentValidator::validate($patch, 'patch');
-        $payload = array();
+        $payload = [];
         foreach ($patch as $patchObject) {
             $payload[] = $patchObject->toArray();
         }

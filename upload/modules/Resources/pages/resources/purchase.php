@@ -16,7 +16,7 @@ if(!$user->isLoggedIn()){
     Redirect::to(URL::build('/resources'));
 }
 
-$groups = array();
+$groups = [];
 foreach ($user->getGroups() as $group) {
     $groups[] = $group->id;
 }
@@ -35,7 +35,7 @@ if(!is_numeric($rid[0])){
 }
 $rid = $rid[0];
 
-$resource = DB::getInstance()->get('resources', array('id', '=', $rid));
+$resource = DB::getInstance()->get('resources', ['id', '=', $rid]);
 if (!$resource->count()) {
     Redirect::to(URL::build('/resources'));
 }
@@ -56,7 +56,7 @@ if (!$resources->canDownloadResourceFromCategory($groups, $resource->category_id
 }
 
 // Already purchased?
-$already_purchased = DB::getInstance()->query('SELECT id, status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $user->data()->id))->results();
+$already_purchased = DB::getInstance()->query('SELECT id, status FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', [$resource->id, $user->data()->id])->results();
 if(count($already_purchased)){
     $already_purchased_id = $already_purchased[0]->id;
     $already_purchased = $already_purchased[0]->status;
@@ -97,21 +97,21 @@ if(isset($_GET['do'])){
 
             if(isset($already_purchased_id) && $already_purchased == 2){
                 // Update a cancelled purchase
-                DB::getInstance()->update('resources_payments', $already_purchased_id, array(
+                DB::getInstance()->update('resources_payments', $already_purchased_id, [
                     'status' => 0,
                     'created' => date('U'),
                     'transaction_id' => $payment->getId()
-                ));
+                ]);
 
             } else {
                 // Create a new purchase
-                DB::getInstance()->insert('resources_payments', array(
+                DB::getInstance()->insert('resources_payments', [
                     'status' => 0,
                     'created' => date('U'),
                     'user_id' => $user->data()->id,
                     'resource_id' => $resource->id,
                     'transaction_id' => $payment->getId()
-                ));
+                ]);
             }
 
             // TODO: alerts
@@ -130,12 +130,12 @@ if(isset($_GET['do'])){
                 } else {
                     $_SESSION['resource_purchasing'] = $resource->id;
 
-                    $currency = DB::getInstance()->get('settings', array('name', '=', 'resources_currency'));
+                    $currency = DB::getInstance()->get('settings', ['name', '=', 'resources_currency']);
                     if (!$currency->count()) {
-                        DB::getInstance()->insert('settings', array(
+                        DB::getInstance()->insert('settings', [
                             'name' => 'resources_currency',
                             'value' => 'GBP'
-                        ));
+                        ]);
                         $currency = 'GBP';
 
                     } else {
@@ -143,7 +143,7 @@ if(isset($_GET['do'])){
                     }
 
                     // Get author's PayPal
-                    $author_paypal = DB::getInstance()->get('resources_users_premium_details', array('user_id', '=', $resource->creator_id));
+                    $author_paypal = DB::getInstance()->get('resources_users_premium_details', ['user_id', '=', $resource->creator_id]);
                     if (!$author_paypal->count() || !strlen($author_paypal->first()->paypal_email)){
                         $error = $resource_language->get('resources', 'author_doesnt_have_paypal');
 
@@ -174,7 +174,7 @@ if(isset($_GET['do'])){
                         $payment = new \PayPal\Api\Payment();
                         $payment->setIntent('sale')
                             ->setPayer($payer)
-                            ->setTransactions(array($transaction))
+                            ->setTransactions([$transaction])
                             ->setRedirectUrls($redirectUrls);
 
                         try {
@@ -201,39 +201,39 @@ require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
 if(isset($_GET['do'])){
     if($_GET['do'] == 'complete'){
-        $smarty->assign(array(
+        $smarty->assign([
             'PURCHASING_RESOURCE' => $resource_language->get('resources', 'purchasing_resource_x', ['resource' => Output::getClean($resource->name)]),
             'PURCHASE_COMPLETE' => $resource_language->get('resources', 'purchase_complete'),
             'BACK_LINK' => URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))),
             'BACK' => $language->get('general', 'back')
-        ));
+        ]);
 
         $template_file = 'resources/purchase_pending.tpl';
     } else {
-        $smarty->assign(array(
+        $smarty->assign([
             'PURCHASING_RESOURCE' => $resource_language->get('resources', 'purchasing_resource_x', ['resource' => Output::getClean($resource->name)]),
             'PURCHASE_CANCELLED' => $resource_language->get('resources', 'purchase_cancelled'),
             'BACK_LINK' => URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))),
             'BACK' => $language->get('general', 'back')
-        ));
+        ]);
 
         $template_file = 'resources/purchase_cancelled.tpl';
     }
 
 } else {
-    $pre_purchase_info = DB::getInstance()->get('privacy_terms', array('name', '=', 'resource'));
+    $pre_purchase_info = DB::getInstance()->get('privacy_terms', ['name', '=', 'resource']);
     if (!$pre_purchase_info->count()) {
         $pre_purchase_info = '<p>You will be redirected to PayPal to complete your purchase.</p><p>Access to the download will only be granted once the payment has been completed, this may take a while.</p><p>Please note, ' . SITE_NAME . ' can\'t take any responsibility for purchases that occur through our resources section. If you experience any issues with the resource, please contact the resource author directly.</p><p>If your access to ' . SITE_NAME . ' is revoked (for example, your account is banned), you will lose access to any purchased resources.</p>';
 
-        DB::getInstance()->insert('privacy_terms', array(
+        DB::getInstance()->insert('privacy_terms', [
             'name' => 'resource',
             'value' => $pre_purchase_info
-        ));
+        ]);
     } else
         $pre_purchase_info = Output::getPurified($pre_purchase_info->first()->value);
 
     // Assign Smarty variables
-    $smarty->assign(array(
+    $smarty->assign([
         'PURCHASING_RESOURCE' => $resource_language->get('resources', 'purchasing_resource_x', ['resource' => Output::getClean($resource->name)]),
         'CANCEL' => $language->get('general', 'cancel'),
         'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
@@ -241,7 +241,7 @@ if(isset($_GET['do'])){
         'PRE_PURCHASE_INFO' => $pre_purchase_info,
         'PURCHASE' => $resource_language->get('resources', 'purchase'),
         'TOKEN' => Token::get()
-    ));
+    ]);
 
     $template_file = 'resources/purchase.tpl';
 }

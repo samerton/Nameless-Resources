@@ -11,7 +11,7 @@
 
 require(ROOT_PATH . '/modules/Resources/classes/Resources.php');
 
-$data = DB::getInstance()->get('settings', array('name', '=', 'resources_paypal_hook'));
+$data = DB::getInstance()->get('settings', ['name', '=', 'resources_paypal_hook']);
 
 if (!$data->count())
     die();
@@ -20,7 +20,7 @@ else
 
 if(isset($_GET['key']) && $_GET['key'] == $data){
     // Success
-    $webhookId = DB::getInstance()->get('settings', array('name', '=', 'resources_paypal_hook_id'));
+    $webhookId = DB::getInstance()->get('settings', ['name', '=', 'resources_paypal_hook_id']);
     if (!$webhookId->count())
         die();
     else
@@ -32,7 +32,7 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
 
     if (!function_exists('getallheaders')) {
         function getallheaders() {
-                $build = array();
+                $build = [];
                 foreach($_SERVER as $name => $value) {
                 if (strpos($name, 'HTTP_PAYPAL') !== false) {
                     $build[str_replace('_','-', substr($name, 5))] = $value;
@@ -64,7 +64,7 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
         }
 
         $transaction = $response->resource->parent_payment;
-        $transaction = DB::getInstance()->get('resources_payments', array('transaction_id', '=', $transaction));
+        $transaction = DB::getInstance()->get('resources_payments', ['transaction_id', '=', $transaction]);
 
         if (!$transaction->count()){
             ErrorHandler::logCustomError('[PayPal] Could not find transaction ' . Output::getClean($transaction) . ' in the system.');
@@ -73,17 +73,17 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
             $transaction = $transaction->first();
 
         $customer = new User($transaction->user_id);
-        $resource = DB::getInstance()->query('SELECT `name`, `creator_id` FROM nl2_resources WHERE id = ?', array($transaction->resource_id))->first();
+        $resource = DB::getInstance()->query('SELECT `name`, `creator_id` FROM nl2_resources WHERE id = ?', [$transaction->resource_id])->first();
 
         switch($response->event_type){
             case 'PAYMENT.SALE.COMPLETED':
                 // Grant access to a resource
-                DB::getInstance()->update('resources_payments', $transaction->id, array(
+                DB::getInstance()->update('resources_payments', $transaction->id, [
                     'status' => 1
-                ));
+                ]);
 
-                Alert::create($transaction->user_id, 'resource_purchased', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name), Resources::buildURL($transaction->resource_id, $resource->name));
-                Alert::create($resource->creator_id, 'resource_purchase', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchase'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchase_full', 'replace' => array('{{user}}', '{{resource}}'), 'replace_with' => array($customer->getDisplayName(), $resource->name)), $customer->getProfileURL());
+                Alert::create($transaction->user_id, 'resource_purchased', ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'], ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name], Resources::buildURL($transaction->resource_id, $resource->name));
+                Alert::create($resource->creator_id, 'resource_purchase', ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchase'], ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchase_full', 'replace' => ['{{user}}', '{{resource}}'], 'replace_with' => [$customer->getDisplayName(), $resource->name]], $customer->getProfileURL());
 
                 break;
 
@@ -91,11 +91,11 @@ if(isset($_GET['key']) && $_GET['key'] == $data){
             case 'PAYMENT.SALE.REFUNDED':
             case 'PAYMENT.SALE.REVERSED':
                 // Revoke access to a resource
-                DB::getInstance()->update('resources_payments', $transaction->id, array(
+                DB::getInstance()->update('resources_payments', $transaction->id, [
                     'status' => 2
-                ));
+                ]);
 
-                Alert::create($resource->creator_id, 'resource_license_revoked', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_revoked'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_revoked_full', 'replace' => array('{{resource}}', '{{user}}'), 'replace_with' => array($resource->name, $customer->getDisplayName())), $customer->getProfileURL());
+                Alert::create($resource->creator_id, 'resource_license_revoked', ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_revoked'], ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_revoked_full', 'replace' => ['{{resource}}', '{{user}}'], 'replace_with' => [$resource->name, $customer->getDisplayName()]], $customer->getProfileURL());
 
                 break;
 

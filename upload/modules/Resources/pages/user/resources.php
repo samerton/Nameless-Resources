@@ -34,19 +34,19 @@ if(Input::exists()){
         }
 
         if(!isset($error)){
-            $user_id = DB::getInstance()->get('resources_users_premium_details', array('user_id', '=', $user->data()->id));
+            $user_id = DB::getInstance()->get('resources_users_premium_details', ['user_id', '=', $user->data()->id]);
             if ($user_id->count()) {
                 $user_id = $user_id->first()->id;
 
-                DB::getInstance()->update('resources_users_premium_details', $user_id, array(
+                DB::getInstance()->update('resources_users_premium_details', $user_id, [
                     'paypal_email' => $paypal_address
-                ));
+                ]);
 
             } else {
-                DB::getInstance()->insert('resources_users_premium_details', array(
+                DB::getInstance()->insert('resources_users_premium_details', [
                     'user_id' => $user->data()->id,
                     'paypal_email' => $paypal_address
-                ));
+                ]);
 
             }
 
@@ -57,7 +57,7 @@ if(Input::exists()){
         $error = $language->get('general', 'invalid_token');
 }
 
-$paypal_address_query = DB::getInstance()->get('resources_users_premium_details', array('user_id', '=', $user->data()->id));
+$paypal_address_query = DB::getInstance()->get('resources_users_premium_details', ['user_id', '=', $user->data()->id]);
 if ($paypal_address_query->count())
     $paypal_address = Output::getClean($paypal_address_query->first()->paypal_email);
 else
@@ -69,14 +69,14 @@ if(isset($success))
 if(isset($error))
     $smarty->assign('ERROR', $error);
 
-$purchased_resources = DB::getInstance()->query('SELECT nl2_resources.id as id, nl2_resources.name as name, nl2_resources.creator_id as author, nl2_resources.latest_version as version, nl2_resources.updated as updated FROM nl2_resources_payments LEFT JOIN nl2_resources ON nl2_resources.id = nl2_resources_payments.resource_id WHERE nl2_resources_payments.status = 1 AND nl2_resources_payments.user_id = ?', array($user->data()->id))->results();
+$purchased_resources = DB::getInstance()->query('SELECT nl2_resources.id as id, nl2_resources.name as name, nl2_resources.creator_id as author, nl2_resources.latest_version as version, nl2_resources.updated as updated FROM nl2_resources_payments LEFT JOIN nl2_resources ON nl2_resources.id = nl2_resources_payments.resource_id WHERE nl2_resources_payments.status = 1 AND nl2_resources_payments.user_id = ?', [$user->data()->id])->results();
 
-$purchased_array = array();
+$purchased_array = [];
 if(count($purchased_resources)){
     foreach($purchased_resources as $resource){
         $author = new User($resource->author);
 
-        $purchased_array[] = array(
+        $purchased_array[] = [
             'name' => Output::getClean($resource->name),
             'author_username' => $author->getDisplayname(true),
             'author_nickname' => $author->getDisplayname(),
@@ -87,26 +87,26 @@ if(count($purchased_resources)){
             'updated' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $language),
             'updated_full' => date('d M Y, H:i', $resource->updated),
             'link' => URL::build('/resources/resource/' . Output::getClean($resource->id) . '-' . Util::stringToURL($resource->name))
-        );
+        ];
     }
 }
 
-$premium_resources = DB::getInstance()->query('SELECT `id`, `name`, `latest_version` AS `version` FROM nl2_resources WHERE creator_id = ? AND `type` = 1', array($user->data()->id))->results();
-$premium_array = array();
+$premium_resources = DB::getInstance()->query('SELECT `id`, `name`, `latest_version` AS `version` FROM nl2_resources WHERE creator_id = ? AND `type` = 1', [$user->data()->id])->results();
+$premium_array = [];
 if (count($premium_resources)) {
     foreach($premium_resources as $resource){
-        $purchase_count = DB::getInstance()->query('SELECT COUNT(*) as `count` FROM nl2_resources_payments WHERE resource_id = ? AND `status` = 1', array($resource->id))->first();
-        $premium_array[] = array(
+        $purchase_count = DB::getInstance()->query('SELECT COUNT(*) as `count` FROM nl2_resources_payments WHERE resource_id = ? AND `status` = 1', [$resource->id])->first();
+        $premium_array[] = [
             'name' => Output::getClean($resource->name),
             'latest_version' => Output::getClean($resource->version),
             'link' => URL::build('/user/resources/licenses/' . Output::getClean($resource->id) . '-' . Util::stringToURL($resource->name)),
             'license_count' => $purchase_count->count == 1 ? $resource_language->get('resources', '1_license') : $resource_language->get('resources', 'x_licenses', ['count' => $purchase_count->count])
-        );
+        ];
     }
 }
 
 // Language values
-$smarty->assign(array(
+$smarty->assign([
     'USER_CP' => $language->get('user', 'user_cp'),
     'RESOURCES' => $resource_language->get('resources', 'resources'),
     'MY_RESOURCES_LINK' => URL::build('/resources/author/' . Output::getClean($user->data()->id  . '-' . $user->data()->nickname)),
@@ -125,7 +125,7 @@ $smarty->assign(array(
     'INFO' => $language->get('general', 'info'),
     'TOKEN' => Token::get(),
     'SUBMIT' => $language->get('general', 'submit')
-));
+]);
 
 // Load modules + template
 Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);

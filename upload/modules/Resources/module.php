@@ -181,13 +181,13 @@ class Resources_Module extends Module {
         }
 
         // AdminCP
-        PermissionHandler::registerPermissions('Resources', array(
+        PermissionHandler::registerPermissions('Resources', [
             'admincp.resources' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'resources'),
             'admincp.resources.categories' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'categories'),
             'admincp.resources.downloads' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'downloads'),
             'admincp.resources.settings' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'settings'),
             'admincp.resources.licenses' => $this->_language->get('moderator', 'staff_cp') . ' &raquo; ' . $this->_resource_language->get('resources', 'manage_licenses'),
-        ));
+        ]);
     }
 
     // Update to 1.6.0

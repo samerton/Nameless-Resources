@@ -42,61 +42,61 @@ require_once(ROOT_PATH . '/core/templates/backend_init.php');
 Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);
 
 if (Input::exists()) {
-    $errors = array();
+    $errors = [];
     if (Token::check(Input::get('token'))) {
         $currencyMessage = $resource_language->get('resources', 'invalid_currency', ['linkStart' => '<a href="https://en.wikipedia.org/wiki/ISO_4217#Active_codes" target="_blank" rel="noopener nofollow">', 'linkEnd' => '</a>']);
         $filesizeMessage = $resource_language->get('resources', 'invalid_filesize');
         $infoMessage = $resource_language->get('resources', 'invalid_pre_purchase_info');
 
         $validation = Validate::check($_POST, [
-            'currency' => array(
+            'currency' => [
                 'required' => true,
                 'min' => 3,
                 'max' => 3
-            ),
-            'filesize' => array(
+            ],
+            'filesize' => [
                 'required' => true,
                 'min' => 1
-            ),
-            'pre_purchase_info' => array(
+            ],
+            'pre_purchase_info' => [
                 'max' => 100000
-            )
+            ]
         ])->messages([
-            'currency' => array(
+            'currency' => [
                 'required' => $currencyMessage,
                 'min' => $currencyMessage,
                 'max' => $currencyMessage
-            ),
-            'filesize' => array(
+            ],
+            'filesize' => [
                 'required' => $filesizeMessage,
                 'min' => $filesizeMessage
-            ),
-            'pre_purchase_info' => array(
+            ],
+            'pre_purchase_info' => [
                 'max' => $infoMessage
-            )
+            ]
         ]);
 
         if($validation->passed()){
-            DB::getInstance()->update('settings', ['name', '=', 'resources_currency'], array(
+            DB::getInstance()->update('settings', ['name', '=', 'resources_currency'], [
                 'value' => $_POST['currency']
-            ));
+            ]);
 
-            DB::getInstance()->update('settings', ['name', '=', 'resources_filesize'], array(
+            DB::getInstance()->update('settings', ['name', '=', 'resources_filesize'], [
                 'value' => $_POST['filesize']
-            ));
+            ]);
 
             $pre_purchase_info = '';
             if (isset($_POST['pre_purchase_info'])) {
                 $pre_purchase_info = $_POST['pre_purchase_info'];
             }
 
-            DB::getInstance()->update('privacy_terms', ['name', '=', 'resource'], array(
+            DB::getInstance()->update('privacy_terms', ['name', '=', 'resource'], [
                 'value' => $pre_purchase_info
-            ));
+            ]);
 
             if (isset($_POST['client_id']) && isset($_POST['client_secret']) && strlen($_POST['client_id']) && strlen($_POST['client_secret'])) {
                 $to_config = file_get_contents(ROOT_PATH . '/modules/Resources/paypal_default.php');
-                $to_config = str_replace(array('{client_id}', '{client_secret}'), array($_POST['client_id'], $_POST['client_secret']), $to_config);
+                $to_config = str_replace(['{client_id}', '{client_secret}'], [$_POST['client_id'], $_POST['client_secret']], $to_config);
 
                 if((!file_exists(ROOT_PATH . '/modules/Resources/paypal.php') && is_writable(ROOT_PATH . '/modules/Resources')) || (file_exists(ROOT_PATH . '/modules/Resources/paypal.php') && is_writable(ROOT_PATH . '/modules/Resources/paypal.php'))){
                     file_put_contents(ROOT_PATH . '/modules/Resources/paypal.php', $to_config);
@@ -115,35 +115,35 @@ if (Input::exists()) {
 }
 
 if(isset($success))
-    $smarty->assign(array(
+    $smarty->assign([
         'SUCCESS' => $success,
         'SUCCESS_TITLE' => $language->get('general', 'success')
-    ));
+    ]);
 
 if(isset($errors) && count($errors))
-    $smarty->assign(array(
+    $smarty->assign([
         'ERRORS' => $errors,
         'ERRORS_TITLE' => $language->get('general', 'error')
-    ));
+    ]);
 
-$currency = DB::getInstance()->get('settings', array('name', '=', 'resources_currency'));
+$currency = DB::getInstance()->get('settings', ['name', '=', 'resources_currency']);
 if (!$currency->count()) {
-    DB::getInstance()->insert('settings', array(
+    DB::getInstance()->insert('settings', [
         'name' => 'resources_currency',
         'value' => 'GBP'
-    ));
+    ]);
     $currency = 'GBP';
 
 } else {
     $currency = Output::getClean($currency->first()->value);
 }
 
-$filesize = DB::getInstance()->get('settings', array('name', '=', 'resources_filesize'));
+$filesize = DB::getInstance()->get('settings', ['name', '=', 'resources_filesize']);
 if(!$filesize->count()) {
-    DB::getInstance()->insert('settings', array(
+    DB::getInstance()->insert('settings', [
         'name' => 'resources_filesize',
         'value' => '2048'
-    ));
+    ]);
     $filesize = '2048';
 
 } else {
@@ -153,20 +153,20 @@ if(!$filesize->count()) {
         $filesize = '2048';
 }
 
-$pre_purchase_info = DB::getInstance()->get('privacy_terms', array('name', '=', 'resource'));
+$pre_purchase_info = DB::getInstance()->get('privacy_terms', ['name', '=', 'resource']);
 if (!$pre_purchase_info->count()) {
     $pre_purchase_info = '<p>You will be redirected to PayPal to complete your purchase.</p><p>Access to the download will only be granted once the payment has been completed, this may take a while.</p><p>Please note, ' . SITE_NAME . ' can\'t take any responsibility for purchases that occur through our resources section. If you experience any issues with the resource, please contact the resource author directly.</p><p>If your access to ' . SITE_NAME . ' is revoked (for example, your account is banned), you will lose access to any purchased resources.</p>';
 
-    DB::getInstance()->insert('privacy_terms', array(
+    DB::getInstance()->insert('privacy_terms', [
         'name' => 'resource',
         'value' => $pre_purchase_info
-    ));
+    ]);
 
 } else {
     $pre_purchase_info = $pre_purchase_info->first()->value;
 }
 
-$smarty->assign(array(
+$smarty->assign([
     'PARENT_PAGE' => PARENT_PAGE,
     'DASHBOARD' => $language->get('admin', 'dashboard'),
     'RESOURCES' => $resource_language->get('resources', 'resources'),
@@ -185,35 +185,35 @@ $smarty->assign(array(
     'INFO' => $language->get('general', 'info'),
     'PAYPAL_CLIENT_ID' => $resource_language->get('resources', 'paypal_client_id'),
     'PAYPAL_CLIENT_SECRET' => $resource_language->get('resources', 'paypal_client_secret')
-));
+]);
 
 if(!is_dir(ROOT_PATH . '/uploads/resources')){
     if(!mkdir(ROOT_PATH . '/uploads/resources')){
-        $smarty->assign(array(
+        $smarty->assign([
             'WARNING' => $language->get('general', 'warning'),
             'UPLOADS_DIRECTORY_WRITABLE_INFO' => $resource_language->get('resources', 'upload_directory_not_writable')
-        ));
+        ]);
     }
 } else if(!is_writable(ROOT_PATH . '/uploads/resources')){
-    $smarty->assign(array(
+    $smarty->assign([
         'WARNING' => $language->get('general', 'warning'),
         'UPLOADS_DIRECTORY_WRITABLE_INFO' => $resource_language->get('resources', 'upload_directory_not_writable')
-    ));
+    ]);
 }
 
 $page_load = microtime(true) - $start;
 define('PAGE_LOAD_TIME', str_replace('{x}', round($page_load, 3), $language->get('general', 'page_loaded_in')));
 
-$template->addCSSFiles(array(
-    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css' => array()
-));
+$template->addCSSFiles([
+    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/css/spoiler.css' => []
+]);
 
-$template->addJSFiles(array(
-    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => array(),
-    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => array(),
-    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => array(),
-    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => array()
-));
+$template->addJSFiles([
+    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/emoji/js/emojione.min.js' => [],
+    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/spoiler/js/spoiler.js' => [],
+    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/ckeditor.js' => [],
+    (defined('CONFIG_PATH') ? CONFIG_PATH : '') . '/core/assets/plugins/ckeditor/plugins/emojione/dialogs/emojione.json' => []
+]);
 
 $template->assets()->include([
     AssetTree::TINYMCE,

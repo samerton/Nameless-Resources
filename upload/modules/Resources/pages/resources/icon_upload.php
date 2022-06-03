@@ -26,7 +26,7 @@ if (!$user->isLoggedIn()) {
     die();
 }
 
-$image_extensions = array('jpg', 'png', 'jpeg', 'gif');
+$image_extensions = ['jpg', 'png', 'jpeg', 'gif'];
 
 
 // Deal with input
@@ -39,7 +39,7 @@ if(Input::exists()){
             die();
         }
 
-        $resource = DB::getInstance()->get('resources', array('id', '=', $resource_id))->first();
+        $resource = DB::getInstance()->get('resources', ['id', '=', $resource_id])->first();
 
         // Token valid
         $image = new Bulletproof\Image($_FILES);
@@ -47,12 +47,12 @@ if(Input::exists()){
         $image->setDimension(2000, 2000); // 2k x 2k pixel maximum
         $image->setMime($image_extensions);
         
-        if(!is_dir(join(DIRECTORY_SEPARATOR, array(ROOT_PATH, 'uploads', 'resources_icons')))){
-            if(!mkdir(join(DIRECTORY_SEPARATOR, array(ROOT_PATH, 'uploads', 'resources_icons'))))
+        if(!is_dir(join(DIRECTORY_SEPARATOR, [ROOT_PATH, 'uploads', 'resources_icons']))){
+            if(!mkdir(join(DIRECTORY_SEPARATOR, [ROOT_PATH, 'uploads', 'resources_icons'])))
                 die('/uploads folder not writable!');
         }
 
-        $image->setLocation(join(DIRECTORY_SEPARATOR, array(ROOT_PATH, 'uploads', 'resources_icons')));
+        $image->setLocation(join(DIRECTORY_SEPARATOR, [ROOT_PATH, 'uploads', 'resources_icons']));
         $image->setName($resource->id);
 
         if($image['file']){
@@ -63,7 +63,7 @@ if(Input::exists()){
                     // OK
                     
                     // Need to delete any other icons
-                    $diff = array_diff($image_extensions, array(strtolower($upload->getMime())));
+                    $diff = array_diff($image_extensions, [strtolower($upload->getMime())]);
                     $diff_str = rtrim(implode(',', $diff), ',');
 
                     $to_remove = glob(ROOT_PATH . '/uploads/resources_icons/' . $resource->id . '.{' . $diff_str . '}', GLOB_BRACE);
@@ -74,11 +74,11 @@ if(Input::exists()){
                         }
                     }
 
-                    DB::getInstance()->update('resources', $resource->id, array(
+                    DB::getInstance()->update('resources', $resource->id, [
                         'icon' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/'. $resource->id . '.' . $upload->getMime(),
                         'has_icon' => 1,
                         'icon_updated' => date('U')
-                    ));
+                    ]);
 
                     Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
 

@@ -27,7 +27,7 @@ class TopResourcesWidget extends WidgetBase {
         parent::__construct(self::parsePages($widget_query));
         
         // Get widget
-        $widget_query = DB::getInstance()->query('SELECT `location`, `order` FROM nl2_widgets WHERE `name` = ?', array('Top Resources'))->first();
+        $widget_query = DB::getInstance()->query('SELECT `location`, `order` FROM nl2_widgets WHERE `name` = ?', ['Top Resources'])->first();
 
         // Set widget variables
         $this->_module = 'Resources';
@@ -44,14 +44,14 @@ class TopResourcesWidget extends WidgetBase {
         $timeago = new Timeago();
 
         $topResources = $queries->orderAll('resources', 'rating', 'DESC LIMIT 5');
-        $topResourcesArr = array();
+        $topResourcesArr = [];
         
         foreach ($topResources as $resource) {
 
             // check if resource rating > 0
             if ($resource->rating == 0) continue;
 
-            $topResourcesArr[$resource->id] = array(
+            $topResourcesArr[$resource->id] = [
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
                 'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
@@ -62,7 +62,7 @@ class TopResourcesWidget extends WidgetBase {
                 'rating' => round($resource->rating / 10),
                 'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
                 'released_full' => date('d M Y, H:i', $resource->updated),
-            );
+            ];
 
             // Check if resource icon uploaded
             if($resource->has_icon == 1 ) {
@@ -72,11 +72,11 @@ class TopResourcesWidget extends WidgetBase {
             }
         }
 
-        $this->_smarty->assign(array(
+        $this->_smarty->assign([
             'TOP_RESOURCES_TITLE' => $this->_resources_language->get('resources', 'top_resources'),
             'TOP_RESOURCES' => $topResourcesArr,
             'NO_TOP_RESOURCES' => $this->_resources_language->get('resources', 'no_top_resources'),
-        ));
+        ]);
 
         $this->_content = $this->_smarty->fetch('widgets/resources/top_resources.tpl');
     }

@@ -27,7 +27,7 @@ class LatestResourcesWidget extends WidgetBase {
         parent::__construct(self::parsePages($widget_query));
 
         // Get widget
-        $widget_query = DB::getInstance()->query('SELECT `location`, `order` FROM nl2_widgets WHERE `name` = ?', array('Latest Resources'))->first();
+        $widget_query = DB::getInstance()->query('SELECT `location`, `order` FROM nl2_widgets WHERE `name` = ?', ['Latest Resources'])->first();
 
         // Set widget variables
         $this->_module = 'Resources';
@@ -44,10 +44,10 @@ class LatestResourcesWidget extends WidgetBase {
         $timeago = new Timeago();
 
         $latestResources = $queries->orderAll('resources', 'updated', 'DESC LIMIT 5');
-        $latestResourcesArr = array();
+        $latestResourcesArr = [];
 
         foreach ($latestResources as $resource) {
-            $latestResourcesArr[$resource->id] = array(
+            $latestResourcesArr[$resource->id] = [
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
                 'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
@@ -57,7 +57,7 @@ class LatestResourcesWidget extends WidgetBase {
                 'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
                 'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
                 'released_full' => date('d M Y, H:i', $resource->updated),
-            );
+            ];
 
             // Check if resource icon uploaded
             if($resource->has_icon == 1 ) {
@@ -67,11 +67,11 @@ class LatestResourcesWidget extends WidgetBase {
             }
         }
 
-        $this->_smarty->assign(array(
+        $this->_smarty->assign([
             'UPDATED_RESOURCES_TITLE' => $this->_resources_language->get('resources', 'latest_resources'),
             'UPDATED_RESOURCES' => $latestResourcesArr,
             'NO_UPDATED_RESOURCES' => $this->_resources_language->get('resources', 'no_latest_resources'),
-        ));
+        ]);
 
         $this->_content = $this->_smarty->fetch('widgets/resources/latest_resources.tpl');
     }

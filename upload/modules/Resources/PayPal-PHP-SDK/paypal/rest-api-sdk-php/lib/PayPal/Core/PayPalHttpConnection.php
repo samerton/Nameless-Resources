@@ -28,7 +28,7 @@ class PayPalHttpConnection
     /**
      * @var array
      */
-    private $responseHeaders = array();
+    private $responseHeaders = [];
 
     /**
      * @var bool
@@ -58,7 +58,7 @@ class PayPalHttpConnection
      */
     private function getHttpHeaders()
     {
-        $ret = array();
+        $ret = [];
         foreach ($this->httpConfig->getHeaders() as $k => $v) {
             $ret[] = "$k: $v";
         }
@@ -158,9 +158,9 @@ class PayPalHttpConnection
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->httpConfig->getMethod());
         }
 
-        $this->responseHeaders = array();
+        $this->responseHeaders = [];
         $this->skippedHttpStatusLine = false;
-        curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($this, 'parseResponseHeaders'));
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, [$this, 'parseResponseHeaders']);
 
         //Execute Curl Request
         $result = curl_exec($ch);

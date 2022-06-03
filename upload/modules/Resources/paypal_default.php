@@ -9,22 +9,22 @@ $apiContext = new \PayPal\Rest\ApiContext(
 );
 
 $apiContext->setConfig(
-    array(
+    [
         'log.LogEnabled' => true,
         'log.FileName' => ROOT_PATH . '/cache/logs/PayPal.log',
         'log.LogLevel' => 'FINE',
         'mode' => 'live',
-    )
+    ]
 );
 
 try {
-    $data = DB::getInstance()->get('settings', array('name', '=', 'resources_paypal_hook'));
+    $data = DB::getInstance()->get('settings', ['name', '=', 'resources_paypal_hook']);
     if (!$data->count()) {
         $key = md5(uniqid());
 
         // Create API webhook
         $webhook = new \PayPal\Api\Webhook();
-        $webhookEventTypes = array();
+        $webhookEventTypes = [];
 
         $webhookEventTypes[] = new \PayPal\Api\WebhookEventType('{"name":"PAYMENT.SALE.COMPLETED"}');
         $webhookEventTypes[] = new \PayPal\Api\WebhookEventType('{"name":"PAYMENT.SALE.DENIED"}');
@@ -36,15 +36,15 @@ try {
         $output = $webhook->create($apiContext);
         $id = $output->getId();
 
-        DB::getInstance()->insert('settings', array(
+        DB::getInstance()->insert('settings', [
             'name' => 'resources_paypal_hook_id',
             'value' => $id
-        ));
+        ]);
 
-        DB::getInstance()->insert('settings', array(
+        DB::getInstance()->insert('settings', [
             'name' => 'resources_paypal_hook',
             'value' => $key
-        ));
+        ]);
     }
 } catch(Exception $e){
     ErrorHandler::logCustomError($e->getData());
