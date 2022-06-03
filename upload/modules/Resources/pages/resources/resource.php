@@ -272,20 +272,24 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 		$formatting = $cache->retrieve('formatting');
 
 		while($n < count($results->data)){
-		    $author = new User($results->data[$n]->author_id);
-			$comments_array[] = array(
-				'username' => $author->getDisplayname(),
-				'user_avatar' => $author->getAvatar(),
-				'user_style' => $author->getGroupStyle(),
-				'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
-				'content' => Output::getPurified(Output::getDecoded($results->data[$n]->content)), // TODO: hooks
-				'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language),
-				'date_full' => date('d M Y, H:i', $results->data[$n]->created),
-				'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
-				'rating' => $results->data[$n]->rating,
-				'release_tag' => Output::getClean($results->data[$n]->release_tag),
-				'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
-			);
+            $author = new User($results->data[$n]->author_id);
+
+		    if ($author && $author->exists()) {
+                $comments_array[] = array(
+                    'username' => $author->getDisplayname(),
+                    'user_avatar' => $author->getAvatar(),
+                    'user_style' => $author->getGroupStyle(),
+                    'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
+                    'content' => Output::getPurified(Output::getDecoded($results->data[$n]->content)), // TODO: hooks
+                    'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language),
+                    'date_full' => date('d M Y, H:i', $results->data[$n]->created),
+                    'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
+                    'rating' => $results->data[$n]->rating,
+                    'release_tag' => Output::getClean($results->data[$n]->release_tag),
+                    'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
+                );
+            }
+
 			$n++;
 		}
 	}
@@ -552,19 +556,22 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
 			while($n < count($results->data)){
 			    $author = new User($results->data[$n]->author_id);
-				$comments_array[] = array(
-					'username' => $author->getDisplayname(),
-					'user_avatar' => $author->getAvatar(),
-					'user_style' => $author->getGroupStyle(),
-					'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
-					'content' => Output::getPurified(Output::getDecoded($results->data[$n]->content)), // TODO: hooks
-					'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language),
-					'date_full' => date('d M Y, H:i', $results->data[$n]->created),
-					'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
-					'rating' => $results->data[$n]->rating,
-					'release_tag' => Output::getClean($results->data[$n]->release_tag),
-					'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
-				);
+
+			    if ($author && $author->exists()) {
+			        $comments_array[] = array(
+			            'username' => $author->getDisplayname(),
+			            'user_avatar' => $author->getAvatar(),
+			            'user_style' => $author->getGroupStyle(),
+			            'user_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
+			            'content' => Output::getPurified(Output::getDecoded($results->data[$n]->content)), // TODO: hooks
+			            'date' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->created), $language),
+			            'date_full' => date('d M Y, H:i', $results->data[$n]->created),
+			            'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : array()),
+			            'rating' => $results->data[$n]->rating,
+			            'release_tag' => Output::getClean($results->data[$n]->release_tag),
+			            'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
+			        );
+			    }
 				$n++;
 			}
 		}
