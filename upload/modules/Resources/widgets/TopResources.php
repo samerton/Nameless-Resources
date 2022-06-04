@@ -43,7 +43,7 @@ class TopResourcesWidget extends WidgetBase {
         $timeago = new TimeAgo(TIMEZONE);
 
         $topResources = DB::getInstance()->orderAll('resources', 'rating', 'DESC LIMIT 5');
-        $topResourcesArr = array();
+        $topResourcesArr = [];
 
         foreach ($topResources->results() as $resource) {
             // check if resource rating > 0
@@ -55,7 +55,7 @@ class TopResourcesWidget extends WidgetBase {
                 continue;
             }
 
-            $topResourcesArr[$resource->id] = array(
+            $topResourcesArr[$resource->id] = [
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
                 'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
@@ -66,7 +66,7 @@ class TopResourcesWidget extends WidgetBase {
                 'rating' => round($resource->rating / 10),
                 'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language),
                 'released_full' => date('d M Y, H:i', $resource->updated),
-            );
+            ];
 
             // Check if resource icon uploaded
             if($resource->has_icon == 1 ) {

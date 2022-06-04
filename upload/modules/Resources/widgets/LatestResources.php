@@ -43,7 +43,7 @@ class LatestResourcesWidget extends WidgetBase {
         $timeago = new TimeAgo(TIMEZONE);
 
         $latestResources = DB::getInstance()->orderAll('resources', 'updated', 'DESC LIMIT 5');
-        $latestResourcesArr = array();
+        $latestResourcesArr = [];
 
         foreach ($latestResources->results() as $resource) {
             $author = new User($resource->creator_id);
@@ -52,7 +52,7 @@ class LatestResourcesWidget extends WidgetBase {
                 continue;
             }
 
-            $latestResourcesArr[$resource->id] = array(
+            $latestResourcesArr[$resource->id] = [
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
                 'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
@@ -62,7 +62,7 @@ class LatestResourcesWidget extends WidgetBase {
                 'creator_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
                 'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language),
                 'released_full' => date('d M Y, H:i', $resource->updated),
-            );
+            ];
 
             // Check if resource icon uploaded
             if($resource->has_icon == 1 ) {
