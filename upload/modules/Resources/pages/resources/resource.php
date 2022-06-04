@@ -1291,7 +1291,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 					if(!$user->isLoggedIn() || $user->data()->id != $resource->creator_id){
 						if($user->isLoggedIn() || Cookie::exists('accept')){
 							if(!Cookie::exists('nl-resource-download-' . $resource->id)) {
-								$DB::getInstance()->increment('resources', $resource->id, 'downloads');
+								DB::getInstance()->increment('resources', $resource->id, 'downloads');
                                 DB::getInstance()->increment('resources_releases', $release->id, 'downloads');
 								Cookie::put('nl-resource-download-' . $resource->id, "true", 3600);
 							}
