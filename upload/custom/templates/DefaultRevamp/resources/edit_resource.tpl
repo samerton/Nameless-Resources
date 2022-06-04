@@ -6,11 +6,11 @@
         <h3>{$EDITING_RESOURCE}</h3>
 
         {if isset($ERRORS)}
-        <div class="ui negative message">
-            {foreach from=$ERRORS item=error}
-            {$error}<br />
-            {/foreach}
-        </div>
+            <div class="ui negative message">
+                {foreach from=$ERRORS item=error}
+                    {$error}<br />
+                {/foreach}
+            </div>
         {/if}
 
         <form action="" method="post" class="ui form">
@@ -26,18 +26,18 @@
             </div>
 
             {if isset($MARKDOWN)}
-            <div class="field">
-                <label for="markdown">{$DESCRIPTION}</label>
-                <textarea style="width:100%" id="markdown" name="description" rows="20"></textarea>
-                <span class="res right floated"><i data-toggle="popover" data-placement="top" data-html="true"
-                        data-content="{$MARKDOWN_HELP}" class="fa fa-question-circle text-info"
-                        aria-hidden="true"></i></span>
-            </div>
+                <div class="field">
+                    <label for="markdown">{$DESCRIPTION}</label>
+                    <textarea style="width:100%" id="markdown" name="description" rows="20"></textarea>
+                    <span class="res right floated"><i data-toggle="popover" data-placement="top" data-html="true"
+                            data-content="{$MARKDOWN_HELP}" class="fa fa-question-circle text-info"
+                            aria-hidden="true"></i></span>
+                </div>
             {else}
-            <div class="field">
-                <label for="editor">{$DESCRIPTION}</label>
-                <textarea name="description" id="editor" rows="3">{$RESOURCE_DESCRIPTION}</textarea>
-            </div>
+                <div class="field">
+                    <label for="editor">{$DESCRIPTION}</label>
+                    <textarea name="description" id="editor" rows="3">{$RESOURCE_DESCRIPTION}</textarea>
+                </div>
             {/if}
 
             <div class="field">
@@ -47,15 +47,15 @@
             </div>
 
             {if isset($PRICE)}
-            <div class="field" id="priceFormGroup">
-                <label for="inputPrice">{$PRICE}</label>
-                <div class="ui right labeled input">
-                    <input type="number" step="0.01" min="0.01" id="inputPrice" name="price" value="{$RESOURCE_PRICE}">
-                    <div class="ui basic label">
-                        {$CURRENCY}
+                <div class="field" id="priceFormGroup">
+                    <label for="inputPrice">{$PRICE}</label>
+                    <div class="ui right labeled input">
+                        <input type="number" step="0.01" min="0.01" id="inputPrice" name="price" value="{$RESOURCE_PRICE}">
+                        <div class="ui basic label">
+                            {$CURRENCY}
+                        </div>
                     </div>
                 </div>
-            </div>
             {/if}
 
             <input type="hidden" name="token" value="{$TOKEN}">

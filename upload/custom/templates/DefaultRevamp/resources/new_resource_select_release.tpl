@@ -11,9 +11,9 @@
         <div class="ui divider"></div>
 
         {if isset($ERROR)}
-        <div class="ui negative message">
-            {$ERROR}
-        </div>
+            <div class="ui negative message">
+                {$ERROR}
+            </div>
         {/if}
 
         <form action="" method="post" class="ui form">
@@ -21,7 +21,7 @@
                 <label for="inputRelease">{$SELECT_RELEASE}</label>
                 <select name="release" class="ui selection dropdown" id="inputRelease">
                     {foreach from=$RELEASES item=release}
-                    <option value="{$release.id}">{$release.tag} - {$release.name}</option>
+                        <option value="{$release.id}">{$release.tag} - {$release.name}</option>
                     {/foreach}
                 </select>
             </div>

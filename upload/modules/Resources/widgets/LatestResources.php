@@ -41,7 +41,7 @@ class LatestResourcesWidget extends WidgetBase {
     public function initialise(): void {
 
         $queries = new Queries;
-        $timeago = new Timeago();
+        $timeago = new TimeAgo();
 
         $latestResources = $queries->orderAll('resources', 'updated', 'DESC LIMIT 5');
         $latestResourcesArr = [];

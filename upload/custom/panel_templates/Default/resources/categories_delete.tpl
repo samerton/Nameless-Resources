@@ -51,7 +51,7 @@
                                     <select id="inputMoveResourcesTo" class="form-control" name="move_resources">
                                         <option value="none" selected>{$DELETE_RESOURCES}</option>
                                         {foreach from=$CATEGORIES_LIST item=category}
-                                        <option value="{$category->id|escape}">{$category->name|escape}</option>
+                                            <option value="{$category->id|escape}">{$category->name|escape}</option>
                                         {/foreach}
                                     </select>
                                 </div>

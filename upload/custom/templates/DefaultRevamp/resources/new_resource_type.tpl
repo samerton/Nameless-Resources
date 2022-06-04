@@ -11,15 +11,15 @@
         <div class="ui divider"></div>
 
         {if isset($ERROR)}
-        <div class="ui negative message">
-            {$ERROR}
-        </div>
+            <div class="ui negative message">
+                {$ERROR}
+            </div>
         {/if}
 
         {if isset($NO_PAYMENT_EMAIL)}
-        <div class="ui yellow message">
-            {$NO_PAYMENT_EMAIL}
-        </div>
+            <div class="ui yellow message">
+                {$NO_PAYMENT_EMAIL}
+            </div>
         {/if}
 
         <form action="" method="post" class="ui form">

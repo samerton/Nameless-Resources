@@ -40,10 +40,10 @@
                             {include file='includes/alerts.tpl'}
 
                             {if isset($UPLOADS_DIRECTORY_WRITABLE_INFO)}
-                            <div class="callout callout-danger">
-                                <h5><i class="icon fa fa-exclamation-triangle"></i> {$WARNING}</h5>
-                                {$UPLOADS_DIRECTORY_WRITABLE_INFO}
-                            </div>
+                                <div class="callout callout-danger">
+                                    <h5><i class="icon fa fa-exclamation-triangle"></i> {$WARNING}</h5>
+                                    {$UPLOADS_DIRECTORY_WRITABLE_INFO}
+                                </div>
                             {/if}
 
                             <form action="" method="post">

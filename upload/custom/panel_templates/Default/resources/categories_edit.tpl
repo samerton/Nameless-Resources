@@ -90,24 +90,24 @@
                                                     $GUEST_PERMISSIONS.0->can_view eq 1} checked{/if} /></td>
                                             <td><input type="hidden" name="perm-download-0" value="0" /><input
                                                     onclick="colourUpdate(this);" name="perm-download-0"
-                                                    id="Input-download-0" value="1" type="checkbox" {if
-                                                    $GUEST_PERMISSIONS|count && $GUEST_PERMISSIONS.0->can_download eq 1}
-                                                checked{/if} /></td>
+                                                    id="Input-download-0" value="1" type="checkbox"
+                                                    {if
+                                                    $GUEST_PERMISSIONS|count && $GUEST_PERMISSIONS.0->can_download eq 1} checked{/if} /></td>
                                             <td class="bg-danger"></td>
                                             <td class="bg-danger"></td>
                                         </tr>
                                         {foreach from=$GROUP_PERMISSIONS item=group}
-                                        <tr>
-                                            <td onclick="toggleAll(this);">{$group->name|escape}</td>
-                                            <td><input type="hidden" name="perm-view-{$group->id}" value="0" /><input
-                                                    onclick="colourUpdate(this);" name="perm-view-{$group->id}"
-                                                    id="Input-view-{$group->id}" value="1" type="checkbox" {if
+                                            <tr>
+                                                <td onclick="toggleAll(this);">{$group->name|escape}</td>
+                                                <td><input type="hidden" name="perm-view-{$group->id}" value="0" /><input
+                                                        onclick="colourUpdate(this);" name="perm-view-{$group->id}"
+                                                        id="Input-view-{$group->id}" value="1" type="checkbox" {if
                                                     $group->can_view eq 1} checked{/if} /></td>
                                             <td><input type="hidden" name="perm-download-{$group->id}"
                                                     value="0" /><input onclick="colourUpdate(this);"
                                                     name="perm-download-{$group->id}" id="Input-download-{$group->id}"
                                                     value="1" type="checkbox" {if $group->can_download eq 1}
-                                                checked{/if} /></td>
+                                                    checked{/if} /></td>
                                             <td><input type="hidden" name="perm-post-{$group->id}" value="0" /><input
                                                     onclick="colourUpdate(this);" name="perm-post-{$group->id}"
                                                     id="Input-post-{$group->id}" value="1" type="checkbox" {if
@@ -117,7 +117,9 @@
                                                     id="Input-premium-{$group->id}" value="1" type="checkbox" {if
                                                     $group->can_post_premium eq 1} checked{/if} /></td>
                                         </tr>
-                                        <script>groups.push("{$group->id}");</script>
+                                        <script>
+                                            groups.push("{$group->id}");
+                                        </script>
                                         {/foreach}
                                     </tbody>
                                 </table>
@@ -135,12 +137,12 @@
                                     </thead>
                                     <tbody>
                                         {foreach from=$GROUP_PERMISSIONS item=group}
-                                        <tr>
-                                            <td onclick="toggleAll(this);">{$group->name|escape}</td>
-                                            <td><input type="hidden" name="perm-move_resource-{$group->id}"
-                                                    value="0" /><input onclick="colourUpdate(this);"
-                                                    name="perm-move_resource-{$group->id}"
-                                                    id="Input-move_resource-{$group->id}" value="1" type="checkbox" {if
+                                            <tr>
+                                                <td onclick="toggleAll(this);">{$group->name|escape}</td>
+                                                <td><input type="hidden" name="perm-move_resource-{$group->id}"
+                                                        value="0" /><input onclick="colourUpdate(this);"
+                                                        name="perm-move_resource-{$group->id}"
+                                                        id="Input-move_resource-{$group->id}" value="1" type="checkbox" {if
                                                     $group->can_move eq 1} checked{/if} /></td>
                                             <td><input type="hidden" name="perm-edit_resource-{$group->id}"
                                                     value="0" /><input onclick="colourUpdate(this);"
@@ -226,6 +228,7 @@
                 x.className = "bg-danger";
             }
         }
+
         function toggle(group) {
             if (document.getElementById('Input-view-' + group).checked) {
                 document.getElementById('Input-view-' + group).checked = false;
@@ -300,14 +303,14 @@
         // Toggle all columns in row
         function toggleAll(that) {
             var first = (($(that).parents('tr').find(':checkbox').first().is(':checked') == true) ? false : true);
-            $(that).parents('tr').find(':checkbox').each(function () {
+            $(that).parents('tr').find(':checkbox').each(function() {
                 $(this).prop('checked', first);
                 colourUpdate(this);
             });
         }
 
-        $(document).ready(function () {
-            $('td').click(function () {
+        $(document).ready(function() {
+            $('td').click(function() {
                 let checkbox = $(this).find('input:checkbox');
                 let id = checkbox.attr('id');
 
@@ -320,7 +323,7 @@
 
                     colourUpdate(document.getElementById(id));
                 }
-            }).children().click(function (e) {
+            }).children().click(function(e) {
                 e.stopPropagation();
             });
         });

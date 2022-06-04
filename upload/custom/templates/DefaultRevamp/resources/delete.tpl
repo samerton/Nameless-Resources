@@ -8,11 +8,11 @@
         </div>
 
         {if isset($ERRORS)}
-        <div class="ui negative message">
-            {foreach from=$ERRORS item=error}
-            {$error}<br />
-            {/foreach}
-        </div>
+            <div class="ui negative message">
+                {foreach from=$ERRORS item=error}
+                    {$error}<br />
+                {/foreach}
+            </div>
         {/if}
 
         <br />

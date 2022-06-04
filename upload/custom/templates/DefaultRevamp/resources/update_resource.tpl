@@ -11,9 +11,9 @@
         <div class="ui divider"></div>
 
         {if isset($ERROR)}
-        <div class="ui negative message">
-            {$ERROR}
-        </div>
+            <div class="ui negative message">
+                {$ERROR}
+            </div>
         {/if}
 
         <form action="" method="post" enctype="multipart/form-data" class="ui form">
@@ -35,19 +35,19 @@
             </div>
 
             {if $GITHUB_LINKED}
-            <div class="field">
-                <div class="ui radio checkbox">
-                    <input type="radio" name="type" id="github" value="github" hidden>
-                    <label for="github">{$GITHUB_RELEASE}</label>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="type" id="github" value="github" hidden>
+                        <label for="github">{$GITHUB_RELEASE}</label>
+                    </div>
                 </div>
-            </div>
-            <div class="field">
-                <select name="release" class="ui selection dropdown" id="inputRelease">
-                    {foreach from=$RELEASES item=release}
-                    <option value="{$release.id}">{$release.tag} - {$release.name}</option>
-                    {/foreach}
-                </select>
-            </div>
+                <div class="field">
+                    <select name="release" class="ui selection dropdown" id="inputRelease">
+                        {foreach from=$RELEASES item=release}
+                            <option value="{$release.id}">{$release.tag} - {$release.name}</option>
+                        {/foreach}
+                    </select>
+                </div>
             {/if}
 
             <div class="field">
@@ -75,11 +75,11 @@
             <div class="field">
                 <label for="{if isset($MARKDOWN)}markdown{else}content{/if}">{$UPDATE_INFORMATION}</label>
                 {if !isset($MARKDOWN)}
-                <textarea style="width:100%" name="content" id="content" rows="15">{$CONTENT_VALUE}</textarea>
+                    <textarea style="width:100%" name="content" id="content" rows="15">{$CONTENT_VALUE}</textarea>
                 {else}
-                <textarea style="width:100%" id="markdown" name="content" rows="15">{$CONTENT_VALUE}</textarea>
-                <span class="res right floated"><i data-toggle="popover" data-content="{$MARKDOWN_HELP}"
-                        class="fa fa-question-circle text-info" aria-hidden="true"></i></span>
+                    <textarea style="width:100%" id="markdown" name="content" rows="15">{$CONTENT_VALUE}</textarea>
+                    <span class="res right floated"><i data-toggle="popover" data-content="{$MARKDOWN_HELP}"
+                            class="fa fa-question-circle text-info" aria-hidden="true"></i></span>
 
                 {/if}
             </div>

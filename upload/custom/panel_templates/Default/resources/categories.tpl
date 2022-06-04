@@ -42,32 +42,33 @@
                             {include file='includes/alerts.tpl'}
 
                             {if count($CATEGORIES_LIST)}
-                            <div class="card card-default">
-                                <div class="card-header">
-                                    {$CATEGORIES}
-                                </div>
-                                <div class="card-body">
-                                    {assign var="number" value=$CATEGORIES_LIST|count}
-                                    {assign var="i" value=1}
-                                    {foreach from=$CATEGORIES_LIST item=category}
-                                    <a href="{$category.edit_link}">{$category.name}</a>
-                                    <div class="float-md-right">
-                                        {if $i > 1}
-                                        <a href="{$category.order_up}" class="btn btn-primary"><i
-                                                class="fa fa-chevron-up" aria-hidden="true"></i></a>
-                                        {/if}
-                                        {if $i < $number} <a href="{$category.order_down}" class="btn btn-info"><i
-                                                class="fa fa-chevron-down" aria-hidden="true"></i></a>
-                                            {/if}
-                                            <a href="{$category.delete_link}" class="btn btn-danger"><i
-                                                    class="fa fa-trash" aria-hidden="true"></i></a>
+                                <div class="card card-default">
+                                    <div class="card-header">
+                                        {$CATEGORIES}
                                     </div>
-                                    <br />
-                                    {$category.description}
-                                    {if $i
-                                    < $number} <hr />
-                                    {/if}
-                                    {assign var="i" value=$i+1}
+                                    <div class="card-body">
+                                        {assign var="number" value=$CATEGORIES_LIST|count}
+                                        {assign var="i" value=1}
+                                        {foreach from=$CATEGORIES_LIST item=category}
+                                            <a href="{$category.edit_link}">{$category.name}</a>
+                                            <div class="float-md-right">
+                                                {if $i > 1}
+                                                    <a href="{$category.order_up}" class="btn btn-primary"><i
+                                                            class="fa fa-chevron-up" aria-hidden="true"></i></a>
+                                                {/if}
+                                                {if $i < $number} <a href="{$category.order_down}" class="btn btn-info"><i
+                                                            class="fa fa-chevron-down" aria-hidden="true"></i></a>
+                                                {/if}
+                                                <a href="{$category.delete_link}" class="btn btn-danger"><i class="fa fa-trash"
+                                                        aria-hidden="true"></i></a>
+                                            </div>
+                                            <br />
+                                            {$category.description}
+                                            {if $i
+                                            < $number}
+                                            <hr />
+                                        {/if}
+                                        {assign var="i" value=$i+1}
                                     {/foreach}
                                 </div>
                             </div>

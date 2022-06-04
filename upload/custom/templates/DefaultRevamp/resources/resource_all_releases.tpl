@@ -36,28 +36,28 @@
                         <a class="item" href="{$REVIEWS_LINK}">{$REVIEWS_TITLE}</a>
                     </div>
                     {foreach from=$RELEASES item=release}
-                    <h4 class="ui top attached header">
-                        <a href="{$release.url}">{$release.name}</a>
-                        <span class="res right floated">
-                            <span data-toggle="tooltip" data-content="{$release.date_full}">{$release.date}</span>
-                        </span>
-                    </h4>
+                        <h4 class="ui top attached header">
+                            <a href="{$release.url}">{$release.name}</a>
+                            <span class="res right floated">
+                                <span data-toggle="tooltip" data-content="{$release.date_full}">{$release.date}</span>
+                            </span>
+                        </h4>
 
-                    <div class="ui bottom attached segment">
-                        <div class="forum_post">
-                            {$release.description}
+                        <div class="ui bottom attached segment">
+                            <div class="forum_post">
+                                {$release.description}
+                            </div>
+                            <br />
+                            {$release.downloads} |
+                            <div class="star-rating view" style="display:inline;">
+                                <span class="far fa-star" data-rating="1" style="color:gold;"></span>
+                                <span class="far fa-star" data-rating="2" style="color:gold"></span>
+                                <span class="far fa-star" data-rating="3" style="color:gold;"></span>
+                                <span class="far fa-star" data-rating="4" style="color:gold;"></span>
+                                <span class="far fa-star" data-rating="5" style="color:gold;"></span>
+                                <input type="hidden" name="rating" class="rating-value" value="{$release.rating}">
+                            </div>
                         </div>
-                        <br />
-                        {$release.downloads} |
-                        <div class="star-rating view" style="display:inline;">
-                            <span class="far fa-star" data-rating="1" style="color:gold;"></span>
-                            <span class="far fa-star" data-rating="2" style="color:gold"></span>
-                            <span class="far fa-star" data-rating="3" style="color:gold;"></span>
-                            <span class="far fa-star" data-rating="4" style="color:gold;"></span>
-                            <span class="far fa-star" data-rating="5" style="color:gold;"></span>
-                            <input type="hidden" name="rating" class="rating-value" value="{$release.rating}">
-                        </div>
-                    </div>
 
                     {/foreach}
                     {$PAGINATION}

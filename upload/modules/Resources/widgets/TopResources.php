@@ -41,7 +41,7 @@ class TopResourcesWidget extends WidgetBase {
     public function initialise(): void {
 
         $queries = new Queries;
-        $timeago = new Timeago();
+        $timeago = new TimeAgo();
 
         $topResources = $queries->orderAll('resources', 'rating', 'DESC LIMIT 5');
         $topResourcesArr = [];

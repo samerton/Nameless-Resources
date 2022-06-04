@@ -12,9 +12,9 @@
 		<div class="ui divider"></div>
 
 		{if isset($ERROR)}
-		<div class="ui negative message">
-			{$ERROR}
-		</div>
+			<div class="ui negative message">
+				{$ERROR}
+			</div>
 		{/if}
 
 		<form action="" method="post" class="ui form">
@@ -22,7 +22,7 @@
 				<label for="inputCategory">{$SELECT_CATEGORY} <small>{$REQUIRED}</small></label>
 				<select class="ui selection dropdown" name="category" id="inputCategory">
 					{foreach from=$CATEGORIES item=category}
-					<option value="{$category.id}">{$category.name}</option>
+						<option value="{$category.id}">{$category.name}</option>
 					{/foreach}
 				</select>
 			</div>
@@ -41,14 +41,14 @@
 				<label for="inputDescription">{$RESOURCE_DESCRIPTION} <small>{$REQUIRED}</small></label>
 
 				{if !isset($MARKDOWN)}
-				<textarea style="width:100%" name="content" id="reply" rows="15">{$CONTENT}</textarea>
+					<textarea style="width:100%" name="content" id="reply" rows="15">{$CONTENT}</textarea>
 
 				{else}
 
-				<textarea style="width:100%" id="markdown" name="content" rows="15">{$CONTENT}</textarea>
-				<span class="res right floated"><i data-toggle="popover" data-placement="top" data-html="true"
-						data-content="{$MARKDOWN_HELP}" class="fa fa-question-circle text-info"
-						aria-hidden="true"></i></span>
+					<textarea style="width:100%" id="markdown" name="content" rows="15">{$CONTENT}</textarea>
+					<span class="res right floated"><i data-toggle="popover" data-placement="top" data-html="true"
+							data-content="{$MARKDOWN_HELP}" class="fa fa-question-circle text-info"
+							aria-hidden="true"></i></span>
 
 				{/if}
 			</div>
