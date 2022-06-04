@@ -40,29 +40,33 @@ class TopResourcesWidget extends WidgetBase {
 
     public function initialise(): void {
 
-        $queries = new Queries;
-        $timeago = new TimeAgo();
+        $timeago = new TimeAgo(TIMEZONE);
 
-        $topResources = $queries->orderAll('resources', 'rating', 'DESC LIMIT 5');
-        $topResourcesArr = [];
-        
-        foreach ($topResources as $resource) {
+        $topResources = DB::getInstance()->orderAll('resources', 'rating', 'DESC LIMIT 5');
+        $topResourcesArr = array();
 
+        foreach ($topResources->results() as $resource) {
             // check if resource rating > 0
             if ($resource->rating == 0) continue;
 
-            $topResourcesArr[$resource->id] = [
+            $author = new User($resource->creator_id);
+
+            if (!$author->exists()) {
+                continue;
+            }
+
+            $topResourcesArr[$resource->id] = array(
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
                 'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
                 'creator_id' => $resource->creator_id,
-                'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
-                'creator_style' => $this->_user->getGroupClass($resource->creator_id),
-                'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
+                'creator_username' => $author->getDisplayname(),
+                'creator_style' => $author->getGroupStyle(),
+                'creator_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
                 'rating' => round($resource->rating / 10),
-                'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
+                'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language),
                 'released_full' => date('d M Y, H:i', $resource->updated),
-            ];
+            );
 
             // Check if resource icon uploaded
             if($resource->has_icon == 1 ) {

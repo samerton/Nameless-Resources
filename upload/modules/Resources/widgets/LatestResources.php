@@ -40,24 +40,29 @@ class LatestResourcesWidget extends WidgetBase {
 
     public function initialise(): void {
 
-        $queries = new Queries;
-        $timeago = new TimeAgo();
+        $timeago = new TimeAgo(TIMEZONE);
 
-        $latestResources = $queries->orderAll('resources', 'updated', 'DESC LIMIT 5');
-        $latestResourcesArr = [];
+        $latestResources = DB::getInstance()->orderAll('resources', 'updated', 'DESC LIMIT 5');
+        $latestResourcesArr = array();
 
-        foreach ($latestResources as $resource) {
-            $latestResourcesArr[$resource->id] = [
+        foreach ($latestResources->results() as $resource) {
+            $author = new User($resource->creator_id);
+
+            if (!$author->exists()) {
+                continue;
+            }
+
+            $latestResourcesArr[$resource->id] = array(
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
                 'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
                 'creator_id' => $resource->creator_id,
-                'creator_username' => Output::getClean($this->_user->idToName($resource->creator_id)),
-                'creator_style' => $this->_user->getGroupClass($resource->creator_id),
-                'creator_profile' => URL::build('/profile/' . Output::getClean($this->_user->idToName($resource->creator_id))),
-                'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language->getTimeLanguage()),
+                'creator_username' => $author->getDisplayname(),
+                'creator_style' => $author->getGroupStyle(),
+                'creator_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
+                'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language),
                 'released_full' => date('d M Y, H:i', $resource->updated),
-            ];
+            );
 
             // Check if resource icon uploaded
             if($resource->has_icon == 1 ) {
