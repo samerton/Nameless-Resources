@@ -627,26 +627,26 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             'REVIEWS_TITLE' => $resource_language->get('resources', 'reviews_x', ['count' => Output::getClean($reviews)]),
             'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
             'RESOURCE' => $resource_language->get('resources', 'resource'),
-               'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
-               'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
-               'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
-               'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
+            'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
+            'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
+            'LAST_RELEASE' => $resource_language->get('resources', 'last_release'),
+            'LAST_RELEASE_DATE' => date('d M Y', $latest_update->created),
             'VIEWS' => $resource_language->get('resources', 'views'),
-               'VIEWS_VALUE' => Output::getClean($resource->views),
-               'DOWNLOAD' => $resource_language->get('resources', 'download'),
-               'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
+            'VIEWS_VALUE' => Output::getClean($resource->views),
+            'DOWNLOAD' => $resource_language->get('resources', 'download'),
+            'DOWNLOADS' => $resource_language->get('resources', 'downloads'),
             'TOTAL_DOWNLOADS' => $resource_language->get('resources', 'total_downloads'),
-               'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
-               'CATEGORY' => $resource_language->get('resources', 'category'),
-               'CATEGORY_VALUE' => Output::getClean($category),
-               'RATING' => $resource_language->get('resources', 'rating'),
+            'TOTAL_DOWNLOADS_VALUE' => Output::getClean($resource->downloads),
+            'CATEGORY' => $resource_language->get('resources', 'category'),
+            'CATEGORY_VALUE' => Output::getClean($category),
+            'RATING' => $resource_language->get('resources', 'rating'),
             'RATING_VALUE' => round($resource->rating / 10),
             'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
             'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
-               'RELEASE' => $resource_language->get('resources', 'release'),
+            'RELEASE' => $resource_language->get('resources', 'release'),
             'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
             'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
-               'RELEASE_VERSION' => $resource_language->get('resources', 'version_x', ['version' => Output::getClean($latest_update->release_tag)]),
+            'RELEASE_VERSION' => $resource_language->get('resources', 'version_x', ['version' => Output::getClean($latest_update->release_tag)]),
             'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
             'RELEASE_RATING' => round($latest_update->rating / 10),
             'RELEASE_DOWNLOADS' => $latest_update->downloads,
@@ -671,7 +671,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                 if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
                     $smarty->assign([
                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
                     ]);
                 }
             } else {
@@ -682,7 +682,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             // Author can download their own resources
                             $smarty->assign([
                                 'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
                             ]);
 
                         } else {
@@ -696,7 +696,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                     // Purchased
                                     $smarty->assign([
                                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
                                     ]);
 
                                 } else if($paid->status == 0){
@@ -864,7 +864,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                 if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
                     $smarty->assign([
                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
                     ]);
                 }
             } else {
@@ -875,7 +875,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             // Author can download their own resources
                             $smarty->assign([
                                 'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
                             ]);
 
                         } else {
@@ -889,7 +889,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                     // Purchased
                                     $smarty->assign([
                                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id)
+                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
                                     ]);
 
                                 } else if($paid->status == 0){
@@ -2137,9 +2137,6 @@ if($user->isLoggedIn()){
 
 // Load modules + template
 Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);
-
-$page_load = microtime(true) - $start;
-define('PAGE_LOAD_TIME', str_replace('{x}', round($page_load, 3), $language->get('general', 'page_loaded_in')));
 
 $template->onPageLoad();
 
