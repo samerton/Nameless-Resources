@@ -39,18 +39,7 @@
 
 			<div class="field">
 				<label for="inputDescription">{$RESOURCE_DESCRIPTION} <small>{$REQUIRED}</small></label>
-
-				{if !isset($MARKDOWN)}
-					<textarea style="width:100%" name="content" id="reply" rows="15">{$CONTENT}</textarea>
-
-				{else}
-
-					<textarea style="width:100%" id="markdown" name="content" rows="15">{$CONTENT}</textarea>
-					<span class="res right floated"><i data-toggle="popover" data-placement="top" data-html="true"
-							data-content="{$MARKDOWN_HELP}" class="fa fa-question-circle text-info"
-							aria-hidden="true"></i></span>
-
-				{/if}
+            	<textarea style="width:100%" name="content" id="reply" rows="15">{$CONTENT}</textarea>
 			</div>
 
 			<div class="field">

@@ -268,10 +268,6 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         // Display the correct number of comments
         $n = 0;
 
-        // Get post formatting type (HTML or Markdown)
-        $cache->setCache('post_formatting');
-        $formatting = $cache->retrieve('formatting');
-
         while($n < count($results->data)){
             $author = new User($results->data[$n]->author_id);
 

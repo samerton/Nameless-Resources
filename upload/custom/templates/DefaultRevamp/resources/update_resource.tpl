@@ -73,15 +73,8 @@
             </div>
 
             <div class="field">
-                <label for="{if isset($MARKDOWN)}markdown{else}content{/if}">{$UPDATE_INFORMATION}</label>
-                {if !isset($MARKDOWN)}
-                    <textarea style="width:100%" name="content" id="content" rows="15">{$CONTENT_VALUE}</textarea>
-                {else}
-                    <textarea style="width:100%" id="markdown" name="content" rows="15">{$CONTENT_VALUE}</textarea>
-                    <span class="res right floated"><i data-toggle="popover" data-content="{$MARKDOWN_HELP}"
-                            class="fa fa-question-circle text-info" aria-hidden="true"></i></span>
-
-                {/if}
+                <label for="content">{$UPDATE_INFORMATION}</label>
+                <textarea style="width:100%" name="content" id="content" rows="15">{$CONTENT_VALUE}</textarea>
             </div>
 
             <div class="field">

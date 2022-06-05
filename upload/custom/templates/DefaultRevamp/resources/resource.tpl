@@ -253,14 +253,7 @@
                 </div>
                 <br />
                 <div class="form-group">
-                    {if !isset($MARKDOWN)}
-                        <textarea style="width:100%" name="content" id="editor" rows="15"></textarea>
-                    {else}
-                        <textarea class="form-control" style="width:100%" id="markdown" name="content" rows="20"></textarea>
-                        <span class="pull-right"><i data-toggle="popover" data-placement="top" data-html="true"
-                                data-content="{$MARKDOWN_HELP}" class="fa fa-question-circle text-info"
-                                aria-hidden="true"></i></span>
-                    {/if}
+                    <textarea style="width:100%" name="content" id="editor" rows="15"></textarea>
                 </div>
                 <br />
                 <div class="form-group">

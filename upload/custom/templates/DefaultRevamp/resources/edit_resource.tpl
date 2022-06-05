@@ -25,20 +25,10 @@
                     placeholder="{$SHORT_DESCRIPTION}" value="{$RESOURCE_SHORT_DESCRIPTION}">
             </div>
 
-            {if isset($MARKDOWN)}
-                <div class="field">
-                    <label for="markdown">{$DESCRIPTION}</label>
-                    <textarea style="width:100%" id="markdown" name="description" rows="20"></textarea>
-                    <span class="res right floated"><i data-toggle="popover" data-placement="top" data-html="true"
-                            data-content="{$MARKDOWN_HELP}" class="fa fa-question-circle text-info"
-                            aria-hidden="true"></i></span>
-                </div>
-            {else}
-                <div class="field">
-                    <label for="editor">{$DESCRIPTION}</label>
-                    <textarea name="description" id="editor" rows="3">{$RESOURCE_DESCRIPTION}</textarea>
-                </div>
-            {/if}
+            <div class="field">
+                <label for="editor">{$DESCRIPTION}</label>
+                <textarea name="description" id="editor" rows="3">{$RESOURCE_DESCRIPTION}</textarea>
+            </div>
 
             <div class="field">
                 <label for="inputContributors">{$CONTRIBUTORS}</label>
