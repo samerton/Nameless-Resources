@@ -15,7 +15,7 @@ class PayPalLoggingManager
     /**
      * @var array of logging manager instances with class name as key
      */
-    private static $instances = array();
+    private static $instances = [];
 
     /**
      * The logger to be used for all messages

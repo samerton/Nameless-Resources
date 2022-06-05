@@ -173,16 +173,16 @@ class OAuthTokenCredential extends PayPalResourceModel
      * @param array $params optional arrays to override defaults
      * @return string|null
      */
-    public function getRefreshToken($config, $authorizationCode = null, $params = array())
+    public function getRefreshToken($config, $authorizationCode = null, $params = [])
     {
-        static $allowedParams = array(
+        static $allowedParams = [
             'grant_type' => 'authorization_code',
             'code' => 1,
             'redirect_uri' => 'urn:ietf:wg:oauth:2.0:oob',
             'response_type' => 'token'
-        );
+        ];
 
-        $params = is_array($params) ? $params : array();
+        $params = is_array($params) ? $params : [];
         if ($authorizationCode) {
             //Override the authorizationCode if value is explicitly set
             $params['code'] = $authorizationCode;
@@ -231,7 +231,7 @@ class OAuthTokenCredential extends PayPalResourceModel
             $httpConfig->setHttpProxy($config['http.Proxy']);
         }
 
-        $handlers = array(self::$AUTH_HANDLER);
+        $handlers = [self::$AUTH_HANDLER];
 
         /** @var IPayPalHandler $handler */
         foreach ($handlers as $handler) {
@@ -239,7 +239,7 @@ class OAuthTokenCredential extends PayPalResourceModel
                 $fullHandler = "\\" . (string)$handler;
                 $handler = new $fullHandler(new ApiContext($this));
             }
-            $handler->handle($httpConfig, $payload, array('clientId' => $clientId, 'clientSecret' => $clientSecret));
+            $handler->handle($httpConfig, $payload, ['clientId' => $clientId, 'clientSecret' => $clientSecret]);
         }
 
         $connection = new PayPalHttpConnection($httpConfig, $config);
@@ -260,7 +260,7 @@ class OAuthTokenCredential extends PayPalResourceModel
      */
     private function generateAccessToken($config, $refreshToken = null)
     {
-        $params = array('grant_type' => 'client_credentials');
+        $params = ['grant_type' => 'client_credentials'];
         if ($refreshToken != null) {
             // If the refresh token is provided, it would get access token using refresh token
             // Used for Future Payments

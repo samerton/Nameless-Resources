@@ -1,6 +1,6 @@
 <?php
 /*
- *	Made by Samerton
+ *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
  *  NamelessMC version 2.0.0-pr10
  *
@@ -37,7 +37,7 @@ if (!is_numeric($rid[0])) {
 }
 $rid = $rid[0];
 
-$resource = DB::getInstance()->get('resources', array('id', '=', $rid));
+$resource = DB::getInstance()->get('resources', ['id', '=', $rid]);
 
 if (!$resource->count()) {
     // Doesn't exist
@@ -54,24 +54,24 @@ if (Input::exists()) {
             if ($_POST['user']) {
                 // Check user is not adding themselves, or someone that's already added
                 if ($user->data()->id != $_POST['user']) {
-                    $existing_license = DB::getInstance()->query('SELECT id FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', array($resource->id, $_POST['user']));
+                    $existing_license = DB::getInstance()->query('SELECT id FROM nl2_resources_payments WHERE resource_id = ? AND user_id = ?', [$resource->id, $_POST['user']]);
 
                     if (!$existing_license->count()) {
-                        $user_exists = DB::getInstance()->query('SELECT id FROM nl2_users WHERE id = ?', array($_POST['user']));
+                        $user_exists = DB::getInstance()->query('SELECT id FROM nl2_users WHERE id = ?', [$_POST['user']]);
 
                         if ($user_exists->count()) {
                             // Add license
-                            DB::getInstance()->insert('resources_payments', array(
+                            DB::getInstance()->insert('resources_payments', [
                                 'user_id' => $_POST['user'],
                                 'resource_id' => $resource->id,
                                 'transaction_id' => 'manual',
                                 'created' => date('U'),
                                 'status' => 1
-                            ));
+                            ]);
                             $success = $resource_language->get('resources', 'license_added_successfully');
 
                             // Alert
-                            Alert::create($user_exists->first()->id, 'resource_purchased', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name), Resources::buildURL($resource->id, $resource->name));
+                            Alert::create($user_exists->first()->id, 'resource_purchased', ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'], ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name], Resources::buildURL($resource->id, $resource->name));
 
                         } else
                             $error = $language->get('api', 'unable_to_find_user');
@@ -87,26 +87,26 @@ if (Input::exists()) {
 
         } else if (isset($_POST['license'])) {
             // Ensure license ID is for current resource
-            $license = DB::getInstance()->get('resources_payments', array('id', '=', $_POST['license']));
+            $license = DB::getInstance()->get('resources_payments', ['id', '=', $_POST['license']]);
 
             if ($license->count() && $license->first()->resource_id == $resource->id) {
                 switch (Input::get('action')) {
                     case 'reinstate':
-                        DB::getInstance()->update('resources_payments', $license->first()->id, array(
+                        DB::getInstance()->update('resources_payments', $license->first()->id, [
                             'status' => 1
-                        ));
+                        ]);
 
                         // Alert
-                        Alert::create($license->first()->user_id, 'resource_purchased', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name), Resources::buildURL($resource->id, $resource->name));
+                        Alert::create($license->first()->user_id, 'resource_purchased', ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased'], ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_purchased_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name], Resources::buildURL($resource->id, $resource->name));
                         break;
 
                     case 'revoke':
-                        DB::getInstance()->update('resources_payments', $license->first()->id, array(
+                        DB::getInstance()->update('resources_payments', $license->first()->id, [
                             'status' => 3
-                        ));
+                        ]);
 
                         // Alert
-                        Alert::create($license->first()->user_id, 'resource_license_cancelled', array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_cancelled'), array('path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_cancelled_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name), Resources::buildURL($resource->id, $resource->name));
+                        Alert::create($license->first()->user_id, 'resource_license_cancelled', ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_cancelled'], ['path' => ROOT_PATH . '/modules/Resources/language', 'file' => 'resources', 'term' => 'resource_license_cancelled_full', 'replace' => '{{resource}}', 'replace_with' => $resource->name], Resources::buildURL($resource->id, $resource->name));
                         break;
                 }
             } else
@@ -123,14 +123,14 @@ if (isset($success))
 if (isset($error))
     $smarty->assign('ERROR', $error);
 
-$licenses = DB::getInstance()->query('SELECT `id`, `user_id`, `status`, `transaction_id`, `created` FROM nl2_resources_payments WHERE resource_id = ?', array($resource->id))->results();
+$licenses = DB::getInstance()->query('SELECT `id`, `user_id`, `status`, `transaction_id`, `created` FROM nl2_resources_payments WHERE resource_id = ?', [$resource->id])->results();
 
-$licenses_array = array();
+$licenses_array = [];
 if (count($licenses)) {
     foreach ($licenses as $license) {
         $customer = new User($license->user_id);
 
-        $licenses_array[] = array(
+        $licenses_array[] = [
             'id' => Output::getClean($license->id),
             'username' => $customer->getDisplayName(),
             'profile' => $customer->getProfileURL(),
@@ -143,12 +143,12 @@ if (count($licenses)) {
             'date' => date('d M Y, H:i', $license->created),
             'transaction_id' => Output::getClean($license->transaction_id),
             'can_reinstate' => $license->status != '1'
-        );
+        ];
     }
 }
 
 // Language values
-$smarty->assign(array(
+$smarty->assign([
     'USER_CP' => $language->get('user', 'user_cp'),
     'MANAGING_LICENSES' => $resource_language->get('resources', 'managing_licenses_for', ['resource' => Output::getClean($resource->name)]),
     'NO_LICENSES' => $resource_language->get('resources', 'no_licenses'),
@@ -166,7 +166,7 @@ $smarty->assign(array(
     'PURCHASED' => $resource_language->get('resources', 'purchased'),
     'STATUS' => $resource_language->get('resources', 'status'),
     'ACTIONS' => $resource_language->get('resources', 'actions'),
-));
+]);
 
 // Load modules + template
 Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);

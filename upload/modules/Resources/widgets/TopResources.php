@@ -1,6 +1,6 @@
 <?php
 /*
- *	Made by Samerton
+ *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
  *  NamelessMC version 2.0.0-pr12
  *
@@ -16,18 +16,18 @@ class TopResourcesWidget extends WidgetBase {
 
     public function __construct($user, $language, $resources_language, $smarty, $cache) {
 
-    	$this->_user = $user;
-		$this->_language = $language;
-		$this->_resources_language = $resources_language;
-    	$this->_smarty = $smarty;
-    	$this->_cache = $cache;
+        $this->_user = $user;
+        $this->_language = $language;
+        $this->_resources_language = $resources_language;
+        $this->_smarty = $smarty;
+        $this->_cache = $cache;
 
         $widget_query = self::getData('Top Resources');
 
         parent::__construct(self::parsePages($widget_query));
         
         // Get widget
-        $widget_query = DB::getInstance()->query('SELECT `location`, `order` FROM nl2_widgets WHERE `name` = ?', array('Top Resources'))->first();
+        $widget_query = DB::getInstance()->query('SELECT `location`, `order` FROM nl2_widgets WHERE `name` = ?', ['Top Resources'])->first();
 
         // Set widget variables
         $this->_module = 'Resources';
@@ -40,14 +40,14 @@ class TopResourcesWidget extends WidgetBase {
 
     public function initialise(): void {
 
-		$timeago = new TimeAgo(TIMEZONE);
+        $timeago = new TimeAgo(TIMEZONE);
 
-		$topResources = DB::getInstance()->orderAll('resources', 'rating', 'DESC LIMIT 5');
-		$topResourcesArr = array();
+        $topResources = DB::getInstance()->orderAll('resources', 'rating', 'DESC LIMIT 5');
+        $topResourcesArr = [];
 
-		foreach ($topResources->results() as $resource) {
-			// check if resource rating > 0
-			if ($resource->rating == 0) continue;
+        foreach ($topResources->results() as $resource) {
+            // check if resource rating > 0
+            if ($resource->rating == 0) continue;
 
             $author = new User($resource->creator_id);
 
@@ -55,33 +55,33 @@ class TopResourcesWidget extends WidgetBase {
                 continue;
             }
 
-			$topResourcesArr[$resource->id] = array(
-				'name' => Output::getClean($resource->name),
-				'short_description' => Output::getClean($resource->short_description),
-				'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
-				'creator_id' => $resource->creator_id,
-				'creator_username' => $author->getDisplayname(),
-				'creator_style' => $author->getGroupStyle(),
-				'creator_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
-				'rating' => round($resource->rating / 10),
-				'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language),
-				'released_full' => date('d M Y, H:i', $resource->updated),
-			);
+            $topResourcesArr[$resource->id] = [
+                'name' => Output::getClean($resource->name),
+                'short_description' => Output::getClean($resource->short_description),
+                'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                'creator_id' => $resource->creator_id,
+                'creator_username' => $author->getDisplayname(),
+                'creator_style' => $author->getGroupStyle(),
+                'creator_profile' => URL::build('/profile/' . $author->getDisplayname(true)),
+                'rating' => round($resource->rating / 10),
+                'released' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $this->_language),
+                'released_full' => date('d M Y, H:i', $resource->updated),
+            ];
 
-			// Check if resource icon uploaded
-			if($resource->has_icon == 1 ) {
-				$topResourcesArr[$resource->id]['icon'] = Output::getClean($resource->icon);
-			} else {
-				$topResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
-			}
-		}
+            // Check if resource icon uploaded
+            if($resource->has_icon == 1 ) {
+                $topResourcesArr[$resource->id]['icon'] = Output::getClean($resource->icon);
+            } else {
+                $topResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+            }
+        }
 
-		$this->_smarty->assign(array(
-			'TOP_RESOURCES_TITLE' => $this->_resources_language->get('resources', 'top_resources'),
-			'TOP_RESOURCES' => $topResourcesArr,
-			'NO_TOP_RESOURCES' => $this->_resources_language->get('resources', 'no_top_resources'),
-		));
+        $this->_smarty->assign([
+            'TOP_RESOURCES_TITLE' => $this->_resources_language->get('resources', 'top_resources'),
+            'TOP_RESOURCES' => $topResourcesArr,
+            'NO_TOP_RESOURCES' => $this->_resources_language->get('resources', 'no_top_resources'),
+        ]);
 
-		$this->_content = $this->_smarty->fetch('widgets/resources/top_resources.tpl');
+        $this->_content = $this->_smarty->fetch('widgets/resources/top_resources.tpl');
     }
 }

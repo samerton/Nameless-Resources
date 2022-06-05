@@ -17,14 +17,14 @@ class ReflectionUtil
      *
      * @var \ReflectionMethod[]
      */
-    private static $propertiesRefl = array();
+    private static $propertiesRefl = [];
 
     /**
      * Properties Type
      *
      * @var string[]
      */
-    private static $propertiesType = array();
+    private static $propertiesType = [];
 
 
     /**

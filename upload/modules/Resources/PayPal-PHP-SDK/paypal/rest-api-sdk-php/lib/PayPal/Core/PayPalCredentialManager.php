@@ -26,7 +26,7 @@ class PayPalCredentialManager
      *
      * @var array
      */
-    private $credentialHashmap = array();
+    private $credentialHashmap = [];
 
     /**
      * Contains the API username of the default account to use
@@ -47,7 +47,7 @@ class PayPalCredentialManager
         try {
             $this->initCredential($config);
         } catch (\Exception $e) {
-            $this->credentialHashmap = array();
+            $this->credentialHashmap = [];
             throw $e;
         }
     }
@@ -76,7 +76,7 @@ class PayPalCredentialManager
         $suffix = 1;
         $prefix = "acct";
 
-        $arr = array();
+        $arr = [];
         foreach ($config as $k => $v) {
             if (strstr($k, $prefix)) {
                 $arr[$k] = $v;
@@ -84,7 +84,7 @@ class PayPalCredentialManager
         }
         $credArr = $arr;
 
-        $arr = array();
+        $arr = [];
         foreach ($config as $key => $value) {
             $pos = strpos($key, '.');
             if (strstr($key, "acct")) {

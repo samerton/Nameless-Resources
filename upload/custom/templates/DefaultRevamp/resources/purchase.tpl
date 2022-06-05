@@ -5,7 +5,8 @@
     <div class="ui padded segment">
         <h2 style="display:inline;">{$PURCHASING_RESOURCE}</h2>
         <div class="res right floated">
-            <a href="{$CANCEL_LINK}" onclick="return confirm('{$CONFIRM_CANCEL}');" class="ui yellow button">{$CANCEL}</a>
+            <a href="{$CANCEL_LINK}" onclick="return confirm('{$CONFIRM_CANCEL}');"
+                class="ui yellow button">{$CANCEL}</a>
         </div>
 
         <div class="ui divider"></div>

@@ -69,14 +69,14 @@ abstract class AuthorizationCache
 
         // Reads all the existing persisted data
         $tokens = self::pull();
-        $tokens = $tokens ? $tokens : array();
+        $tokens = $tokens ? $tokens : [];
         if (is_array($tokens)) {
-            $tokens[$clientId] = array(
+            $tokens[$clientId] = [
                 'clientId' => $clientId,
                 'accessTokenEncrypted' => $accessToken,
                 'tokenCreateTime' => $tokenCreateTime,
                 'tokenExpiresIn' => $tokenExpiresIn
-            );
+            ];
         }
         if (!file_put_contents($cachePath, json_encode($tokens))) {
             throw new \Exception("Failed to write cache");

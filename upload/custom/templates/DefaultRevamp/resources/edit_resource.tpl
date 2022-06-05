@@ -18,17 +18,20 @@
                 <label for="inputTitle">{$NAME}</label>
                 <input type="text" id="inputTitle" name="title" placeholder="{$NAME}" value="{$RESOURCE_NAME}">
             </div>
-            
+
             <div class="field">
                 <label for="inputShort_description">{$SHORT_DESCRIPTION}</label>
-                <input type="text" id="inputShort_description" name="short_description" placeholder="{$SHORT_DESCRIPTION}" value="{$RESOURCE_SHORT_DESCRIPTION}">
+                <input type="text" id="inputShort_description" name="short_description"
+                    placeholder="{$SHORT_DESCRIPTION}" value="{$RESOURCE_SHORT_DESCRIPTION}">
             </div>
 
             {if isset($MARKDOWN)}
                 <div class="field">
                     <label for="markdown">{$DESCRIPTION}</label>
                     <textarea style="width:100%" id="markdown" name="description" rows="20"></textarea>
-                    <span class="res right floated"><i data-toggle="popover" data-placement="top" data-html="true" data-content="{$MARKDOWN_HELP}" class="fa fa-question-circle text-info" aria-hidden="true"></i></span>
+                    <span class="res right floated"><i data-toggle="popover" data-placement="top" data-html="true"
+                            data-content="{$MARKDOWN_HELP}" class="fa fa-question-circle text-info"
+                            aria-hidden="true"></i></span>
                 </div>
             {else}
                 <div class="field">
@@ -39,7 +42,8 @@
 
             <div class="field">
                 <label for="inputContributors">{$CONTRIBUTORS}</label>
-                <input type="text" name="contributors" id="inputContributors" placeholder="{$CONTRIBUTORS}" value="{$RESOURCE_CONTRIBUTORS}">
+                <input type="text" name="contributors" id="inputContributors" placeholder="{$CONTRIBUTORS}"
+                    value="{$RESOURCE_CONTRIBUTORS}">
             </div>
 
             {if isset($PRICE)}

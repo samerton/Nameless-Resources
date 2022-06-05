@@ -1,6 +1,6 @@
 <?php
 /*
- *	Made by Samerton
+ *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
  *  NamelessMC version 2.0.0-pr5
  *
@@ -56,26 +56,26 @@ require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
 // Obtain categories + permissions from database
 if ($user->isLoggedIn()) {
-    $groups = array();
+    $groups = [];
     foreach ($user->getGroups() as $group) {
         $groups[] = $group->id;
     }
 } else {
-    $groups = array(0);
+    $groups = [0];
 }
 $categories = $resources->getCategories($groups);
 
 // Assign to Smarty array
-$category_array = array();
+$category_array = [];
 foreach($categories as $category){
     // Get category count
-    $category_count = DB::getInstance()->get('resources', array('category_id', '=', $category->id)); // TODO: replace with count query
+    $category_count = DB::getInstance()->get('resources', ['category_id', '=', $category->id]); // TODO: replace with count query
     $category_count = $category_count->count();
-    $to_array = array(
+    $to_array = [
         'name' => Output::getClean($category->name),
         'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
-	'count' => Output::getClean($category_count)
-    );
+    'count' => Output::getClean($category_count)
+    ];
     $category_array[] = $to_array;
 }
 $categories = null;
@@ -84,14 +84,14 @@ $categories = null;
 $latest_releases = $resources->getAuthorLatestResources($aid, $groups);
 
 // Pagination
-$paginator = new Paginator((isset($template_pagination) ? $template_pagination : array()));
+$paginator = new Paginator((isset($template_pagination) ? $template_pagination : []));
 $results = $paginator->getLimited($latest_releases, 10, $p, count($latest_releases));
 $pagination = $paginator->generate(7, URL::build('/resources/author/' . $author->data()->id . '-' . Util::stringToURL($author->getDisplayname(true)) . '/', true));
 
 $smarty->assign('PAGINATION', $pagination);
 
 // Array to pass to template
-$releases_array = array();
+$releases_array = [];
 
 if (count($latest_releases)) {
     // Display the correct number of resources
@@ -99,7 +99,7 @@ if (count($latest_releases)) {
 
     while ($n < count($results->data)) {
         // Get category
-        $category = DB::getInstance()->get('resources_categories', array('id', '=', $results->data[$n]->category_id));
+        $category = DB::getInstance()->get('resources_categories', ['id', '=', $results->data[$n]->category_id]);
         if ($category->count()) {
             $category = Output::getClean($category->first()->name);
         } else {
@@ -107,7 +107,7 @@ if (count($latest_releases)) {
         }
 
         if (!isset($releases_array[$results->data[$n]->id])) {
-            $releases_array[$results->data[$n]->id] = array(
+            $releases_array[$results->data[$n]->id] = [
                 'link' => URL::build('/resources/resource/' . $results->data[$n]->id . '-' . Util::stringToURL($results->data[$n]->name)),
                 'name' => Output::getClean($results->data[$n]->name),
                 'short_description' => Output::getClean($results->data[$n]->short_description), 
@@ -123,18 +123,18 @@ if (count($latest_releases)) {
                 'category' => $resource_language->get('resources', 'in_category_x', ['category' => $category]),
                 'updated' => $resource_language->get('resources', 'updated_x', ['updated' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->updated), $language)]),
                 'updated_full' => date('d M Y, H:i', $results->data[$n]->updated)
-            );
-		
+            ];
+        
             if($results->data[$n]->type == 1 ) {
                 $releases_array[$results->data[$n]->id]['price'] = Output::getClean($results->data[$n]->price);
             }
-		
-	        // Check if resource icon uploaded
-	        if($results->data[$n]->has_icon == 1 ) {
-	    	    $releases_array[$results->data[$n]->id]['icon'] = $results->data[$n]->icon;
-	        } else {
-	    	    $releases_array[$results->data[$n]->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
-	        }
+        
+            // Check if resource icon uploaded
+            if($results->data[$n]->has_icon == 1 ) {
+                $releases_array[$results->data[$n]->id]['icon'] = $results->data[$n]->icon;
+            } else {
+                $releases_array[$results->data[$n]->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+            }
             
         }
 
@@ -143,7 +143,7 @@ if (count($latest_releases)) {
 } else $releases_array = null;
 
 // Assign Smarty variables
-$smarty->assign(array(
+$smarty->assign([
     'RESOURCES' => $resource_language->get('resources', 'resources'),
     'CATEGORIES_TITLE' => $resource_language->get('resources', 'categories'),
     'CATEGORIES' => $category_array,
@@ -156,7 +156,7 @@ $smarty->assign(array(
     'AUTHOR' => $resource_language->get('resources', 'author'),
     'BACK' => $language->get('general', 'back'),
     'BACK_LINK' => URL::build('/resources')
-));
+]);
 
 $template->addJSScript('
     var $star_rating = $(\'.star-rating.view .fa-star\');

@@ -19,7 +19,8 @@
                 <div class="form-group">
                     <input type="hidden" name="token" value="{$TOKEN}">
                     <input type="submit" class="ui blue button" value="{$SUBMIT}">
-                    <a class="ui red button" href="{$CANCEL_LINK}" onclick="return confirm('{$CONFIRM_CANCEL}')">{$CANCEL}</a>
+                    <a class="ui red button" href="{$CANCEL_LINK}"
+                        onclick="return confirm('{$CONFIRM_CANCEL}')">{$CANCEL}</a>
                 </div>
             </form>
         {else}

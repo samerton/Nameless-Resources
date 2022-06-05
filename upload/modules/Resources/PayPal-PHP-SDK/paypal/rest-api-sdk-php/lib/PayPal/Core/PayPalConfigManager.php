@@ -18,8 +18,8 @@ class PayPalConfigManager
      *
      * @var array
      */
-    private $configs = array(
-    );
+    private $configs = [
+    ];
 
     /**
      * Singleton Object
@@ -37,7 +37,7 @@ class PayPalConfigManager
             $configFile = constant('PP_CONFIG_PATH') . '/sdk_config.ini';
         } else {
             $configFile = implode(DIRECTORY_SEPARATOR,
-                array(dirname(__FILE__), "..", "config", "sdk_config.ini"));
+                [dirname(__FILE__), "..", "config", "sdk_config.ini"]);
         }
         if (file_exists($configFile)) {
             $this->addConfigFromIni($configFile);
@@ -79,7 +79,7 @@ class PayPalConfigManager
      * @param array $configs
      * @return $this
      */
-    public function addConfigs($configs = array())
+    public function addConfigs($configs = [])
     {
         $this->configs = $configs + $this->configs;
         return $this;
@@ -98,7 +98,7 @@ class PayPalConfigManager
         if (array_key_exists($searchKey, $this->configs)) {
             return $this->configs[$searchKey];
         } else {
-            $arr = array();
+            $arr = [];
             if ($searchKey !== '') {
                 foreach ($this->configs as $k => $v) {
                     if (strstr($k, $searchKey)) {
@@ -124,7 +124,7 @@ class PayPalConfigManager
     public function getIniPrefix($userId = null)
     {
         if ($userId == null) {
-            $arr = array();
+            $arr = [];
             foreach ($this->configs as $key => $value) {
                 $pos = strpos($key, '.');
                 if (strstr($key, "acct")) {

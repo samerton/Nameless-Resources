@@ -39,8 +39,12 @@
                 <div class="ui bottom attached tab segment active" data-tab="first">
                     <form action="" method="post" class="ui form">
                         <div class="field">
-                            <label for="inputPaypalEmail" style="display:inline">{$PAYPAL_EMAIL_ADDRESS}</label> <span class="ui small blue icon label" data-toggle="tooltip" data-title="{$INFO}" data-content="{$PAYPAL_EMAIL_ADDRESS_INFO}"><i class="fa fa-question-circle"></i></span><br/>
-                            <input type="text" id="inputPaypalEmail" name="paypal_email" placeholder="{$PAYPAL_EMAIL_ADDRESS}" value="{$PAYPAL_EMAIL_ADDRESS_VALUE}">
+                            <label for="inputPaypalEmail" style="display:inline">{$PAYPAL_EMAIL_ADDRESS}</label> <span
+                                class="ui small blue icon label" data-toggle="tooltip" data-title="{$INFO}"
+                                data-content="{$PAYPAL_EMAIL_ADDRESS_INFO}"><i
+                                    class="fa fa-question-circle"></i></span><br />
+                            <input type="text" id="inputPaypalEmail" name="paypal_email"
+                                placeholder="{$PAYPAL_EMAIL_ADDRESS}" value="{$PAYPAL_EMAIL_ADDRESS_VALUE}">
                         </div>
                         <div class="field">
                             <input type="hidden" name="token" value="{$TOKEN}">
@@ -52,18 +56,22 @@
                     {if count($PURCHASED_RESOURCES_VALUE)}
                         <table class="ui fixed single line selectable unstackable small padded res table">
                             <tbody>
-                            {foreach from=$PURCHASED_RESOURCES_VALUE item=resource}
-                                <tr>
-                                    <td class="eight wide">
-                                        <a href="{$resource.link}">{$resource.name}</a> <small>{$resource.latest_version}</small>
-                                    </td>
-                                    <td class="eight wide">
-                                        <div class="res right floated">
-                                            <a href="{$resource.author_link}" style="{$resource.author_style}"><img src="{$resource.author_avatar}" class="ui avatar image" style="max-height:25px;max-width:25px;" alt="{$resource.author_username}"/> {$resource.author_nickname}</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {/foreach}
+                                {foreach from=$PURCHASED_RESOURCES_VALUE item=resource}
+                                    <tr onclick="window.location.href='{$resource.link}'">
+                                        <td class="eight wide">
+                                            <a>{$resource.name}</a>
+                                            <small>{$resource.latest_version}</small>
+                                        </td>
+                                        <td class="eight wide">
+                                            <div class="res right floated">
+                                                <a href="{$resource.author_link}" style="{$resource.author_style}"><img
+                                                        src="{$resource.author_avatar}" class="ui avatar image"
+                                                        style="max-height:25px;max-width:25px;"
+                                                        alt="{$resource.author_username}" /> {$resource.author_nickname}</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {/foreach}
                             </tbody>
                         </table>
                     {else}
@@ -75,18 +83,19 @@
                         {$SELECT_RESOURCE}
                         <table class="ui fixed single line selectable unstackable small padded res table">
                             <tbody>
-                            {foreach from=$PREMIUM_RESOURCES item=resource}
-                                <tr>
-                                    <td class="eight wide">
-                                        <a href="{$resource.link}">{$resource.name}</a> <small>{$resource.latest_version}</small>
-                                    </td>
-                                    <td class="eight wide">
-                                        <div class="res right floated">
-                                            {$resource.license_count}
-                                        </div>
-                                    </td>
-                                </tr>
-                            {/foreach}
+                                {foreach from=$PREMIUM_RESOURCES item=resource}
+                                    <tr onclick="window.location.href='{$resource.link}'">
+                                        <td class="eight wide">
+                                            <a>{$resource.name}</a>
+                                            <small>{$resource.latest_version}</small>
+                                        </td>
+                                        <td class="eight wide">
+                                            <div class="res right floated">
+                                                {$resource.license_count}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {/foreach}
                             </tbody>
                         </table>
                     {else}

@@ -6,29 +6,29 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit7a93031aedce0fe3fa1cfa18bf1045f6
 {
-    public static $prefixLengthsPsr4 = array (
+    public static $prefixLengthsPsr4 = [
         'P' => 
-        array (
+        [
             'Psr\\Log\\' => 8,
-        ),
-    );
+        ],
+    ];
 
-    public static $prefixDirsPsr4 = array (
+    public static $prefixDirsPsr4 = [
         'Psr\\Log\\' => 
-        array (
+        [
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
-        ),
-    );
+        ],
+    ];
 
-    public static $prefixesPsr0 = array (
+    public static $prefixesPsr0 = [
         'P' => 
-        array (
+        [
             'PayPal' => 
-            array (
+            [
                 0 => __DIR__ . '/..' . '/paypal/rest-api-sdk-php/lib',
-            ),
-        ),
-    );
+            ],
+        ],
+    ];
 
     public static function getInitializer(ClassLoader $loader)
     {
