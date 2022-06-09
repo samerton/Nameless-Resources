@@ -1867,6 +1867,8 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                 $categories = DB::getInstance()->get('resources_categories', ['id', '<>', $resource->category_id]);
                 if (!$categories->count()) {
                     $smarty->assign('NO_CATEGORIES', $resource_language->get('resources', 'no_categories_available'));
+                } else {
+                    $smarty->assign('CATEGORIES', $categories->results());
                 }
 
                 if(Input::exists()){
@@ -1913,8 +1915,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                     'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
                     'CANCEL_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
                     'SUBMIT' => $language->get('general', 'submit'),
-                    'MOVE_TO' => $resource_language->get('resources', 'move_to'),
-                    'CATEGORIES' => $categories
+                    'MOVE_TO' => $resource_language->get('resources', 'move_to')
                 ]);
 
                 $template_file = 'resources/move.tpl';

@@ -84,8 +84,8 @@ if(count($purchased_resources)){
             'author_style' => $author->getGroupStyle(),
             'author_link' => $author->getProfileURL(),
             'latest_version' => Output::getClean($resource->version),
-            'updated' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $language),
-            'updated_full' => date('d M Y, H:i', $resource->updated),
+            'updated' => $timeago->inWords($resource->updated, $language),
+            'updated_full' => date(DATE_FORMAT, $resource->updated),
             'link' => URL::build('/resources/resource/' . Output::getClean($resource->id) . '-' . Util::stringToURL($resource->name))
         ];
     }
