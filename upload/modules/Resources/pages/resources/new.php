@@ -294,7 +294,13 @@ if (Input::exists()) {
                 }
 
                 if(!$permission->premium){
-                    Redirect::to(URL::build('/resources/new/', 'step=upload'));
+                    $type = $_SESSION['new_resource']['type'];
+
+                    if($type == 'external'){
+                        Redirect::to(URL::build('/resources/new/', 'step=link'));
+                    } else {
+                        Redirect::to(URL::build('/resources/new/', 'step=upload'));
+                    }
                 }
 
                 if(Input::exists()){
@@ -687,8 +693,14 @@ if(!isset($_GET['step'])){
                 Redirect::to(URL::build('/resources/new'));
             }
 
-            if (!$permission->premium) {
-                Redirect::to(URL::build('/resources/new/', 'step=upload'));
+            if(!$permission->premium){
+                $type = $_SESSION['new_resource']['type'];
+
+                if($type == 'external'){
+                    Redirect::to(URL::build('/resources/new/', 'step=link'));
+                } else {
+                    Redirect::to(URL::build('/resources/new/', 'step=upload'));
+                }
             }
 
             $currency = DB::getInstance()->get('settings', ['name', '=', 'resources_currency']);
