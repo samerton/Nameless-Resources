@@ -518,7 +518,7 @@ if (Input::exists()) {
 
                     if ($validation->passed()) {
                         // TODO: hooks
-                        Output::getClean($_SESSION['new_resource']['content']);
+                        $content = Output::getClean($_SESSION['new_resource']['content']);
 
                         if(!isset($_POST['version']))
                             $version = '1.0.0';
