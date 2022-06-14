@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
@@ -39,7 +39,7 @@ if(isset($_GET['p'])){
     if(!is_numeric($_GET['p'])){
         Redirect::to($url);
     } else {
-        if($_GET['p'] == 1){ 
+        if($_GET['p'] == 1){
             // Avoid bug in pagination class
             Redirect::to($url);
         }
@@ -70,7 +70,7 @@ foreach($categories as $category){
     $category_count = $category_count->count();
     $category_array[] = [
         'name' => Output::getClean($category->name),
-        'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
+        'link' => URL::build('/resources/category/' . $category->id . '-' . urlencode($category->name)),
         'count' => Output::getClean($category_count)
     ];
 }
@@ -89,7 +89,7 @@ $smarty->assign('PAGINATION', $pagination);
 // Array to pass to template
 $releases_array = [];
 
-if(count($latest_releases)){
+if (count($latest_releases)) {
     // Display the correct number of resources
     $n = 0;
 
@@ -105,10 +105,10 @@ if(count($latest_releases)){
               $category = 'n/a';
         }
 
-        if(!isset($releases_array[$resource->id])){
+        if (!isset($releases_array[$resource->id])) {
             $resource_author = new User($resource->creator_id);
             $releases_array[$resource->id] = [
-                'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                'link' => URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name)),
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
                 'description' => mb_substr(strip_tags(Output::getDecoded($resource->description)), 0, 60) . '...',

@@ -49,9 +49,9 @@ if (!$current_category->count()) {
 $current_category = $current_category->first();
 
 $sort_types = [];
-$sort_types['updated'] = ['type' => 'updated', 'sort' => $resource_language->get('resources', 'last_updated'), 'link' => URL::build('/resources/category/' . $current_category->id . '-' . Util::stringToURL($current_category->name), 'sort=updated')];
-$sort_types['newest'] = ['type' => 'created', 'sort' => $resource_language->get('resources', 'newest'), 'link' => URL::build('/resources/category/' . $current_category->id . '-' . Util::stringToURL($current_category->name), 'sort=newest')];
-$sort_types['downloads'] = ['type' => 'downloads', 'sort' => $resource_language->get('resources', 'downloads'), 'link' => URL::build('/resources/category/' . $current_category->id . '-' . Util::stringToURL($current_category->name), 'sort=downloads')];
+$sort_types['updated'] = ['type' => 'updated', 'sort' => $resource_language->get('resources', 'last_updated'), 'link' => URL::build('/resources/category/' . $current_category->id . '-' . urlencode($current_category->name), 'sort=updated')];
+$sort_types['newest'] = ['type' => 'created', 'sort' => $resource_language->get('resources', 'newest'), 'link' => URL::build('/resources/category/' . $current_category->id . '-' . urlencode($current_category->name), 'sort=newest')];
+$sort_types['downloads'] = ['type' => 'downloads', 'sort' => $resource_language->get('resources', 'downloads'), 'link' => URL::build('/resources/category/' . $current_category->id . '-' . urlencode($current_category->name), 'sort=downloads')];
 
 if(isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_types)){
     $sort_type = $_GET['sort'];
@@ -61,7 +61,7 @@ if(isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_types)){
 } else {
     $sort_by = 'updated';
     $sort_by_text = $resource_language->get('resources', 'last_updated');
-    $url = URL::build('/resources/category/' . $current_category->id . '-' . Util::stringToURL($current_category->name), '');
+    $url = URL::build('/resources/category/' . $current_category->id . '-' . urlencode($current_category->name), '');
 }
 
 if ($user->isLoggedIn()) {
@@ -91,7 +91,7 @@ foreach($categories as $category){
     $category_count = $category_count->count();
     $to_array = [
         'name' => Output::getClean($category->name),
-        'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
+        'link' => URL::build('/resources/category/' . $category->id . '-' . urlencode($category->name)),
         'count' => Output::getClean($category_count)
     ];
     if($current_category->id == $category->id){
@@ -132,7 +132,7 @@ if(count($latest_releases)){
         if (!isset($releases_array[$resource->id])) {
             $resource_author = new User($resource->creator_id);
             $releases_array[$resource->id] = [
-                'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                'link' => URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name)),
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
                 'description' => mb_substr(strip_tags(Output::getPurified(Output::getDecoded($resource->description))), 0, 50) . '...',

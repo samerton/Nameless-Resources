@@ -73,7 +73,7 @@ foreach($categories as $category){
     $category_count = $category_count->count();
     $to_array = [
         'name' => Output::getClean($category->name),
-        'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
+        'link' => URL::build('/resources/category/' . $category->id . '-' . urlencode($category->name)),
     'count' => Output::getClean($category_count)
     ];
     $category_array[] = $to_array;
@@ -86,7 +86,7 @@ $latest_releases = $resources->getAuthorLatestResources($aid, $groups);
 // Pagination
 $paginator = new Paginator((isset($template_pagination) ? $template_pagination : []));
 $results = $paginator->getLimited($latest_releases, 10, $p, count($latest_releases));
-$pagination = $paginator->generate(7, URL::build('/resources/author/' . $author->data()->id . '-' . Util::stringToURL($author->getDisplayname(true)) . '/', true));
+$pagination = $paginator->generate(7, URL::build('/resources/author/' . $author->data()->id . '-' . urlencode($author->getDisplayname(true)) . '/', true));
 
 $smarty->assign('PAGINATION', $pagination);
 
@@ -108,9 +108,9 @@ if (count($latest_releases)) {
 
         if (!isset($releases_array[$results->data[$n]->id])) {
             $releases_array[$results->data[$n]->id] = [
-                'link' => URL::build('/resources/resource/' . $results->data[$n]->id . '-' . Util::stringToURL($results->data[$n]->name)),
+                'link' => URL::build('/resources/resource/' . $results->data[$n]->id . '-' . urlencode($results->data[$n]->name)),
                 'name' => Output::getClean($results->data[$n]->name),
-                'short_description' => Output::getClean($results->data[$n]->short_description), 
+                'short_description' => Output::getClean($results->data[$n]->short_description),
                 'description' => mb_substr(strip_tags(Output::getDecoded($results->data[$n]->description)), 0, 50) . '...',
                 'author' => Output::getClean($author->getDisplayname()),
                 'author_style' => $author->getGroupStyle(),
@@ -124,23 +124,25 @@ if (count($latest_releases)) {
                 'updated' => $resource_language->get('resources', 'updated_x', ['updated' => $timeago->inWords(date('d M Y, H:i', $results->data[$n]->updated), $language)]),
                 'updated_full' => date('d M Y, H:i', $results->data[$n]->updated)
             ];
-        
+
             if($results->data[$n]->type == 1 ) {
                 $releases_array[$results->data[$n]->id]['price'] = Output::getClean($results->data[$n]->price);
             }
-        
+
             // Check if resource icon uploaded
             if($results->data[$n]->has_icon == 1 ) {
                 $releases_array[$results->data[$n]->id]['icon'] = $results->data[$n]->icon;
             } else {
                 $releases_array[$results->data[$n]->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
             }
-            
+
         }
 
         $n++;
     }
-} else $releases_array = null;
+} else {
+    $releases_array = null;
+}
 
 // Assign Smarty variables
 $smarty->assign([

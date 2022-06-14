@@ -10,7 +10,7 @@
  */
 
 // Can the user view the panel?
-if($user->isLoggedIn()){
+if ($user->isLoggedIn()){
     if(!$user->canViewStaffCP()){
         // No
         Redirect::to(URL::build('/'));
@@ -135,7 +135,7 @@ if (!$currency->count()) {
     $currency = 'GBP';
 
 } else {
-    $currency = Output::getClean($currency->first()->value);
+    $currency = $currency->first()->value;
 }
 
 $filesize = DB::getInstance()->get('settings', ['name', '=', 'resources_filesize']);
@@ -167,15 +167,15 @@ if (!$pre_purchase_info->count()) {
 }
 
 $smarty->assign([
-    'PARENT_PAGE' => PARENT_PAGE,
+    'PARENT_PAGE' => Output::getClean(PARENT_PAGE),
     'DASHBOARD' => $language->get('admin', 'dashboard'),
     'RESOURCES' => $resource_language->get('resources', 'resources'),
     'SETTINGS' => $resource_language->get('resources', 'settings'),
-    'PAGE' => PANEL_PAGE,
-    'TOKEN' => Token::get(),
+    'PAGE' => Output::getClean(PANEL_PAGE),
+    'TOKEN' => Output::getClean(Token::get()),
     'SUBMIT' => $language->get('general', 'submit'),
     'CURRENCY' => $resource_language->get('resources', 'currency'),
-    'CURRENCY_VALUE' => $currency,
+    'CURRENCY_VALUE' => Output::getClean($currency),
     'FILESIZE' => $resource_language->get('resources', 'maximum_filesize'),
     'FILESIZE_VALUE' => $filesize,
     'PRE_PURCHASE_INFO' => $resource_language->get('resources', 'pre_purchase_information'),

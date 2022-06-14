@@ -135,8 +135,7 @@ if (Input::exists()) {
                             'User-Agent: NamelessMC-App'
                         ]);
                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                        curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($_POST['github_username']) . '/' . Output::getClean($_POST['github_repo']) . '/releases');
+                        curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . urlencode($_POST['github_username']) . '/' . urlencode($_POST['github_repo']) . '/releases');
 
                         if(!$github_query = curl_exec($ch)){
                             $error = curl_error($ch);
@@ -155,9 +154,9 @@ if (Input::exists()) {
                                 // Select release
                                 $releases_array[] = [
                                     'id' => $release['id'],
-                                    'tag' => Output::getClean($release['tag_name']),
-                                    'name' => Output::getClean($release['name']),
-                                    'short_description' => Output::getClean($release['short_description'])
+                                    'tag' => $release['tag_name'],
+                                    'name' => $release['name'],
+                                    'short_description' => $release['short_description'],
                                 ];
                             }
 
@@ -200,7 +199,6 @@ if (Input::exists()) {
                         'User-Agent: NamelessMC-App'
                     ]);
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                     curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($_SESSION['new_resource']['github']['github_username']) . '/' . Output::getClean($_SESSION['new_resource']['github']['github_repo']) . '/releases/' . Output::getClean($_POST['release']));
 
                     if(!$github_query = curl_exec($ch)){
@@ -217,21 +215,21 @@ if (Input::exists()) {
                         // Create resource
                         // Format description
                         // TODO: hooks!
-                        $content = Output::getClean($_SESSION['new_resource']['content']);
+                        $content = $_SESSION['new_resource']['content'];
 
                         DB::getInstance()->insert('resources', [
                             'category_id' => $_SESSION['new_resource']['category'],
                             'creator_id' => $user->data()->id,
-                            'name' => Output::getClean($_SESSION['new_resource']['name']),
-                            'short_description' => Output::getClean($_SESSION['new_resource']['short_description']),
+                            'name' => $_SESSION['new_resource']['name'],
+                            'short_description' => $_SESSION['new_resource']['short_description'],
                             'description' => $content,
-                            'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? Output::getClean($_SESSION['new_resource']['contributors']) : null),
+                            'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? $_SESSION['new_resource']['contributors'] : null),
                             'created' => date('U'),
                             'updated' => date('U'),
-                            'github_url' => 'https://github.com/' . Output::getClean($_SESSION['new_resource']['github']['github_username']) . '/' . Output::getClean($_SESSION['new_resource']['github']['github_repo']),
-                            'github_username' => Output::getClean($_SESSION['new_resource']['github']['github_username']),
-                            'github_repo_name' => Output::getClean($_SESSION['new_resource']['github']['github_repo']),
-                            'latest_version' => Output::getClean($github_query->tag_name)
+                            'github_url' => 'https://github.com/' . urlencode($_SESSION['new_resource']['github']['github_username']) . '/' . urlencode($_SESSION['new_resource']['github']['github_repo']),
+                            'github_username' => $_SESSION['new_resource']['github']['github_username'],
+                            'github_repo_name' => $_SESSION['new_resource']['github']['github_repo'],
+                            'latest_version' => $github_query->tag_name
                         ]);
 
                         $resource_id = DB::getInstance()->lastId();
@@ -239,30 +237,30 @@ if (Input::exists()) {
                         DB::getInstance()->insert('resources_releases', [
                             'resource_id' => $resource_id,
                             'category_id' => $_SESSION['new_resource']['category'],
-                            'release_title' => Output::getClean($github_query->name),
-                            'release_description' => Output::getPurified($github_query->body),
-                            'release_tag' => Output::getClean($github_query->tag_name),
+                            'release_title' => $github_query->name,
+                            'release_description' => $github_query->body,
+                            'release_tag' => $github_query->tag_name,
                             'created' => date('U'),
-                            'download_link' => Output::getClean($github_query->html_url)
+                            'download_link' => $github_query->html_url
                         ]);
 
                         // Hook
                         $new_resource_category = DB::getInstance()->get('resources_categories', ['id', '=', $_SESSION['new_resource']['category']]);
 
                         if ($new_resource_category->count())
-                            $new_resource_category = Output::getClean($new_resource_category->first()->name);
+                            $new_resource_category = $new_resource_category->first()->name;
 
                         else
                             $new_resource_category = 'Unknown';
 
                         EventHandler::executeEvent('newResource', [
                             'event' => 'newResource',
-                            'username' => Output::getClean($user->data()->nickname),
+                            'username' => $user->data()->nickname,
                             'content' => $resource_language->get('resources', 'new_resource_text', ['category' => $new_resource_category, 'user' => Output::getClean($user->data()->nickname)]),
                             'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
                             'avatar_url' => $user->getAvatar(128, true),
-                            'title' => Output::getClean($_SESSION['new_resource']['name']),
-                            'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
+                            'title' => $_SESSION['new_resource']['name'],
+                            'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . urlencode($_SESSION['new_resource']['name']))
                         ]);
 
                         unset($_SESSION['new_resource']);
@@ -479,7 +477,7 @@ if (Input::exists()) {
                                     'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
                                     'avatar_url' => $user->getAvatar(128, true),
                                     'title' => Output::getClean($_SESSION['new_resource']['name']),
-                                    'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
+                                    'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . urlencode($_SESSION['new_resource']['name']))
                                 ]);
 
                                 unset($_SESSION['new_resource']);
@@ -582,7 +580,7 @@ if (Input::exists()) {
                             'content_full' => str_replace('&nbsp;', '', strip_tags(Output::getDecoded($content))),
                             'avatar_url' => $user->getAvatar(128, true),
                             'title' => Output::getClean($_SESSION['new_resource']['name']),
-                            'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . Util::stringToURL(Output::getClean($_SESSION['new_resource']['name'])))
+                            'url' => rtrim(Util::getSelfURL(), '/') . URL::build('/resources/resource/' . $resource_id . '-' . urlencode($_SESSION['new_resource']['name']))
                         ]);
 
                         unset($_SESSION['new_resource']);
@@ -604,7 +602,7 @@ if (Input::exists()) {
 $page_title = $resource_language->get('resources', 'new_resource');
 require_once(ROOT_PATH . '/core/templates/frontend_init.php');
 
-if(!isset($_GET['step'])){
+if (!isset($_GET['step'])){
     $categories = $resources->getCategories($groups);
 
     // Assign to Smarty array
@@ -618,11 +616,12 @@ if(!isset($_GET['step'])){
     $categories = null;
 
     // Assign post content if it already exists
-    if(isset($_POST['description'])) $smarty->assign('CONTENT', Output::getClean($_POST['description']));
-    else $smarty->assign('CONTENT', '');
+    $smarty->assign('CONTENT', isset($_POST['description']) ? Output::getClean($_POST['description']) : '');
 
     // Errors?
-    if(isset($error)) $smarty->assign('ERROR', $error);
+    if (isset($error)) {
+        $smarty->assign('ERROR', $error);
+    }
 
     // Assign Smarty variables
     $smarty->assign([

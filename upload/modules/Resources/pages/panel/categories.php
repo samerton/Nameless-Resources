@@ -31,12 +31,12 @@ if(!isset($_GET['action'])){
     if($categories->count()){
         foreach($categories->results() as $category){
             $template_array[] = [
-                'edit_link' => URL::build('/panel/resources/categories/', 'action=edit&cid=' . Output::getClean($category->id)),
-                'name' => Output::getPurified(Output::getDecoded($category->name)),
-                'description' => Output::getPurified(Output::getDecoded($category->description)),
-                'order_up' => URL::build('/panel/resources/categories/', 'action=order&dir=up&cid=' . Output::getClean($category->id)),
-                'order_down' => URL::build('/panel/resources/categories/', 'action=order&dir=down&cid=' . Output::getClean($category->id)),
-                'delete_link' => URL::build('/panel/resources/categories/', 'action=delete&cid=' . Output::getClean($category->id))
+                'edit_link' => Output::getClean(URL::build('/panel/resources/categories/', 'action=edit&cid=' . $category->id)),
+                'name' => Output::getPurified($category->name),
+                'description' => Output::getPurified($category->description),
+                'order_up' => Output::getClean(URL::build('/panel/resources/categories/', 'action=order&dir=up&cid=' . $category->id)),
+                'order_down' => Output::getClean(URL::build('/panel/resources/categories/', 'action=order&dir=down&cid=' . $category->id)),
+                'delete_link' => Output::getClean(URL::build('/panel/resources/categories/', 'action=delete&cid=' . $category->id)),
             ];
         }
     }
@@ -88,8 +88,8 @@ if(!isset($_GET['action'])){
                             else $last_cat_order = 0;
 
                             DB::getInstance()->insert('resources_categories', [
-                                'name' => Output::getClean(Input::get('catname')),
-                                'description' => Output::getClean($description),
+                                'name' => Input::get('catname'),
+                                'description' => $description,
                                 'display_order' => $last_cat_order + 1
                             ]);
 
@@ -110,7 +110,7 @@ if(!isset($_GET['action'])){
             $smarty->assign([
                 'CREATING_CATEGORY' => $resource_language->get('resources', 'creating_category'),
                 'CANCEL' => $language->get('general', 'cancel'),
-                'CANCEL_LINK' => URL::build('/panel/resources/categories'),
+                'CANCEL_LINK' => Output::getClean(URL::build('/panel/resources/categories')),
                 'ARE_YOU_SURE' => $language->get('general', 'are_you_sure'),
                 'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
                 'YES' => $language->get('general', 'yes'),
@@ -322,7 +322,7 @@ if(!isset($_GET['action'])){
             $smarty->assign([
                 'EDITING_CATEGORY' => $resource_language->get('resources', 'editing_category'),
                 'CANCEL' => $language->get('general', 'cancel'),
-                'CANCEL_LINK' => URL::build('/panel/resources/categories'),
+                'CANCEL_LINK' => Output::getClean(URL::build('/panel/resources/categories')),
                 'ARE_YOU_SURE' => $language->get('general', 'are_you_sure'),
                 'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
                 'YES' => $language->get('general', 'yes'),
@@ -429,7 +429,7 @@ if(!isset($_GET['action'])){
 
             $smarty->assign([
                 'DELETE_CATEGORY' => $resource_language->get('resources', 'delete_category'),
-                'BACK_LINK' => URL::build('/panel/resources/categories'),
+                'BACK_LINK' => Output::getClean(URL::build('/panel/resources/categories')),
                 'BACK' => $language->get('general', 'back'),
                 'MOVE_RESOURCES_TO' => $resource_language->get('resources', 'move_resources_to'),
                 'CATEGORIES_LIST' => $categories->results(),
@@ -537,7 +537,7 @@ $smarty->assign([
     'RESOURCES' => $resource_language->get('resources', 'resources'),
     'CATEGORIES' => $resource_language->get('resources', 'categories'),
     'PAGE' => PANEL_PAGE,
-    'TOKEN' => Token::get(),
+    'TOKEN' => Output::getClean(Token::get()),
     'SUBMIT' => $language->get('general', 'submit')
 ]);
 

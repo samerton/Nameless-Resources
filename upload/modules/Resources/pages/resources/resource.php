@@ -209,7 +209,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                         $cache->setCache('resource-comments-' . $resource->id);
                         $cache->erase('comments');
 
-                        Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                        Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name)));
                     }
 
                 } else {
@@ -245,7 +245,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
     // Pagination
     $paginator = new Paginator((isset($template_pagination) ? $template_pagination : []));
     $results = $paginator->getLimited($comments, 10, $p, count($comments));
-    $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringtoURL($resource->name) . '/', true));
+    $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', true));
 
     if(count($comments))
         $smarty->assign('PAGINATION', $pagination);
@@ -283,7 +283,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                     'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : []),
                     'rating' => $results->data[$n]->rating,
                     'release_tag' => Output::getClean($results->data[$n]->release_tag),
-                    'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
+                    'delete_link' => Output::getClean((isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=delete_review&review=' . $results->data[$n]->id) : ''))
                 ];
             }
 
@@ -314,20 +314,20 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         'CHANGE_ICON_ACTION' => URL::build('/resources/icon_upload'),
         'BACK_LINK' => URL::build('/resources'),
         'OVERVIEW_TITLE' => $resource_language->get('resources', 'overview'),
-        'OVERVIEW_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+        'OVERVIEW_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name))),
         'RELEASES_TITLE' => $resource_language->get('resources', 'releases_x', ['count' => Output::getClean($releases)]),
         'VERSIONS_TITLE' => $resource_language->get('resources', 'versions_x', ['count' => Output::getClean($releases)]),
-        'VERSIONS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions'),
+        'VERSIONS_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'versions')),
         'REVIEWS_TITLE' => $resource_language->get('resources', 'reviews_x', ['count' => Output::getClean($reviews)]),
-        'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
+        'REVIEWS_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'reviews')),
         'RESOURCE_NAME' => Output::getClean($resource->name),
         'RESOURCE_ID' => Output::getClean($resource->id),
         'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
         'RESOURCE_INDEX' => $resource_language->get('resources', 'resource_index'),
         'AUTHOR' => $resource_language->get('resources', 'author'),
-        'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
+        'AUTHOR_RESOURCES' => Output::getClean(URL::build('/resources/author/' . $resource->creator_id . '-' . urlencode($author->getDisplayname(true)))),
         'VIEW_OTHER_RESOURCES' => $resource_language->get('resources', 'view_other_resources', ['user' => $author->getDisplayname()]),
-        'DESCRIPTION' => Output::getPurified(Output::getDecoded($resource->description)),
+        'DESCRIPTION' => Output::getPurified($resource->description),
         'CREATED' => $timeago->inWords(date('d M Y, H:i', $resource->created), $language),
         'CREATED_FULL' => date('d M Y, H:i', $resource->created),
         'REVIEWS' => $resource_language->get('resources', 'reviews'),
@@ -354,10 +354,10 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         'RATING' => $resource_language->get('resources', 'rating'),
         'RATING_VALUE' => round($resource->rating / 10),
         'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
-        'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
+        'OTHER_RELEASES_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'releases=all')),
         'RELEASE' => $resource_language->get('resources', 'release'),
         'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
-        'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
+        'RELEASE_DESCRIPTION' => Output::getPurified($latest_update->release_description),
         'RELEASE_VERSION' => $resource_language->get('resources', 'version_x', ['version' => Output::getClean($latest_update->release_tag)]),
         'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
         'RELEASE_RATING' => round($latest_update->rating / 10),
@@ -403,7 +403,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
             $smarty->assign([
                 'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download')
             ]);
         }
     } else {
@@ -414,7 +414,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                     // Author can download their own resources
                     $smarty->assign([
                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download')
                     ]);
 
                 } else {
@@ -428,7 +428,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             // Purchased
                             $smarty->assign([
                                 'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download')
                             ]);
 
                         } else if($paid->status == 0){
@@ -441,7 +441,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             // Cancelled
                             $smarty->assign([
                                 'PURCHASE_FOR_PRICE' => $resource_language->get('resources', 'purchase_for_x', ['price' => Output::getClean($resource->price) . ' ' . Output::getClean($currency)]),
-                                'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                'PURCHASE_LINK' => Output::getClean(URL::build('/resources/purchase/' . $resource->id . '-' . urlencode($resource->name)))
                             ]);
 
                         }
@@ -449,7 +449,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                         // Needs to purchase
                         $smarty->assign([
                             'PURCHASE_FOR_PRICE' => $resource_language->get('resources', 'purchase_for_x', ['price' => Output::getClean($resource->price) . ' ' . Output::getClean($currency)]),
-                            'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                            'PURCHASE_LINK' => Output::getClean(URL::build('/resources/purchase/' . $resource->id . '-' . urlencode($resource->name))))
                         ]);
                     }
                 }
@@ -467,7 +467,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         $smarty->assign([
             'CAN_UPDATE' => true,
             'UPDATE' => $resource_language->get('resources', 'update'),
-            'UPDATE_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=update')
+            'UPDATE_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=update')),
         ]);
     }
 
@@ -476,7 +476,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             $smarty->assign([
                 'CAN_EDIT' => true,
                 'EDIT' => $language->get('general', 'edit'),
-                'EDIT_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=edit'),
+                'EDIT_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=edit')),
                 'CHANGE_ICON' => $resource_language->get('resources', 'resource_change_icon')
             ]);
         }
@@ -485,20 +485,20 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         $moderation = [];
         if($resources->canMoveResources($resource->category_id, $groups)){
             $moderation[] = [
-                'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=move'),
+                'link' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=move')),
                 'title' => $resource_language->get('resources', 'move_resource')
             ];
         }
         if($resources->canDeleteResources($resource->category_id, $groups)){
             $moderation[] = [
-                'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete'),
+                'link' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=delete')),
                 'title' => $resource_language->get('resources', 'delete_resource')
             ];
         }
 
         if (Resources::canManageLicenses($resource->id, $user)) {
             $moderation[] = [
-                'link' => URL::build('/user/resources/licenses/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                'link' => Output::getClean(URL::build('/user/resources/licenses/' . $resource->id . '-' . urlencode($resource->name))),
                 'title' => $resource_language->get('resources', 'manage_licenses')
             ];
         }
@@ -537,12 +537,13 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         // Pagination
         $paginator = new Paginator((isset($template_pagination) ? $template_pagination : []));
         $results = $paginator->getLimited($comments, 10, $p, count($comments));
-        $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews=all&amp;'));
+        $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'reviews=all&amp;'));
 
-        if(count($comments))
+        if (count($comments)) {
             $smarty->assign('PAGINATION', $pagination);
-        else
+        } else {
             $smarty->assign('PAGINATION', '');
+        }
 
         // Array to pass to template
         $comments_array = [];
@@ -566,7 +567,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                         'replies' => (isset($replies_array[$results->data[$n]->id]) ? $replies_array[$results->data[$n]->id] : []),
                         'rating' => $results->data[$n]->rating,
                         'release_tag' => Output::getClean($results->data[$n]->release_tag),
-                        'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
+                        'delete_link' => (isset($can_delete_reviews) ? URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=delete_review&amp;review=' . $results->data[$n]->id) : '')
                     ];
                 }
                 $n++;
@@ -609,23 +610,23 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
             'COMMENT_ARRAY' => $comments_array,
             'AUTHOR' => $resource_language->get('resources', 'author'),
-            'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
+            'AUTHOR_RESOURCES' => Output::getClean(URL::build('/resources/author/' . $resource->creator_id . '-' . urlencode($author->getDisplayname(true)))),
             'VIEW_OTHER_RESOURCES' => $resource_language->get('resources', 'view_other_resources', ['user' => $author->getDisplayname()]),
             'AUTHOR_NICKNAME' => $author->getDisplayname(),
             'AUTHOR_NAME' => $author->getDisplayname(true),
             'AUTHOR_STYLE' => $author->getGroupStyle(),
             'AUTHOR_AVATAR' => $author->getAvatar(),
-            'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
+            'AUTHOR_PROFILE' => Output::getClean(URL::build('/profile/' . $author->getDisplayname(true))),
             'NO_REVIEWS' => $resource_language->get('resources', 'no_reviews'),
             'BACK' => $language->get('general', 'back'),
-            'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+            'BACK_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name))),
             'OVERVIEW_TITLE' => $resource_language->get('resources', 'overview'),
-            'OVERVIEW_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+            'OVERVIEW_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name))),
             'RELEASES_TITLE' => $resource_language->get('resources', 'releases_x', ['count' => Output::getClean($releases)]),
             'VERSIONS_TITLE' => $resource_language->get('resources', 'versions_x', ['count' => Output::getClean($releases)]),
-            'VERSIONS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions'),
+            'VERSIONS_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'versions')),
             'REVIEWS_TITLE' => $resource_language->get('resources', 'reviews_x', ['count' => Output::getClean($reviews)]),
-            'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
+            'REVIEWS_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'reviews')),
             'RESOURCE' => $resource_language->get('resources', 'resource'),
             'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
             'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
@@ -642,10 +643,10 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             'RATING' => $resource_language->get('resources', 'rating'),
             'RATING_VALUE' => round($resource->rating / 10),
             'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
-            'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
+            'OTHER_RELEASES_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'releases=all')),
             'RELEASE' => $resource_language->get('resources', 'release'),
             'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
-            'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
+            'RELEASE_DESCRIPTION' => Output::getPurified($latest_update->release_description),
             'RELEASE_VERSION' => $resource_language->get('resources', 'version_x', ['version' => Output::getClean($latest_update->release_tag)]),
             'RELEASE_TAG' => Output::getClean($latest_update->release_tag),
             'RELEASE_RATING' => round($latest_update->rating / 10),
@@ -664,14 +665,14 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                 'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
             ]);
         }
-        
+
             // Ensure user has download permission
             if($resource->type == 0){
                 // Can the user download?
                 if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
                     $smarty->assign([
                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                        'DOWNLOAD_URL' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download'))
                     ]);
                 }
             } else {
@@ -682,7 +683,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             // Author can download their own resources
                             $smarty->assign([
                                 'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                                'DOWNLOAD_URL' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download'))
                             ]);
 
                         } else {
@@ -696,7 +697,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                     // Purchased
                                     $smarty->assign([
                                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                                        'DOWNLOAD_URL' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download'))
                                     ]);
 
                                 } else if($paid->status == 0){
@@ -709,7 +710,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                     // Cancelled
                                     $smarty->assign([
                                         'PURCHASE_FOR_PRICE' => $resource_language->get('resources', 'purchase_for_x', ['price' => Output::getClean($resource->price) . ' ' . Output::getClean($currency)]),
-                                        'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                        'PURCHASE_LINK' => Output::getClean(URL::build('/resources/purchase/' . urlencode($resource->id) . '-' . urlencode($resource->name)))
                                     ]);
 
                                 }
@@ -717,7 +718,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                 // Needs to purchase
                                 $smarty->assign([
                                     'PURCHASE_FOR_PRICE' => $resource_language->get('resources', 'purchase_for_x', ['price' => Output::getClean($resource->price) . ' ' . Output::getClean($currency)]),
-                                    'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                    'PURCHASE_LINK' => Ouput::getClean(URL::build('/resources/purchase/' . $resource->id . '-' . urlencode($resource->name)))
                                 ]);
                             }
                         }
@@ -738,7 +739,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         $release_count = $releases->count();
 
         if (!$release_count) {
-            Redirect::to('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name));
+            Redirect::to('/resources/resource/' . $resource->id . '-' . urlencode($resource->name));
         }
 
         $releases = $releases->results();
@@ -746,7 +747,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         // Pagination
         $paginator = new Paginator((isset($template_pagination) ? $template_pagination : []));
         $results = $paginator->getLimited($releases, 10, $p, $release_count);
-        $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions=all&amp;'));
+        $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'versions=all&amp;'));
 
         $smarty->assign('PAGINATION', $pagination);
 
@@ -755,11 +756,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
         foreach($results->data as $release){
             $releases_array[] = [
                 'id' => $release->id,
-                'url' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=' . $release->id),
-                'download_url' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download&release=' . $release->id),
+                'url' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'releases=' . $release->id)),
+                'download_url' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download&release=' . $release->id)),
                 'tag' => Output::getClean($release->release_tag),
                 'name' => Output::getClean($release->release_title),
-                'description' => Output::getPurified(nl2br(Output::getDecoded($release->release_description))),
+                'description' => Output::getPurified(nl2br($release->release_description)),
                 'date' => $timeago->inWords(date('d M Y, H:i', $release->created), $language),
                 'date_full' => date('d M Y, H:i', $release->created),
                 'rating' => round($release->rating / 10),
@@ -802,23 +803,23 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             'RESOURCE_NAME' => Output::getClean($resource->name),
             'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
             'AUTHOR' => $resource_language->get('resources', 'author'),
-            'AUTHOR_RESOURCES' => URL::build('/resources/author/' . $resource->creator_id . '-' . Util::stringToURL($author->getDisplayname(true))),
+            'AUTHOR_RESOURCES' => Output::getClean(URL::build('/resources/author/' . $resource->creator_id . '-' . urlencode($author->getDisplayname(true)))),
             'VIEW_OTHER_RESOURCES' => $resource_language->get('resources', 'view_other_resources', ['user' => $author->getDisplayname()]),
             'AUTHOR_NICKNAME' => $author->getDisplayname(),
             'AUTHOR_NAME' => $author->getDisplayname(true),
             'AUTHOR_STYLE' => $author->getGroupStyle(),
             'AUTHOR_AVATAR' => $author->getAvatar(),
-            'AUTHOR_PROFILE' => URL::build('/profile/' . $author->getDisplayname(true)),
+            'AUTHOR_PROFILE' => Output::getClean(URL::build('/profile/' . urlencode($author->getDisplayname(true)))),
             'RELEASES' => $releases_array,
             'BACK' => $language->get('general', 'back'),
-            'BACK_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+            'BACK_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name))),
             'OVERVIEW_TITLE' => $resource_language->get('resources', 'overview'),
-            'OVERVIEW_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+            'OVERVIEW_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name))),
             'RELEASES_TITLE' => $resource_language->get('resources', 'releases_x', ['count' => Output::getClean($releases)]),
             'VERSIONS_TITLE' => $resource_language->get('resources', 'versions_x', ['count' => Output::getClean($releases)]),
-            'VERSIONS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'versions'),
+            'VERSIONS_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'versions')),
             'REVIEWS_TITLE' =>  $resource_language->get('resources', 'reviews_x', ['count' => Output::getClean($reviews)]),
-            'REVIEWS_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'reviews'),
+            'REVIEWS_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'reviews')),
             'RESOURCE' => $resource_language->get('resources', 'resource'),
             'FIRST_RELEASE' => $resource_language->get('resources', 'first_release'),
             'FIRST_RELEASE_DATE' => date('d M Y', $resource->created),
@@ -835,7 +836,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             'RATING' => $resource_language->get('resources', 'rating'),
             'RATING_VALUE' => round($resource->rating / 10),
             'OTHER_RELEASES' => $resource_language->get('resources', 'other_releases'),
-            'OTHER_RELEASES_LINK' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all'),
+            'OTHER_RELEASES_LINK' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'releases=all')),
             'RELEASE' => $resource_language->get('resources', 'release'),
             'RELEASE_TITLE' => Output::getClean($latest_update->release_title),
             'RELEASE_DESCRIPTION' => Output::getPurified(Output::getDecoded($latest_update->release_description)),
@@ -857,14 +858,14 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                 'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
             ]);
         }
-        
+
             // Ensure user has download permission
             if($resource->type == 0){
                 // Can the user download?
                 if ($resources->canDownloadResourceFromCategory($groups, $resource->category_id)) {
                     $smarty->assign([
                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                        'DOWNLOAD_URL' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download'))
                     ]);
                 }
             } else {
@@ -875,7 +876,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             // Author can download their own resources
                             $smarty->assign([
                                 'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                                'DOWNLOAD_URL' => Ouput::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download'))
                             ]);
 
                         } else {
@@ -889,7 +890,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                     // Purchased
                                     $smarty->assign([
                                         'DOWNLOAD' => $resource_language->get('resources', 'download'),
-                                        'DOWNLOAD_URL' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'do=download')
+                                        'DOWNLOAD_URL' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'do=download'))
                                     ]);
 
                                 } else if($paid->status == 0){
@@ -902,15 +903,14 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                     // Cancelled
                                     $smarty->assign([
                                         'PURCHASE_FOR_PRICE' => $resource_language->get('resources', 'purchase_for_x', ['price' => Output::getClean($resource->price) . ' ' . Output::getClean($currency)]),
-                                        'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                        'PURCHASE_LINK' => Ouput::getClean(URL::build('/resources/purchase/' . $resource->id . '-' . urlencode($resource->name))),
                                     ]);
-
                                 }
                             } else {
                                 // Needs to purchase
                                 $smarty->assign([
                                     'PURCHASE_FOR_PRICE' => $resource_language->get('resources', 'purchase_for_x', ['price' => Output::getClean($resource->price) . ' ' . Output::getClean($currency)]),
-                                    'PURCHASE_LINK' => URL::build('/resources/purchase/' . Output::getClean($resource->id) . '-' . Output::getClean(Util::stringToURL($resource->name)))
+                                    'PURCHASE_LINK' => Output::getClean(URL::build('/resources/purchase/' . $resource->id . '-' . urlencode($resource->name)))
                                 ]);
                             }
                         }
@@ -924,21 +924,21 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             }
 
         $template_file = 'resources/resource_all_versions.tpl';
-        
+
     } else if(isset($_GET['releases'])){
         if($_GET['releases'] == 'all'){
             // Display list of all releases
             $releases = DB::getInstance()->orderWhere('resources_releases', 'resource_id = ' . $resource->id, 'created', 'DESC')->results();
 
             if (!count($releases)){
-                Redirect::to('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name));
+                Redirect::to('/resources/resource/' . $resource->id . '-' . urlencode($resource->name));
                 die();
             }
 
             // Pagination
             $paginator = new Paginator((isset($template_pagination) ? $template_pagination : []));
             $results = $paginator->getLimited($releases, 10, $p, count($releases));
-            $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=all&amp;'));
+            $pagination = $paginator->generate(7, URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'releases=all&amp;'));
 
             $smarty->assign('PAGINATION', $pagination);
 
@@ -947,10 +947,10 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             foreach($releases as $release){
                 $releases_array[] = [
                     'id' => $release->id,
-                    'url' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name) . '/', 'releases=' . $release->id),
+                    'url' => Output::getClean(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name) . '/', 'releases=' . $release->id)),
                     'tag' => Output::getClean($release->release_tag),
                     'name' => Output::getClean($release->release_title),
-                    'description' => Output::getPurified(nl2br(Output::getDecoded($release->release_description))),
+                    'description' => Output::getPurified(nl2br($release->release_description)),
                     'date' => $timeago->inWords(date('d M Y, H:i', $release->created), $language),
                     'date_full' => date('d M Y, H:i', $release->created),
                     'rating' => round($release->rating / 10),
@@ -1033,7 +1033,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                     'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
                 ]);
             }
-            
+
             $template_file = 'resources/resource_all_releases.tpl';
 
         } else {
@@ -1127,7 +1127,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                     'RESOURCE_ICON' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png'
                 ]);
             }
-            
+
             $currency = DB::getInstance()->get('settings', ['name', '=', 'resources_currency']);
             if (!$currency->count()) {
                 DB::getInstance()->insert('settings', [
@@ -1372,7 +1372,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             ob_clean();
                             flush();
                             readfile($zip);
-                            
+
                             die();
 
                         } else {
@@ -1452,7 +1452,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                             ]);
 
                                             $release_id = DB::getInstance()->lastId();
-                                            
+
                                             $uploadPath = $user_dir . DIRECTORY_SEPARATOR . $resource->id;
 
                                             if(!is_dir($uploadPath))
@@ -1471,7 +1471,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                                     'updated' => date('U'),
                                                     'latest_version' => Output::getClean($version)
                                                 ]);
-                                                
+
                                                 $success = true;
                                             } else {
                                                 // Unable to upload file
@@ -1495,7 +1495,6 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                             'User-Agent: NamelessMC-App'
                                         ]);
                                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                                         curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases/' . Output::getClean($_POST['release']));
 
                                         if(!$github_query = curl_exec($ch)){
@@ -1526,7 +1525,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                                 if(empty($content)) {
                                                     $content = $github_query->body;
                                                 }
-                                                
+
                                                 DB::getInstance()->update('resources', $resource->id, [
                                                     'updated' => date('U'),
                                                     'latest_version' => Output::getClean($github_query->tag_name)
@@ -1556,7 +1555,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
                                 // TODO: improve error
                                 $errorMessage = $resource_language->get('resources', 'external_link_error', ['min' => 4, 'max' => 256]);
-                                
+
                                 // Validate link
                                 $validation = Validate::check($_POST, [
                                     'link' => [
@@ -1598,7 +1597,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                         'created' => date('U'),
                                         'download_link' => Output::getClean($_POST['link'])
                                     ]);
-                                    
+
                                     $success = true;
                                 } else {
                                     $error = $resource_language->get('resources', 'external_link_error', ['min' => 4, 'max' => 256]);
@@ -1608,7 +1607,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                 $error = $resource_language->get('resources', 'select_release_type_error');
                             break;
                         }
-                        
+
                         if($success) {
                             // Hook
                             $new_resource_category = DB::getInstance()->get('resources_categories', ['id', '=', $resource->category_id]);
@@ -1616,7 +1615,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                 $new_resource_category = Output::getClean($new_resource_category->first()->name);
                             else
                                 $new_resource_category = 'Unknown';
-                            
+
                             EventHandler::executeEvent('updateResource', [
                                 'event' => 'updateResource',
                                 'username' => $user->getDisplayname(),
@@ -1633,7 +1632,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                         $error = $language->get('general', 'invalid_token');
                     }
                 }
-                
+
                 // Github Integration
                 if($resource->type == 0 && $resource->github_url != 'none'){
                     // Github API
@@ -1645,7 +1644,6 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             'User-Agent: NamelessMC-App'
                         ]);
                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                         curl_setopt($ch, CURLOPT_URL, 'https://api.github.com/repos/' . Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo_name) . '/releases');
 
                         if(!$github_query = curl_exec($ch)){
@@ -1674,7 +1672,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                             ];
                         }
                     }
-                    
+
                     // Assign Smarty variables
                     $smarty->assign([
                         'GITHUB_LINKED' => true,
@@ -1685,7 +1683,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
                 // Upload new zip
                 if(isset($error)) $smarty->assign('ERROR', $error);
-                
+
                 // Assign Smarty variables
                 $smarty->assign([
                     'UPDATE_RESOURCE' => $resource_language->get('resources', 'update'),
@@ -1814,7 +1812,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
             } else $latest_update = $latest_update->first();
 
             $author = new User($resource->creator_id);
-            
+
             // Smarty variables
             $smarty->assign([
                 'EDITING_RESOURCE' => $resource_language->get('resources', 'editing_resource'),
@@ -2078,7 +2076,7 @@ if($user->isLoggedIn()){
     $template->addJSScript('
       var $star_rating = $(\'.star-rating.view .far\');
       var $star_rating_set = $(\'.star-rating.set .far\');
-    
+
       var SetRatingStar = function(type = 0) {
           if(type === 0) {
               return $star_rating.each(function () {
@@ -2098,12 +2096,12 @@ if($user->isLoggedIn()){
               });
           }
       };
-    
+
       $star_rating_set.on(\'click\', function() {
           $star_rating_set.siblings(\'input.rating-value\').val($(this).data(\'rating\'));
           return SetRatingStar(1);
       });
-    
+
       SetRatingStar();
     ');
 
@@ -2111,7 +2109,7 @@ if($user->isLoggedIn()){
     $template->addJSScript('
       var $star_rating = $(\'.star-rating.view .far\');
       var $star_rating_set = $(\'.star-rating.set .far\');
-    
+
       var SetRatingStar = function(type = 0) {
           if(type === 0) {
               return $star_rating.each(function () {
@@ -2131,7 +2129,7 @@ if($user->isLoggedIn()){
               });
           }
       };
-    
+
       SetRatingStar();
     ');
 }

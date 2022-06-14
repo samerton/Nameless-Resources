@@ -46,7 +46,7 @@ if(Input::exists()){
         $image->setSize(1, 2097152); // between 1b and 2mb
         $image->setDimension(2000, 2000); // 2k x 2k pixel maximum
         $image->setMime($image_extensions);
-        
+
         if(!is_dir(join(DIRECTORY_SEPARATOR, [ROOT_PATH, 'uploads', 'resources_icons']))){
             if(!mkdir(join(DIRECTORY_SEPARATOR, [ROOT_PATH, 'uploads', 'resources_icons'])))
                 die('/uploads folder not writable!');
@@ -61,7 +61,7 @@ if(Input::exists()){
 
                 if($upload){
                     // OK
-                    
+
                     // Need to delete any other icons
                     $diff = array_diff($image_extensions, [strtolower($upload->getMime())]);
                     $diff_str = rtrim(implode(',', $diff), ',');
@@ -80,14 +80,14 @@ if(Input::exists()){
                         'icon_updated' => date('U')
                     ]);
 
-                    Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                    Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . urlencode($resource->name)));
 
                 } else {
                     http_response_code(400);
                     echo $image["error"];
                     die();
                 }
-                
+
             } catch(Exception $e){
                 // Error
                 http_response_code(400);
@@ -97,7 +97,7 @@ if(Input::exists()){
         } else {
                 die('No image selected');
         }
-        
+
     } else {
         // Invalid token
         Session::flash('token_error', '<div class="alert alert-danger">' . $language->get('general', 'invalid_token') . '</div>');
