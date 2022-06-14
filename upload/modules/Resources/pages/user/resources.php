@@ -80,7 +80,7 @@ if(count($purchased_resources)){
             'name' => Output::getClean($resource->name),
             'author_username' => $author->getDisplayname(true),
             'author_nickname' => $author->getDisplayname(),
-            'author_avatar' => $author->getAvatar('', 256),
+            'author_avatar' => $author->getAvatar(256),
             'author_style' => $author->getGroupStyle(),
             'author_link' => $author->getProfileURL(),
             'latest_version' => Output::getClean($resource->version),
