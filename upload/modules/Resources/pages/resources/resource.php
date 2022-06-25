@@ -2,7 +2,7 @@
 /*
  *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr12
+ *  NamelessMC version 2.0.0-pr13
  *
  *  License: MIT
  *
@@ -167,6 +167,8 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                         // Ensure user hasn't already rated, and if so, hide their rating
                         $ratings = DB::getInstance()->get('resources_comments', ['resource_id', '=', $resource->id]);
                         if ($ratings->count()) {
+                            $ratings = $ratings->results();
+
                             $overall_rating = 0;
                             $overall_rating_count = 0;
                             $release_rating = 0;
