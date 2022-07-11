@@ -42,6 +42,8 @@ class Resources_Module extends Module {
         $pages->add('Resources', '/resources/icon_upload', 'pages/resources/icon_upload.php');
         $pages->add('Resources', '/user/resources/licenses', 'pages/user/licenses.php');
 
+        EventHandler::registerListener('deleteUser', 'DeleteUserResourcesHook::execute');
+
     }
 
     public function onInstall(){

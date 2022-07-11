@@ -42,13 +42,30 @@ class TopResourcesWidget extends WidgetBase {
 
         $timeago = new TimeAgo(TIMEZONE);
 
-        $topResources = DB::getInstance()->orderAll('resources', 'rating', 'DESC LIMIT 5');
+        $groups = '0';
+        if (($user = new User())->isLoggedIn()) {
+            $groups = implode(',', array_keys($user->getAllGroupIds()));
+        }
+
+        $topResources = DB::getInstance()->query(
+            <<<SQL
+            SELECT * FROM nl2_resources
+            WHERE
+                category_id
+            IN (
+                SELECT category_id FROM nl2_resources_categories_permissions
+                WHERE
+                    group_id
+                IN (
+                    {$groups}
+                )
+                AND `view` = 1
+            ) ORDER BY rating DESC LIMIT 5
+            SQL
+        );
         $topResourcesArr = [];
 
         foreach ($topResources->results() as $resource) {
-            // check if resource rating > 0
-            if ($resource->rating == 0) continue;
-
             $author = new User($resource->creator_id);
 
             if (!$author->exists()) {
@@ -72,7 +89,7 @@ class TopResourcesWidget extends WidgetBase {
             if($resource->has_icon == 1 ) {
                 $topResourcesArr[$resource->id]['icon'] = Output::getClean($resource->icon);
             } else {
-                $topResourcesArr[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+                $topResourcesArr[$resource->id]['icon'] = rtrim(URL::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
             }
         }
 

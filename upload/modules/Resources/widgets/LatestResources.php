@@ -42,7 +42,27 @@ class LatestResourcesWidget extends WidgetBase {
 
         $timeago = new TimeAgo(TIMEZONE);
 
-        $latestResources = DB::getInstance()->orderAll('resources', 'updated', 'DESC LIMIT 5');
+        $groups = '0';
+        if (($user = new User())->isLoggedIn()) {
+            $groups = implode(',', array_keys($user->getAllGroupIds()));
+        }
+
+        $latestResources = DB::getInstance()->query(
+            <<<SQL
+            SELECT * FROM nl2_resources
+            WHERE
+                category_id
+            IN (
+                SELECT category_id FROM nl2_resources_categories_permissions
+                WHERE
+                    group_id
+                IN (
+                    {$groups}
+                )
+                AND `view` = 1
+            ) ORDER BY updated DESC LIMIT 5
+            SQL
+        );
         $latestResourcesArr = [];
 
         foreach ($latestResources->results() as $resource) {

@@ -132,6 +132,11 @@ Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp
 
 require(ROOT_PATH . '/core/templates/cc_navbar.php');
 
+// Temporary fix until v2.0.0
+if (NAMELESS_VERSION == '2.0.0-pr13' && !defined('FOMANTIC_RESOURCES_FIX')) {
+    $template->addJSScript('$(\'.menu .item\').tab();');
+}
+
 $template->onPageLoad();
 
 require(ROOT_PATH . '/core/templates/navbar.php');
