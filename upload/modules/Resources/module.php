@@ -43,6 +43,7 @@ class Resources_Module extends Module {
         $pages->add('Resources', '/user/resources/licenses', 'pages/user/licenses.php');
 
         EventHandler::registerListener('deleteUser', 'DeleteUserResourcesHook::execute');
+        EventHandler::registerListener('cloneGroup', 'CloneGroupResourcesHook::execute');
 
     }
 
