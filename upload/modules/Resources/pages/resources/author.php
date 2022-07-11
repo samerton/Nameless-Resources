@@ -2,12 +2,13 @@
 /*
  *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr5
+ *  NamelessMC version 2.0.0-pr13
  *
  *  License: MIT
  *
  *  Resources - author view
  */
+
 // Always define page name
 define('PAGE', 'resources');
 define('RESOURCE_PAGE', 'view_author');
@@ -98,6 +99,9 @@ if (count($latest_releases)) {
     $n = 0;
 
     while ($n < count($results->data)) {
+        // Get actual resource info
+        $resource = $results->data[$n];
+        
         // Get category
         $category = DB::getInstance()->get('resources_categories', ['id', '=', $results->data[$n]->category_id]);
         if ($category->count()) {
@@ -142,6 +146,18 @@ if (count($latest_releases)) {
     }
 } else $releases_array = null;
 
+// Get currency
+$currency = DB::getInstance()->get('settings', ['name', '=', 'resources_currency']);
+if (!$currency->count()) {
+    DB::getInstance()->insert('settings', [
+        'name' => 'resources_currency',
+        'value' => 'GBP'
+    ]);
+    $currency = 'GBP';
+
+} else
+    $currency = $currency->first()->value;
+
 // Assign Smarty variables
 $smarty->assign([
     'RESOURCES' => $resource_language->get('resources', 'resources'),
@@ -155,7 +171,8 @@ $smarty->assign([
     'STATS' => $resource_language->get('resources', 'stats'),
     'AUTHOR' => $resource_language->get('resources', 'author'),
     'BACK' => $language->get('general', 'back'),
-    'BACK_LINK' => URL::build('/resources')
+    'BACK_LINK' => URL::build('/resources'),
+    'CURRENCY' => Output::getClean($currency)
 ]);
 
 $template->addJSScript('
