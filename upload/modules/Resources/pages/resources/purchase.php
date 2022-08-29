@@ -159,7 +159,7 @@ if(isset($_GET['do'])){
                         $payee->setEmail($author_paypal);
 
                         $amount = new \PayPal\Api\Amount();
-                        $amount->setTotal($resource->price);
+                        $amount->setTotal($resource->price, $resource->discount);
                         $amount->setCurrency($currency);
 
                         $transaction = new \PayPal\Api\Transaction();

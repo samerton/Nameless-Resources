@@ -48,9 +48,15 @@
                                                 <img src="{$resource.icon}" class="ui medium rounded image">
                                                 <div class="content">
                                                     <a>{$resource.name}</a>
-                                                    <small>{$resource.version}</small> {if isset($resource.price)}<span
-                                                            class="res right floated ui mini label">{$resource.price}
-                                                        {$CURRENCY}</span>{/if}<br />
+                                                    <small>{$resource.version}</small>
+                                                    {if isset($resource.price)}
+                                                        {if isset($resource.discount)}
+                                                            <span class="res green right floated ui mini label">
+                                                                {$resource.discount}% off</span>
+                                                        {/if}
+                                                        <span class="res right floated ui mini label">{$resource.price}
+                                                            {$CURRENCY}</span>
+                                                    {/if}<br />
                                                     <div class="sub header">
                                                         {if $resource.short_description}
                                                             {$resource.short_description}

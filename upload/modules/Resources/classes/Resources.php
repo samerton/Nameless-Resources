@@ -221,4 +221,14 @@ class Resources {
         }
         return 'unknown';
     }
+    
+    public static function getPricePercent($price, $percent) {
+        if ($percent > 0 and $percent < 100) {
+            $price = $price - ($price * ($percent / 100));
+            $round = round($price, 2);
+            return number_format($round, 2, '.', '');
+        } else {
+            return $price;
+        }
+    }
 }

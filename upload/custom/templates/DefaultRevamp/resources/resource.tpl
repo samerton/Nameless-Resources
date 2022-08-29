@@ -52,11 +52,13 @@
                     <a href="{$DOWNLOAD_URL}" class="ui blue button" target="_blank">{$DOWNLOAD}</a>
                 {elseif isset($PURCHASE_FOR_PRICE)}
                     <a {if isset($PURCHASE_LINK)}href="{$PURCHASE_LINK}" 
-                    {else}disabled
-                            {/if}class="ui blue{if !isset($PURCHASE_LINK)} disabled{/if} button">{$PURCHASE_FOR_PRICE}</a>
-                    {elseif isset($PAYMENT_PENDING)}
-                        <button type="button" disabled class="ui blue button">{$PAYMENT_PENDING}</button>
-                    {/if}
+                        {else}disabled
+                        {/if}class="ui blue{if !isset($PURCHASE_LINK)} disabled{/if} button">
+                        <i class="cart icon"></i>{$PURCHASE_FOR_PRICE}
+                    </a>
+                {elseif isset($PAYMENT_PENDING)}
+                    <button type="button" disabled class="ui blue button">{$PAYMENT_PENDING}</button>
+                {/if}
 
                     <span class="pull-right">
                         {if isset($CAN_EDIT)}

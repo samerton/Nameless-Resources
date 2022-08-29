@@ -133,6 +133,12 @@ if (count($latest_releases)) {
                 $releases_array[$results->data[$n]->id]['price'] = Output::getClean($results->data[$n]->price);
             }
         
+            if ($resource->type == 1) {
+                if ($resource->discount > 0 and $resource->discount < 100) {
+                    $releases_array[$resource->id]['discount'] = Output::getClean($resource->discount);
+                }
+                $releases_array[$resource->id]['price'] = Output::getClean(Resources::getPricePercent($resource->price, $resource->discount));
+            }
             // Check if resource icon uploaded
             if($results->data[$n]->has_icon == 1 ) {
                 $releases_array[$results->data[$n]->id]['icon'] = $results->data[$n]->icon;
