@@ -19,9 +19,6 @@ $page = 'icon_uploads';
 
 //require(ROOT_PATH . '/core/init.php');
 
-// Require Bulletproof
-require(ROOT_PATH . '/core/includes/bulletproof/bulletproof.php');
-
 if (!$user->isLoggedIn()) {
     die();
 }
