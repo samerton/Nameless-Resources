@@ -2,7 +2,7 @@
 /*
  *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr13
+ *  NamelessMC version 2.0.2
  *
  *  License: MIT
  *
@@ -156,7 +156,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                         DB::getInstance()->insert('resources_comments', [
                             'resource_id' => $resource->id,
                             'author_id' => $user->data()->id,
-                            'content' => Output::getClean(Input::get('content')),
+                            'content' => Input::get('content'),
                             'release_tag' => $release_tag,
                             'created' => date('U'),
                             'rating' => $rating
@@ -1396,7 +1396,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                     if(Token::check(Input::get('token'))){
                         // Validate release
                         // TODO: hooks
-                        $content = Output::getClean($_POST['content']);
+                        $content = $_POST['content'];
 
                         // Release type
                         switch(strtolower($_POST['type'])) {
@@ -1446,9 +1446,9 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                             DB::getInstance()->insert('resources_releases', [
                                                 'resource_id' => $resource->id,
                                                 'category_id' => $resource->category_id,
-                                                'release_title' => Output::getClean((empty($_POST['title']) ? $version : $_POST['title'])),
+                                                'release_title' => (empty($_POST['title']) ? $version : $_POST['title']),
                                                 'release_description' => $content,
-                                                'release_tag' => Output::getClean($version),
+                                                'release_tag' => $version,
                                                 'created' => date('U'),
                                                 'download_link' => 'local'
                                             ]);
@@ -1537,11 +1537,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                                 DB::getInstance()->insert('resources_releases', [
                                                     'resource_id' => $resource->id,
                                                     'category_id' => $resource->category_id,
-                                                    'release_title' => Output::getClean((empty($_POST['title']) ? $github_query->name : $_POST['title'])),
-                                                    'release_description' => Output::getPurified($content),
-                                                    'release_tag' => Output::getClean($github_query->tag_name),
+                                                    'release_title' => (empty($_POST['title']) ? $github_query->name : $_POST['title']),
+                                                    'release_description' => $content,
+                                                    'release_tag' => $github_query->tag_name,
                                                     'created' => date('U'),
-                                                    'download_link' => Output::getClean($github_query->html_url)
+                                                    'download_link' => $github_query->html_url
                                                 ]);
 
                                                 $success = true;
@@ -1594,11 +1594,11 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                     DB::getInstance()->insert('resources_releases', [
                                         'resource_id' => $resource->id,
                                         'category_id' => $resource->category_id,
-                                        'release_title' => Output::getClean((empty($_POST['title']) ? $version : $_POST['title'])),
+                                        'release_title' => (empty($_POST['title']) ? $version : $_POST['title']),
                                         'release_description' => $content,
-                                        'release_tag' => Output::getClean($version),
+                                        'release_tag' => $version,
                                         'created' => date('U'),
-                                        'download_link' => Output::getClean($_POST['link'])
+                                        'download_link' => $_POST['link']
                                     ]);
                                     
                                     $success = true;
@@ -1776,7 +1776,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
                             try {
                                 // TODO: hooks
-                                $content = Output::getClean($_POST['description']);
+                                $content = $_POST['description'];
 
                                 DB::getInstance()->update('resources', $resource->id, [
                                     'name' => Output::getClean(Input::get('title')),

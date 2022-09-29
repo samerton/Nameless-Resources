@@ -119,7 +119,7 @@ if(count($latest_releases)){
                 'downloads' => $resource_language->get('resources', 'x_downloads', ['count' => $resource->downloads]),
                 'views' => $resource_language->get('resources', 'x_views', ['count' => $resource->views]),
                 'rating' => round($resource->rating / 10),
-                'version' => $resource->latest_version,
+                'version' => Output::getClean($resource->latest_version),
                 'category' => $resource_language->get('resources', 'in_category_x', ['category' => $category]),
                 'updated' => $resource_language->get('resources', 'updated_x', ['updated' => $timeago->inWords(date('d M Y, H:i', $resource->updated), $language)]),
                 'updated_full' => date('d M Y, H:i', $resource->updated)

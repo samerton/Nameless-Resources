@@ -2,7 +2,7 @@
 /*
  *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr13
+ *  NamelessMC version 2.0.2
  *
  *  License: MIT
  *
@@ -222,16 +222,16 @@ if (Input::exists()) {
                         DB::getInstance()->insert('resources', [
                             'category_id' => $_SESSION['new_resource']['category'],
                             'creator_id' => $user->data()->id,
-                            'name' => Output::getClean($_SESSION['new_resource']['name']),
-                            'short_description' => Output::getClean($_SESSION['new_resource']['short_description']),
+                            'name' => $_SESSION['new_resource']['name'],
+                            'short_description' => $_SESSION['new_resource']['short_description'],
                             'description' => $content,
-                            'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? Output::getClean($_SESSION['new_resource']['contributors']) : null),
+                            'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? $_SESSION['new_resource']['contributors'] : null),
                             'created' => date('U'),
                             'updated' => date('U'),
-                            'github_url' => 'https://github.com/' . Output::getClean($_SESSION['new_resource']['github']['github_username']) . '/' . Output::getClean($_SESSION['new_resource']['github']['github_repo']),
-                            'github_username' => Output::getClean($_SESSION['new_resource']['github']['github_username']),
-                            'github_repo_name' => Output::getClean($_SESSION['new_resource']['github']['github_repo']),
-                            'latest_version' => Output::getClean($github_query->tag_name)
+                            'github_url' => 'https://github.com/' . $_SESSION['new_resource']['github']['github_username'] . '/' . $_SESSION['new_resource']['github']['github_repo'],
+                            'github_username' => $_SESSION['new_resource']['github']['github_username'],
+                            'github_repo_name' => $_SESSION['new_resource']['github']['github_repo'],
+                            'latest_version' => $github_query->tag_name
                         ]);
 
                         $resource_id = DB::getInstance()->lastId();
@@ -239,11 +239,11 @@ if (Input::exists()) {
                         DB::getInstance()->insert('resources_releases', [
                             'resource_id' => $resource_id,
                             'category_id' => $_SESSION['new_resource']['category'],
-                            'release_title' => Output::getClean($github_query->name),
-                            'release_description' => Output::getPurified($github_query->body),
-                            'release_tag' => Output::getClean($github_query->tag_name),
+                            'release_title' => $github_query->name,
+                            'release_description' => $github_query->body,
+                            'release_tag' => $github_query->tag_name,
                             'created' => date('U'),
-                            'download_link' => Output::getClean($github_query->html_url)
+                            'download_link' => $github_query->html_url
                         ]);
 
                         // Hook
@@ -421,16 +421,16 @@ if (Input::exists()) {
                             DB::getInstance()->insert('resources', [
                                 'category_id' => $_SESSION['new_resource']['category'],
                                 'creator_id' => $user->data()->id,
-                                'name' => Output::getClean($_SESSION['new_resource']['name']),
-                                'short_description' => Output::getClean($_SESSION['new_resource']['short_description']),
+                                'name' => $_SESSION['new_resource']['name'],
+                                'short_description' => $_SESSION['new_resource']['short_description'],
                                 'description' => $content,
-                                'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? Output::getClean($_SESSION['new_resource']['contributors']) : null),
+                                'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? $_SESSION['new_resource']['contributors'] : null),
                                 'created' => date('U'),
                                 'updated' => date('U'),
                                 'github_url' => 'none',
                                 'github_username' => 'none',
                                 'github_repo_name' => 'none',
-                                'latest_version' => Output::getClean($version),
+                                'latest_version' => $version,
                                 'type' => $type,
                                 'price' => $price
                             ]);
@@ -441,9 +441,9 @@ if (Input::exists()) {
                             DB::getInstance()->insert('resources_releases', [
                                 'resource_id' => $resource_id,
                                 'category_id' => $_SESSION['new_resource']['category'],
-                                'release_title' => Output::getClean($version),
+                                'release_title' => $version,
                                 'release_description' => $content,
-                                'release_tag' => Output::getClean($version),
+                                'release_tag' => $version,
                                 'created' => date('U'),
                                 'download_link' => 'local'
                             ]);
@@ -540,16 +540,16 @@ if (Input::exists()) {
                         DB::getInstance()->insert('resources', [
                             'category_id' => $_SESSION['new_resource']['category'],
                             'creator_id' => $user->data()->id,
-                            'name' => Output::getClean($_SESSION['new_resource']['name']),
-                            'short_description' => Output::getClean($_SESSION['new_resource']['short_description']),
+                            'name' => $_SESSION['new_resource']['name'],
+                            'short_description' => $_SESSION['new_resource']['short_description'],
                             'description' => $content,
-                            'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? Output::getClean($_SESSION['new_resource']['contributors']) : null),
+                            'contributors' => ((isset($_SESSION['new_resource']['contributors']) && !is_null($_SESSION['new_resource']['contributors'])) ? $_SESSION['new_resource']['contributors'] : null),
                             'created' => date('U'),
                             'updated' => date('U'),
                             'github_url' => 'none',
                             'github_username' => 'none',
                             'github_repo_name' => 'none',
-                            'latest_version' => Output::getClean($version),
+                            'latest_version' => $version,
                             'type' => $type,
                             'price' => $price
                         ]);
@@ -559,11 +559,11 @@ if (Input::exists()) {
                         DB::getInstance()->insert('resources_releases', [
                             'resource_id' => $resource_id,
                             'category_id' => $_SESSION['new_resource']['category'],
-                            'release_title' => Output::getClean($version),
+                            'release_title' => $version,
                             'release_description' => $content,
-                            'release_tag' => Output::getClean($version),
+                            'release_tag' => $version,
                             'created' => date('U'),
-                            'download_link' => Output::getClean($_POST['link'])
+                            'download_link' => $_POST['link']
                         ]);
 
                         // Hook
