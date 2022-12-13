@@ -6,7 +6,7 @@
         <div class="ui stackable grid">
             <div class="ui row">
                 <div class="twelve wide column">
-                    <h1 style="display:inline" class="white">{$CATEGORY_NAME}</h1>
+                    <h2 style="display:inline" class="white">{$CATEGORY_NAME}</h1>
 
                     <span class="res right floated">
                         <a href="{$BACK_LINK}" class="ui button">{$BACK}</a>
@@ -26,10 +26,11 @@
                     <div class="ui divider"></div>
 
                     {if $LATEST_RESOURCES}
-                        <table class="ui fixed single line selectable unstackable small padded res table">
+
+                        <table class="ui fixed single line selectable unstackable small padded res table" id="sticky-threads">
                             <thead>
                                 <tr>
-                                    <th class="eight wide">
+                                    <th class="nine wide">
                                         <h4>{$RESOURCE}</h4>
                                     </th>
                                     <th class="three wide">
@@ -44,20 +45,28 @@
                                 {foreach from=$LATEST_RESOURCES item=resource}
                                     <tr onclick="window.location.href='{$resource.link}'">
                                         <td>
-                                            <h5 class="ui image header" style="margin: 0;">
-                                                <img src="{$resource.icon}" class="ui medium rounded image">
-                                                <div class="content">
-                                                    <a>{$resource.name}</a>
-                                                    <small>{$resource.version}</small> {if isset($resource.price)}<span
-                                                            class="res right floated ui mini label">{$resource.price}
-                                                        {$CURRENCY}</span>{/if}<br />
-                                                    <div class="sub header">
-                                                        {if $resource.short_description}
-                                                            {$resource.short_description}
-                                                        {else}
-                                                            {$resource.description}
+                                            <h5 class="ui image header" style="margin: 0; width: 100%;">
+                                            <div class="title" style="width: 100%;">
+                                                <img src="{$resource.icon}" class="floated ui mini rounded image">
+                                                    <div class="content">
+                                                        <a>{$resource.name}</a> <span
+                                                            class="version"><small>{$resource.version}</small></span>
+                                                        {if isset($resource.price)}
+                                                            <span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>
+                                                            {if isset($resource.discount)}
+                                                                <span class="res green right floated ui mini label" style="margin-left:5px;">
+                                                                    {$resource.discount}% off</span>
+                                                            {/if}
                                                         {/if}
-                                                        <br />{$resource.category}
+                                                        <br />
+                                                        <div class="sub header">
+                                                            {if $resource.short_description}
+                                                                {$resource.short_description}
+                                                            {else}
+                                                                {$resource.description}
+                                                            {/if}
+                                                            <br />{$resource.category}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </h5>

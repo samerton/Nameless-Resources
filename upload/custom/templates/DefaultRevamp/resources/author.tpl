@@ -42,8 +42,11 @@
                                                     <a>{$resource.name}</a> <span
                                                         class="version"><small>{$resource.version}</small></span>
                                                     {if isset($resource.price)}
-                                                        <span class="res right floated ui mini label"
-                                                            style="margin-left:5px;">{$resource.price} {$CURRENCY}</span>
+                                                        <span class="res right floated ui mini label">{$resource.price} {$CURRENCY}</span>
+                                                        {if isset($resource.discount)}
+                                                            <span class="res green right floated ui mini label" style="margin-left:5px;">
+                                                                {$resource.discount}% off</span>
+                                                        {/if}
                                                     {/if}
                                                     <br />
                                                 </div>

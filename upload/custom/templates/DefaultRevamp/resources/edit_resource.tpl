@@ -46,6 +46,15 @@
                         </div>
                     </div>
                 </div>
+                <div class="field" id="discountFormGroup">
+                    <label for="inputDiscount">{$DISCOUNT}</label>
+                    <div class="ui right labeled input">
+                        <input type="number" min="0" id="inputDiscount" name="discount" value="{$RESOURCE_DISCOUNT}">
+                        <div class="ui basic label">
+                            %
+                        </div>
+                    </div>
+                </div>
             {/if}
 
             <input type="hidden" name="token" value="{$TOKEN}">
