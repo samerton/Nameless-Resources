@@ -310,7 +310,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
     // Assign Smarty variables
     $smarty->assign([
-        'VIEWING_RESOURCE' => $resource_language->get('resources', 'viewing_resource_x', ['resource' => Output::getClean($resource->name)]),
+        'VIEWING_RESOURCE' => $resource_language->get('resources', 'viewing_resource', ['resource' => Output::getClean($resource->name)]),
         'UPLOAD_ICON' => $resource_language->get('resources', 'resource_upload_icon'),
         'CHANGE_ICON' => $resource_language->get('resources', 'resource_change_icon'),
         'CHANGE_ICON_ACTION' => URL::build('/resources/icon_upload'),
@@ -606,7 +606,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
         // Assign Smarty variables
         $smarty->assign([
-            'VIEWING_ALL_REVIEWS' => $resource_language->get('resources', 'viewing_all_reviews', ['resource' => Output::getClean($resource->name)]),
+            'VIEWING_ALL_REVIEWS' => $resource_language->get('resources', 'viewing_resource', ['resource' => Output::getClean($resource->name)]),
             'RESOURCE_NAME' => Output::getClean($resource->name),
             'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
             'COMMENT_ARRAY' => $comments_array,
@@ -800,7 +800,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
         // Assign Smarty variables
         $smarty->assign([
-            'VIEWING_ALL_VERSIONS' => $resource_language->get('resources', 'viewing_all_versions', ['resource' => Output::getClean($resource->name)]),
+            'VIEWING_ALL_VERSIONS' => $resource_language->get('resources', 'viewing_resource', ['resource' => Output::getClean($resource->name)]),
             'RESOURCE_NAME' => Output::getClean($resource->name),
             'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
             'AUTHOR' => $resource_language->get('resources', 'author'),
@@ -977,7 +977,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
 
             // Assign Smarty variables
             $smarty->assign([
-                'VIEWING_ALL_RELEASES' => $resource_language->get('resources', 'viewing_all_releases', ['resource' => Output::getClean($resource->name)]),
+                'VIEWING_ALL_RELEASES' => $resource_language->get('resources', 'viewing_resource', ['resource' => Output::getClean($resource->name)]),
                 'RELEASES' => $releases_array,
                 'RESOURCE_NAME' => Output::getClean($resource->name),
                 'RESOURCE_SHORT_DESCRIPTION' => Output::getClean($resource->short_description),
