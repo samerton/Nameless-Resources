@@ -2,7 +2,7 @@
 /*
  *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr13
+ *  NamelessMC version 2.0.2
  *
  *  License: MIT
  *
@@ -18,8 +18,8 @@ class Resources_Module extends Module {
 
         $name = 'Resources';
         $author = '<a href="https://samerton.me" target="_blank">Samerton</a>';
-        $module_version = '1.7.1';
-        $nameless_version = '2.0.0-pr13';
+        $module_version = '1.7.2';
+        $nameless_version = '2.0.2';
 
         parent::__construct($this, $name, $author, $module_version, $nameless_version);
 
