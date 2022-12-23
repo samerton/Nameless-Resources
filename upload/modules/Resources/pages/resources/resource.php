@@ -922,6 +922,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                     $smarty->assign([
                         'PURCHASE_FOR_PRICE' => $resource_language->get('resources', 'purchase_for_x', ['price' => Output::getClean($resource->price) . ' ' . $currency])
                     ]);
+                    $smarty->assign('LOG_IN_TO_DOWNLOAD', $resource_language->get('resources', 'log_in_to_download'));
                 }
             }
 
