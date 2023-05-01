@@ -74,7 +74,7 @@ foreach($categories as $category){
     $category_count = $category_count->count();
     $to_array = [
         'name' => Output::getClean($category->name),
-        'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
+        'link' => URL::build('/resources/category/' . $category->id . '-' . URL::urlSafe($category->name)),
     'count' => Output::getClean($category_count)
     ];
     $category_array[] = $to_array;
@@ -87,7 +87,7 @@ $latest_releases = $resources->getAuthorLatestResources($aid, $groups);
 // Pagination
 $paginator = new Paginator((isset($template_pagination) ? $template_pagination : []));
 $results = $paginator->getLimited($latest_releases, 10, $p, count($latest_releases));
-$pagination = $paginator->generate(7, URL::build('/resources/author/' . $author->data()->id . '-' . Util::stringToURL($author->getDisplayname(true)) . '/', true));
+$pagination = $paginator->generate(7, URL::build('/resources/author/' . $author->data()->id . '-' . URL::urlSafe($author->getDisplayname(true)) . '/', true));
 
 $smarty->assign('PAGINATION', $pagination);
 
@@ -112,7 +112,7 @@ if (count($latest_releases)) {
 
         if (!isset($releases_array[$results->data[$n]->id])) {
             $releases_array[$results->data[$n]->id] = [
-                'link' => URL::build('/resources/resource/' . $results->data[$n]->id . '-' . Util::stringToURL($results->data[$n]->name)),
+                'link' => URL::build('/resources/resource/' . $results->data[$n]->id . '-' . URL::urlSafe($results->data[$n]->name)),
                 'name' => Output::getClean($results->data[$n]->name),
                 'short_description' => Output::getClean($results->data[$n]->short_description), 
                 'description' => mb_substr(strip_tags(Output::getDecoded($results->data[$n]->description)), 0, 50) . '...',
@@ -137,7 +137,7 @@ if (count($latest_releases)) {
             if($results->data[$n]->has_icon == 1 ) {
                 $releases_array[$results->data[$n]->id]['icon'] = $results->data[$n]->icon;
             } else {
-                $releases_array[$results->data[$n]->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+                $releases_array[$results->data[$n]->id]['icon'] = rtrim(URL::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
             }
             
         }

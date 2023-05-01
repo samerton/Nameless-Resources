@@ -86,7 +86,7 @@ if(count($purchased_resources)){
             'latest_version' => Output::getClean($resource->version),
             'updated' => $timeago->inWords($resource->updated, $language),
             'updated_full' => date(DATE_FORMAT, $resource->updated),
-            'link' => URL::build('/resources/resource/' . Output::getClean($resource->id) . '-' . Util::stringToURL($resource->name))
+            'link' => URL::build('/resources/resource/' . Output::getClean($resource->id) . '-' . URL::urlSafe($resource->name))
         ];
     }
 }
@@ -99,7 +99,7 @@ if (count($premium_resources)) {
         $premium_array[] = [
             'name' => Output::getClean($resource->name),
             'latest_version' => Output::getClean($resource->version),
-            'link' => URL::build('/user/resources/licenses/' . Output::getClean($resource->id) . '-' . Util::stringToURL($resource->name)),
+            'link' => URL::build('/user/resources/licenses/' . Output::getClean($resource->id) . '-' . URL::urlSafe($resource->name)),
             'license_count' => $purchase_count->count == 1 ? $resource_language->get('resources', '1_license') : $resource_language->get('resources', 'x_licenses', ['count' => $purchase_count->count])
         ];
     }

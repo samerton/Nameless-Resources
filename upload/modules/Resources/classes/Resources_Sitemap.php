@@ -25,7 +25,7 @@ class Resources_Sitemap {
         $authors = [];
 
         foreach($resources as $resource){
-            $sitemap->addItem(URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))), 0.5, 'weekly', date('Y-m-d', $resource->updated));
+            $sitemap->addItem(URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . URL::urlSafe($resource->name))), 0.5, 'weekly', date('Y-m-d', $resource->updated));
             if(!in_array($resource->creator_id, $authors))
                 $authors[] = $resource->creator_id;
         }
@@ -47,7 +47,7 @@ class Resources_Sitemap {
         $categories = $db->query('SELECT id, `name` FROM nl2_resources_categories WHERE id IN (SELECT category_id FROM nl2_resources_categories_permissions WHERE group_id = 0 AND `view` = 1)')->results();
 
         foreach($categories as $category){
-            $sitemap->addItem(URL::build('/resources/category/' . Output::getClean($category->id . '-' . Util::stringToURL($category->name))), 0.5, 'daily');
+            $sitemap->addItem(URL::build('/resources/category/' . Output::getClean($category->id . '-' . URL::urlSafe($category->name))), 0.5, 'daily');
         }
     }
 }

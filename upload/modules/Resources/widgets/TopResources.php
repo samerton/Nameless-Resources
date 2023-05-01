@@ -75,7 +75,7 @@ class TopResourcesWidget extends WidgetBase {
             $topResourcesArr[$resource->id] = [
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
-                'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                'link' => URL::build('/resources/resource/' . $resource->id . '-' . URL::urlSafe($resource->name)),
                 'creator_id' => $resource->creator_id,
                 'creator_username' => $author->getDisplayname(),
                 'creator_style' => $author->getGroupStyle(),

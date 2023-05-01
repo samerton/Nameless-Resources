@@ -63,7 +63,7 @@ if(count($already_purchased)){
 
     if($already_purchased == 0 || $already_purchased == 1){
         // Already purchased
-        Redirect::to(URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))));
+        Redirect::to(URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . URL::urlSafe($resource->name))));
     }
 }
 
@@ -75,7 +75,7 @@ if(isset($_GET['do'])){
         if(!isset($_SESSION['resource_purchasing'])){
             // Error, resource ID has been lost
             Session::flash('purchase_resource_error', $resource_language->get('resources', 'sorry_please_try_again'));
-            Redirect::to(URL::build('/resources/purchase/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))));
+            Redirect::to(URL::build('/resources/purchase/' . Output::getClean($resource->id . '-' . URL::urlSafe($resource->name))));
 
         } else {
             $paymentId = $_GET['paymentId'];
@@ -92,7 +92,7 @@ if(isset($_GET['do'])){
             } catch(Exception $e){
                 Session::flash('purchase_resource_error', $resource_language->get('resources', 'error_while_purchasing'));
                 ErrorHandler::logCustomError($e->getMessage());
-                Redirect::to(URL::build('/resources/purchase/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))));
+                Redirect::to(URL::build('/resources/purchase/' . Output::getClean($resource->id . '-' . URL::urlSafe($resource->name))));
             }
 
             if(isset($already_purchased_id) && $already_purchased == 2){
@@ -168,8 +168,8 @@ if(isset($_GET['do'])){
                         $transaction->setDescription(Output::getClean($resource->name));
 
                         $redirectUrls = new \PayPal\Api\RedirectUrls();
-                        $redirectUrls->setReturnUrl(rtrim(Util::getSelfURL(), '/') . URL::build('/resources/purchase/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name)) . '/', 'do=complete'))
-                            ->setCancelUrl(rtrim(Util::getSelfURL(), '/') . URL::build('/resources/purchase/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name)) . '/', 'do=cancel'));
+                        $redirectUrls->setReturnUrl(rtrim(URL::getSelfURL(), '/') . URL::build('/resources/purchase/' . Output::getClean($resource->id . '-' . URL::urlSafe($resource->name)) . '/', 'do=complete'))
+                            ->setCancelUrl(rtrim(URL::getSelfURL(), '/') . URL::build('/resources/purchase/' . Output::getClean($resource->id . '-' . URL::urlSafe($resource->name)) . '/', 'do=cancel'));
 
                         $payment = new \PayPal\Api\Payment();
                         $payment->setIntent('sale')
@@ -204,7 +204,7 @@ if(isset($_GET['do'])){
         $smarty->assign([
             'PURCHASING_RESOURCE' => $resource_language->get('resources', 'purchasing_resource_x', ['resource' => Output::getClean($resource->name)]),
             'PURCHASE_COMPLETE' => $resource_language->get('resources', 'purchase_complete'),
-            'BACK_LINK' => URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))),
+            'BACK_LINK' => URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . URL::urlSafe($resource->name))),
             'BACK' => $language->get('general', 'back')
         ]);
 
@@ -213,7 +213,7 @@ if(isset($_GET['do'])){
         $smarty->assign([
             'PURCHASING_RESOURCE' => $resource_language->get('resources', 'purchasing_resource_x', ['resource' => Output::getClean($resource->name)]),
             'PURCHASE_CANCELLED' => $resource_language->get('resources', 'purchase_cancelled'),
-            'BACK_LINK' => URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))),
+            'BACK_LINK' => URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . URL::urlSafe($resource->name))),
             'BACK' => $language->get('general', 'back')
         ]);
 
@@ -237,7 +237,7 @@ if(isset($_GET['do'])){
         'PURCHASING_RESOURCE' => $resource_language->get('resources', 'purchasing_resource_x', ['resource' => Output::getClean($resource->name)]),
         'CANCEL' => $language->get('general', 'cancel'),
         'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
-        'CANCEL_LINK' => URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . Util::stringToURL($resource->name))),
+        'CANCEL_LINK' => URL::build('/resources/resource/' . Output::getClean($resource->id . '-' . URL::urlSafe($resource->name))),
         'PRE_PURCHASE_INFO' => $pre_purchase_info,
         'PURCHASE' => $resource_language->get('resources', 'purchase'),
         'TOKEN' => Token::get()

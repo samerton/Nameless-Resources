@@ -72,12 +72,12 @@ if(Input::exists()){
                     }
 
                     DB::getInstance()->update('resources', $resource->id, [
-                        'icon' => rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/'. $resource->id . '.' . $upload->getMime(),
+                        'icon' => rtrim(URL::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/'. $resource->id . '.' . $upload->getMime(),
                         'has_icon' => 1,
                         'icon_updated' => date('U')
                     ]);
 
-                    Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)));
+                    Redirect::to(URL::build('/resources/resource/' . $resource->id . '-' . URL::urlSafe($resource->name)));
 
                 } else {
                     http_response_code(400);

@@ -31,7 +31,7 @@ try {
         $webhookEventTypes[] = new \PayPal\Api\WebhookEventType('{"name":"PAYMENT.SALE.REFUNDED"}');
         $webhookEventTypes[] = new \PayPal\Api\WebhookEventType('{"name":"PAYMENT.SALE.REVERSED"}');
 
-        $webhook->setUrl(rtrim(Util::getSelfURL(), '/') . URL::build('/resources/listener/', 'key=' . $key));
+        $webhook->setUrl(rtrim(URL::getSelfURL(), '/') . URL::build('/resources/listener/', 'key=' . $key));
         $webhook->setEventTypes($webhookEventTypes);
         $output = $webhook->create($apiContext);
         $id = $output->getId();

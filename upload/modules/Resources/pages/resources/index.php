@@ -70,7 +70,7 @@ foreach($categories as $category){
     $category_count = $category_count->count();
     $category_array[] = [
         'name' => Output::getClean($category->name),
-        'link' => URL::build('/resources/category/' . $category->id . '-' . Util::stringToURL($category->name)),
+        'link' => URL::build('/resources/category/' . $category->id . '-' . URL::urlSafe($category->name)),
         'count' => Output::getClean($category_count)
     ];
 }
@@ -108,7 +108,7 @@ if(count($latest_releases)){
         if(!isset($releases_array[$resource->id])){
             $resource_author = new User($resource->creator_id);
             $releases_array[$resource->id] = [
-                'link' => URL::build('/resources/resource/' . $resource->id . '-' . Util::stringToURL($resource->name)),
+                'link' => URL::build('/resources/resource/' . $resource->id . '-' . URL::urlSafe($resource->name)),
                 'name' => Output::getClean($resource->name),
                 'short_description' => Output::getClean($resource->short_description),
                 'description' => mb_substr(strip_tags(Output::getDecoded($resource->description)), 0, 60) . '...',
@@ -132,7 +132,7 @@ if(count($latest_releases)){
             if ($resource->has_icon == 1) {
                 $releases_array[$resource->id]['icon'] = $resource->icon;
             } else {
-                $releases_array[$resource->id]['icon'] = rtrim(Util::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
+                $releases_array[$resource->id]['icon'] = rtrim(URL::getSelfURL(), '/') . (defined('CONFIG_PATH') ? CONFIG_PATH . '/' : '/') . 'uploads/resources_icons/default.png';
             }
         }
 

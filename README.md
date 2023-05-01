@@ -2,7 +2,7 @@
 The Nameless-Resources module allows users to share zip files, GitHub projects and external links to your website, either freely or requiring a PayPal purchase.
 
 ## Requirements
-- NamelessMC version 2 pre-release 13
+- NamelessMC version 2.1.0
 
 ## Installation
 - Upload the contents of the **upload** directory straight into your NamelessMC installation's directory
