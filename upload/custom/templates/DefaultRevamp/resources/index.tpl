@@ -24,7 +24,7 @@
 
                 {if $LATEST_RESOURCES}
 
-                    <table class="ui fixed single line selectable unstackable small padded res table" id="sticky-threads">
+                    <table class="ui fixed single line selectable unstackable small padded res table" id="resources">
                         <thead>
                             <tr>
                                 <th class="nine wide">
@@ -98,9 +98,26 @@
                     {$PAGINATION}
 
                 {else}
-                    <p style="color: white;">
-                        {$NO_RESOURCES}
-                    </p>
+                <table class="ui fixed single line selectable unstackable small padded res table" id="resources">
+                    <thead>
+                    <tr>
+                        <th class="nine wide">
+                            <h4>{$RESOURCE}</h4>
+                        </th>
+                        <th class="three wide">
+                            <h4>{$STATS}</h4>
+                        </th>
+                        <th class="five wide">
+                            <h4>{$AUTHOR}</h4>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td colspan="3">{$NO_RESOURCES}</td>
+                    </tr>
+                    </tbody>
+                </table>
                 {/if}
             </div>
             <div class="four wide column">
