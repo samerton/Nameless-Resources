@@ -1663,7 +1663,7 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                     // Get list of all releases
                     $github_query = json_decode($github_query);
 
-                    if(!isset($github_query[0])) $error = $resource_language->get('resources', 'unable_to_get_repo', ['repo' => Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo)]);
+                    if(!is_array($github_query) || !count($github_query)) $error = $resource_language->get('resources', 'unable_to_get_repo', ['repo' => Output::getClean($resource->github_username) . '/' . Output::getClean($resource->github_repo)]);
                     else {
                         // Valid response
                         $releases_array = [];
