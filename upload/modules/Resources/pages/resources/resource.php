@@ -1779,10 +1779,10 @@ if(!isset($_GET['releases']) && !isset($_GET['do']) && !isset($_GET['versions'])
                                 $content = $_POST['description'];
 
                                 DB::getInstance()->update('resources', $resource->id, [
-                                    'name' => Output::getClean(Input::get('title')),
-                                    'short_description' => Output::getClean(Input::get('short_description')),
+                                    'name' => Input::get('title'),
+                                    'short_description' => Input::get('short_description'),
                                     'description' => $content,
-                                    'contributors' => Output::getClean(Input::get('contributors')),
+                                    'contributors' => Input::get('contributors'),
                                     'price' => $price
                                 ]);
 

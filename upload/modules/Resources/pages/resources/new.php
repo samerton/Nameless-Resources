@@ -2,11 +2,24 @@
 /*
  *  Made by Samerton
  *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.2
+ *  NamelessMC version 2.1.0
  *
  *  License: MIT
  *
  *  Resources creation page
+ */
+/**
+ * @var Cache $cache
+ * @var Language $language
+ * @var Language $resource_language
+ * @var Navigation $cc_nav
+ * @var Navigation $navigation
+ * @var Navigation $staffcp_nav
+ * @var Pages $pages
+ * @var Smarty $smarty
+ * @var TemplateBase $template
+ * @var User $user
+ * @var Widgets $widgets
  */
 // Always define page name
 define('PAGE', 'resources');
@@ -155,9 +168,9 @@ if (Input::exists()) {
                                 // Select release
                                 $releases_array[] = [
                                     'id' => $release['id'],
-                                    'tag' => Output::getClean($release['tag_name']),
-                                    'name' => Output::getClean($release['name']),
-                                    'short_description' => Output::getClean($release['short_description'])
+                                    'tag' => $release['tag_name'],
+                                    'name' => $release['name'],
+                                    'short_description' => $release['short_description']
                                 ];
                             }
 
@@ -669,7 +682,12 @@ if(!isset($_GET['step'])){
                 'CANCEL_LINK' => URL::build('/resources'),
                 'CONFIRM_CANCEL' => $language->get('general', 'confirm_cancel'),
                 'SELECT_RELEASE' => $resource_language->get('resources', 'select_release'),
-                'RELEASES' => $_SESSION['github_releases']
+                'RELEASES' => array_map(static fn ($release) => [
+                    'id' => Output::getClean($release['id']),
+                    'tag' => Output::getClean($release['tag']),
+                    'name' => Output::getClean($release['name']),
+                    'short_description' => Output::getClean($release['short_description'])
+                ], $_SESSION['github_releases'])
             ]);
 
             $template_file = 'resources/new_resource_select_release.tpl';
