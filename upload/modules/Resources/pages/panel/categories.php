@@ -1,12 +1,21 @@
 <?php
-/*
- *  Made by Samerton
- *  https://github.com/samerton/Nameless-Resources
- *  NamelessMC version 2.0.0-pr13
+/**
+ *  Resources StaffCP Categories page
  *
- *  License: MIT
+ * @author Samerton
+ * @license MIT
  *
- *  Panel resources categories page
+ * @var Cache $cache
+ * @var Language $language
+ * @var Language $resource_language
+ * @var Navigation $cc_nav
+ * @var Navigation $navigation
+ * @var Navigation $staffcp_nav
+ * @var Pages $pages
+ * @var Smarty $smarty
+ * @var TemplateBase $template
+ * @var User $user
+ * @var Widgets $widgets
  */
 
 if (!$user->handlePanelPageLoad('admincp.resources.categories')) {
@@ -14,23 +23,24 @@ if (!$user->handlePanelPageLoad('admincp.resources.categories')) {
     die();
 }
 
-define('PAGE', 'panel');
-define('PARENT_PAGE', 'resources');
-define('PANEL_PAGE', 'resources_categories');
+const PAGE = 'panel';
+const PARENT_PAGE = 'resources';
+const PANEL_PAGE = 'resources_categories';
+
 $page_title = $resource_language->get('resources', 'categories');
 require_once(ROOT_PATH . '/core/templates/backend_init.php');
 
 // Load modules + template
 Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);
 
-if(!isset($_GET['action'])){
+if (!isset($_GET['action'])) {
     // Get categories
     $categories = DB::getInstance()->orderAll('resources_categories', 'display_order', 'ASC');
     $template_array = [];
 
-    if($categories->count()){
-        foreach($categories->results() as $category){
-            $template_array[] = [
+    if ($categories->count()) {
+        $template_array = array_map(static function ($category) {
+            return [
                 'edit_link' => URL::build('/panel/resources/categories/', 'action=edit&cid=' . Output::getClean($category->id)),
                 'name' => Output::getPurified(Output::getDecoded($category->name)),
                 'description' => Output::getPurified(Output::getDecoded($category->description)),
@@ -38,7 +48,7 @@ if(!isset($_GET['action'])){
                 'order_down' => URL::build('/panel/resources/categories/', 'action=order&dir=down&cid=' . Output::getClean($category->id)),
                 'delete_link' => URL::build('/panel/resources/categories/', 'action=delete&cid=' . Output::getClean($category->id))
             ];
-        }
+        }, $categories->results());
     }
 
     $smarty->assign([
@@ -51,12 +61,12 @@ if(!isset($_GET['action'])){
     $template_file = 'resources/categories.tpl';
 
 } else {
-    switch($_GET['action']){
+    switch ($_GET['action']) {
         case 'create':
-            if(Input::exists()){
+            if (Input::exists()) {
                 $errors = [];
 
-                if(Token::check(Input::get('token'))){
+                if (Token::check(Input::get('token'))) {
                     // Validate input
                     $validation = Validate::check($_POST, [
                         'catname' => [
@@ -81,15 +91,15 @@ if(!isset($_GET['action'])){
                     if ($validation->passed()) {
                         // Create the category
                         try {
-                            $description = Input::get('catdesc');
-
-                            $last_cat_order = DB::getInstance()->orderAll('resources_categories', 'display_order', 'DESC');
-                            if ($last_cat_order->count()) $last_cat_order = $last_cat_order->first()->display_order;
-                            else $last_cat_order = 0;
+                            $last_cat_order = DB::getInstance()->query(<<<SQL
+                                SELECT display_order
+                                FROM nl2_resources_categories
+                                ORDER BY display_order DESC LIMIT 1
+                            SQL)->first()->display_order ?? 0;
 
                             DB::getInstance()->insert('resources_categories', [
-                                'name' => Output::getClean(Input::get('catname')),
-                                'description' => Output::getClean($description),
+                                'name' => Input::get('catname'),
+                                'description' => Input::get('catdesc'),
                                 'display_order' => $last_cat_order + 1
                             ]);
 
@@ -97,14 +107,18 @@ if(!isset($_GET['action'])){
 
                             Redirect::to(URL::build('/panel/resources/categories', 'action=edit&cid=' . $cat_id));
 
-                        } catch(Exception $e){
-                            $errors = ['<div class="alert alert-danger">Unable to create category: ' . $e->getMessage() . '</div>'];
+                        } catch (Exception $e) {
+                            $errors[] = $resource_language->get('resources', 'unable_to_create_category', [$e->getMessage()]);
                         }
+
                     } else {
                         $errors = $validation->errors();
                     }
-                } else
+
+                } else {
                     $errors[] = $language->get('general', 'invalid_token');
+                }
+
             }
 
             $smarty->assign([
@@ -127,12 +141,12 @@ if(!isset($_GET['action'])){
 
         case 'edit':
             // Get category
-            if(!isset($_GET['cid']) || !is_numeric($_GET['cid'])){
+            if (!isset($_GET['cid']) || !is_numeric($_GET['cid'])) {
                 Redirect::to(URL::build('/panel/resources/categories'));
             }
 
             $category = DB::getInstance()->get('resources_categories', ['id', '=', $_GET['cid']]);
-            if(!$category->count()) {
+            if (!$category->count()) {
                 Redirect::to(URL::build('/panel/resources/categories'));
             }
             $category = $category->first();
@@ -140,10 +154,10 @@ if(!isset($_GET['action'])){
             $groups = DB::getInstance()->get('groups', ['id', '<>', '0'])->results(); // Get a list of all groups
             $group_perms = DB::getInstance()->get('resources_categories_permissions', ['category_id', '=', $category->id])->results();
 
-            if(Input::exists()){
+            if (Input::exists()) {
                 $errors = [];
 
-                if(Token::check(Input::get('token'))){
+                if (Token::check(Input::get('token'))) {
                     $validation = Validate::check($_POST, [
                         'title' => [
                             Validate::REQUIRED => true,
@@ -164,15 +178,15 @@ if(!isset($_GET['action'])){
                         ]
                     ]);
 
-                    if($validation->passed()){
+                    if ($validation->passed()) {
                         try {
                             // Update the category
                             DB::getInstance()->update('resources_categories', $_GET['cid'], [
-                                'name' => Output::getClean(Input::get('title')),
-                                'description' => Output::getClean(Input::get('description'))
+                                'name' => Input::get('title'),
+                                'description' => Input::get('description')
                             ]);
 
-                        } catch(Exception $e) {
+                        } catch (Exception $e) {
                             $errors[] = $e->getMessage();
                         }
 
@@ -205,7 +219,6 @@ if(!isset($_GET['action'])){
 
                         try {
                             if ($cat_perm_exists != 0) { // Permission already exists, update
-                                // Update the category
                                 DB::getInstance()->update('resources_categories_permissions', $update_id, [
                                     'view' => $view,
                                     'post' => $post,
@@ -233,12 +246,12 @@ if(!isset($_GET['action'])){
                                 ]);
                             }
 
-                        } catch(Exception $e) {
+                        } catch (Exception $e) {
                             $errors[] = $e->getMessage();
                         }
 
                         // Group category permissions
-                        foreach($groups as $group){
+                        foreach ($groups as $group) {
                             $view = Input::get('perm-view-' . $group->id);
                             $post = Input::get('perm-post-' . $group->id);
                             $move = Input::get('perm-move_resource-' . $group->id);
@@ -249,15 +262,15 @@ if(!isset($_GET['action'])){
                             $download = Input::get('perm-download-' . $group->id);
                             $premium = Input::get('perm-premium-' . $group->id);
 
-                            if(!($view)) $view = 0;
-                            if(!($post)) $post = 0;
-                            if(!($move)) $move = 0;
-                            if(!($edit_resource)) $edit_resource = 0;
-                            if(!($delete_resource)) $delete_resource = 0;
-                            if(!($edit_review)) $edit_review = 0;
-                            if(!($delete_review)) $delete_review = 0;
-                            if(!($download)) $download = 0;
-                            if(!($premium)) $premium = 0;
+                            if (!($view)) $view = 0;
+                            if (!($post)) $post = 0;
+                            if (!($move)) $move = 0;
+                            if (!($edit_resource)) $edit_resource = 0;
+                            if (!($delete_resource)) $delete_resource = 0;
+                            if (!($edit_review)) $edit_review = 0;
+                            if (!($delete_review)) $delete_review = 0;
+                            if (!($download)) $download = 0;
+                            if (!($premium)) $premium = 0;
 
                             $cat_perm_exists = 0;
 
@@ -273,7 +286,6 @@ if(!isset($_GET['action'])){
 
                             try {
                                 if ($cat_perm_exists != 0) { // Permission already exists, update
-                                    // Update the category
                                     DB::getInstance()->update('resources_categories_permissions', $update_id, [
                                         'view' => $view,
                                         'post' => $post,
@@ -301,7 +313,7 @@ if(!isset($_GET['action'])){
                                     ]);
                                 }
 
-                            } catch(Exception $e) {
+                            } catch (Exception $e) {
                                 die($e->getMessage());
                             }
                         }
@@ -312,12 +324,60 @@ if(!isset($_GET['action'])){
                     } else {
                         $errors = $validation->errors();
                     }
-                } else
+
+                } else {
                     $errors[] = $language->get('general', 'invalid_token');
+                }
+
             }
 
-            $guest_query = DB::getInstance()->query('SELECT 0 AS id, `view` AS can_view, 0 AS can_post, download AS can_download, premium AS can_post_premium FROM nl2_resources_categories_permissions WHERE group_id = 0 AND category_id = ?', [$category->id])->results();
-            $group_query = DB::getInstance()->query('SELECT id, name, can_view, can_post, can_move, can_edit, can_delete, can_edit_review, can_delete_review, can_download, can_post_premium FROM nl2_groups A LEFT JOIN (SELECT group_id, `view` AS can_view, post AS can_post, move_resource AS can_move, edit_resource AS can_edit, delete_resource AS can_delete, edit_review AS can_edit_review, delete_review AS can_delete_review, download AS can_download, premium AS can_post_premium FROM nl2_resources_categories_permissions WHERE category_id = ?) B ON A.id = B.group_id ORDER BY `order` ASC', [$category->id])->results();
+            $guest_query = DB::getInstance()->query(
+                <<<SQL
+                    SELECT 0 AS id,
+                           `view` AS can_view,
+                           0 AS can_post,
+                           download AS can_download,
+                           premium AS can_post_premium
+                    FROM nl2_resources_categories_permissions
+                    WHERE group_id = 0 AND
+                          category_id = ?
+                SQL,
+                [$category->id]
+            )->results();
+
+            $group_query = DB::getInstance()->query(
+                <<<SQL
+                    SELECT id,
+                           name,
+                           can_view,
+                           can_post,
+                           can_move,
+                           can_edit,
+                           can_delete,
+                           can_edit_review,
+                           can_delete_review,
+                           can_download,
+                           can_post_premium
+                    FROM nl2_groups A
+                        LEFT JOIN (
+                        SELECT group_id,
+                               `view` AS can_view,
+                               post AS can_post,
+                               move_resource AS can_move,
+                               edit_resource AS can_edit,
+                               delete_resource AS can_delete,
+                               edit_review AS can_edit_review,
+                               delete_review AS can_delete_review,
+                               download AS can_download,
+                               premium AS can_post_premium
+                        FROM nl2_resources_categories_permissions
+                        WHERE category_id = ?
+                        ) B
+                            ON A.id = B.group_id
+                    ORDER BY `order` ASC
+                SQL,
+                [$category->id]
+            )->results();
 
             $smarty->assign([
                 'EDITING_CATEGORY' => $resource_language->get('resources', 'editing_category'),
@@ -371,6 +431,7 @@ if(!isset($_GET['action'])){
                         if (Input::get('move_resources') === 'none') {
                             $resources = DB::getInstance()->get('resources', ['category_id', '=', $_GET['cid']])->results();
                             $releases = DB::getInstance()->get('resources_releases', ['category_id', '=', $_GET['cid']])->results();
+
                             try {
                                 foreach ($resources as $resource) {
                                     DB::getInstance()->delete('resources', ['id', '=', $resource->id]);
@@ -393,19 +454,24 @@ if(!isset($_GET['action'])){
 
                         } else {
                             $new_category = Input::get('move_resources');
-                            $resources = DB::getInstance()->getWhere('resources', ['category_id', '=', $_GET['cid']])->results();
-                            $releases = DB::getInstance()->get('resources_releases', ['category_id', '=', $_GET['cid']])->results();
+
                             try {
-                                foreach ($resources as $resource) {
-                                    DB::getInstance()->update('resources', $resource->id, [
-                                        'category_id' => $new_category
-                                    ]);
-                                }
-                                foreach ($releases as $release) {
-                                    DB::getInstance()->update('resources_releases', $release->id, [
-                                        'category_id' => $new_category
-                                    ]);
-                                }
+                                DB::getInstance()->query(
+                                    <<<SQL
+                                        UPDATE nl2_resources
+                                        SET category_id = ?
+                                        WHERE category_id = ?
+                                    SQL,
+                                    [$new_category, $_GET['cid']]
+                                );
+                                DB::getInstance()->query(
+                                    <<<SQL
+                                        UPDATE nl2_resources_releases
+                                        SET category_id = ?
+                                        WHERE category_id = ?
+                                    SQL,
+                                    [$new_category, $_GET['cid']]
+                                );
 
                                 DB::getInstance()->delete('resources_categories', ['id', '=', $_GET['cid']]);
 
@@ -420,9 +486,9 @@ if(!isset($_GET['action'])){
                             }
                         }
                     }
-                } else
+                } else {
                     $errors[] = $language->get('general', 'invalid_token');
-
+                }
             }
 
             $categories = DB::getInstance()->orderWhere('resources_categories', 'id <> '. $category->id, 'display_order', 'ASC');
@@ -444,6 +510,7 @@ if(!isset($_GET['action'])){
             if (!isset($_GET['dir']) || !isset($_GET['cid']) || !is_numeric($_GET['cid'])) {
                 Redirect::to(URL::build('/panel/resources/categories'));
             }
+
             if ($_GET['dir'] == 'up' || $_GET['dir'] == 'down') {
                 $dir = $_GET['dir'];
             } else {
@@ -461,8 +528,9 @@ if(!isset($_GET['action'])){
 
             if ($dir == 'up') {
                 $n = 0;
+
                 foreach ($previous_cats as $previous_cat) {
-                    if($previous_cat->id == $_GET['cid']){
+                    if ($previous_cat->id == $_GET['cid']) {
                         $previous_cid = $previous_cats[$n - 1]->id;
                         $previous_c_order = $previous_cats[$n - 1]->display_order;
                         break;
@@ -477,7 +545,7 @@ if(!isset($_GET['action'])){
                     DB::getInstance()->update('resources_categories', $previous_cid, [
                         'display_order' => $previous_c_order + 1
                     ]);
-                } catch(Exception $e){
+                } catch (Exception $e) {
                     die($e->getMessage());
                 }
 
@@ -485,8 +553,8 @@ if(!isset($_GET['action'])){
 
             } else if ($dir == 'down') {
                 $n = 0;
-                foreach($previous_cats as $previous_cat){
-                    if($previous_cat->id == $_GET['cid']){
+                foreach ($previous_cats as $previous_cat) {
+                    if ($previous_cat->id == $_GET['cid']) {
                         $previous_cid = $previous_cats[$n + 1]->id;
                         $previous_c_order = $previous_cats[$n + 1]->display_order;
                         break;
@@ -500,7 +568,7 @@ if(!isset($_GET['action'])){
                     DB::getInstance()->update('resources_categories', $previous_cid, [
                         'display_order' => $previous_c_order - 1
                     ]);
-                } catch(Exception $e){
+                } catch (Exception $e) {
                     die($e->getMessage());
                 }
 
@@ -516,20 +584,23 @@ if(!isset($_GET['action'])){
     }
 }
 
-if(Session::exists('resources_categories_success'))
+if (Session::exists('resources_categories_success')) {
     $success = Session::flash('resources_categories_success');
+}
 
-if(isset($success))
+if (isset($success)) {
     $smarty->assign([
         'SUCCESS' => $success,
-        'SUCCESS_TITLE' => $language->get('general', 'success')
+        'SUCCESS_TITLE' => $language->get('general', 'success'),
     ]);
+}
 
-if(isset($errors) && count($errors))
+if (isset($errors) && count($errors)) {
     $smarty->assign([
         'ERRORS' => $errors,
-        'ERRORS_TITLE' => $language->get('general', 'error')
+        'ERRORS_TITLE' => $language->get('general', 'error'),
     ]);
+}
 
 $smarty->assign([
     'PARENT_PAGE' => PARENT_PAGE,
@@ -538,7 +609,7 @@ $smarty->assign([
     'CATEGORIES' => $resource_language->get('resources', 'categories'),
     'PAGE' => PANEL_PAGE,
     'TOKEN' => Token::get(),
-    'SUBMIT' => $language->get('general', 'submit')
+    'SUBMIT' => $language->get('general', 'submit'),
 ]);
 
 $template->onPageLoad();

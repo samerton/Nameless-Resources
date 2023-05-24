@@ -1,20 +1,20 @@
-<?php 
-/*
- *  Made by Samerton
- *  https://github.com/NamelessMC/Nameless/
- *  NamelessMC version 2.0.0-pr13
+<?php
+/**
+ * NamelessMC Resources module initialisation
  *
- *  License: MIT
+ * @author Samerton
+ * @license MIT
  *
- *  Resource initialisation file
+ * @var Language $language
+ * @var Pages $pages
  */
 
 // Initialise module language
-$resource_language = new Language(ROOT_PATH . '/modules/Resources/language', LANGUAGE);
+$resource_language = new Language(__DIR__ . '/language', LANGUAGE);
 
-require_once ROOT_PATH . '/modules/Resources/classes/Resources_Sitemap.php';
-require_once ROOT_PATH . '/modules/Resources/hooks/CloneGroupResourcesHook.php';
-require_once ROOT_PATH . '/modules/Resources/hooks/DeleteUserResourcesHook.php';
+//require_once ROOT_PATH . '/modules/Resources/classes/Resources_Sitemap.php';
+//require_once ROOT_PATH . '/modules/Resources/hooks/CloneGroupResourcesHook.php';
+//require_once ROOT_PATH . '/modules/Resources/hooks/DeleteUserResourcesHook.php';
 
-require_once ROOT_PATH . '/modules/Resources/module.php';
+require_once __DIR__ . '/module.php';
 $module = new Resources_Module($pages, $language, $resource_language);
