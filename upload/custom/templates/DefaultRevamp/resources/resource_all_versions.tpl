@@ -76,8 +76,13 @@
                                         </td>
                                         <td>
                                             <span class="res right floated">
+                                                {if isset($LOG_IN_TO_DOWNLOAD)}
+                                                <a disabled class="ui blue disabled button mini"
+                                                    target="_blank">{$LOG_IN_TO_DOWNLOAD}</a>
+                                                {else}
                                                 <a href="{$release.download_url}" class="ui blue button mini"
                                                     target="_blank">{$DOWNLOAD}</a>
+                                                {/if}
                                             </span>
                                         </td>
                                     </tr>
