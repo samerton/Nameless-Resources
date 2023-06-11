@@ -6,6 +6,8 @@
  * @license MIT
  */
 
+namespace Resources\Classes\Types;
+
 class ResourceType {
 
     /** @var string Free resources */

@@ -34,6 +34,7 @@
     "resources/contributors": "Contributors",
     "resources/contributors_max_255": "The contributors list must be a maximum of 255 characters",
     "resources/contributors_x": "Contributors: {{contributors}}",
+    "resources/created_x": "created {{created}}",
     "resources/creating_category": "Creating Category",
     "resources/currency": "ISO-4217 Currency",
     "resources/delete_category": "Delete Category",

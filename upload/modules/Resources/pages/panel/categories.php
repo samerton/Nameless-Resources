@@ -28,7 +28,7 @@ const PARENT_PAGE = 'resources';
 const PANEL_PAGE = 'resources_categories';
 
 $page_title = $resource_language->get('resources', 'categories');
-require_once(ROOT_PATH . '/core/templates/backend_init.php');
+require_once ROOT_PATH . '/core/templates/backend_init.php';
 
 // Load modules + template
 Module::loadPage($user, $pages, $cache, $smarty, [$navigation, $cc_nav, $staffcp_nav], $widgets, $template);
@@ -614,7 +614,7 @@ $smarty->assign([
 
 $template->onPageLoad();
 
-require(ROOT_PATH . '/core/templates/panel_navbar.php');
+require ROOT_PATH . '/core/templates/panel_navbar.php';
 
 // Display template
 $template->displayTemplate($template_file, $smarty);
