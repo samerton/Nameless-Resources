@@ -12,7 +12,7 @@
 class Resources_Module extends Module {
     private $_resource_language, $_language;
 
-    public function __construct($pages, $language, $resource_language){
+    public function __construct($pages, $language, $resource_language, $endpoints){
         $this->_resource_language = $resource_language;
         $this->_language = $language;
 
@@ -44,6 +44,8 @@ class Resources_Module extends Module {
 
         EventHandler::registerListener('deleteUser', 'DeleteUserResourcesHook::execute');
         EventHandler::registerListener('cloneGroup', 'CloneGroupResourcesHook::execute');
+        
+        $endpoints->loadEndpoints(ROOT_PATH . '/modules/Resources/classes/Endpoints');
 
     }
 
