@@ -18,8 +18,8 @@ class Resources_Module extends Module {
 
         $name = 'Resources';
         $author = '<a href="https://samerton.me" target="_blank">Samerton</a>';
-        $module_version = '1.8.1';
-        $nameless_version = '2.1.0';
+        $module_version = '1.9.0';
+        $nameless_version = '2.2.1';
 
         parent::__construct($this, $name, $author, $module_version, $nameless_version);
 
@@ -112,12 +112,12 @@ class Resources_Module extends Module {
         // Widgets
         // Latest Resources
         require_once(__DIR__ . '/widgets/LatestResources.php');
-        $widgets->add(new LatestResourcesWidget($user, $this->_language, $this->_resource_language, $smarty, $cache));
+        $widgets->add(new LatestResourcesWidget($this->_language, $this->_resource_language, $template->getEngine()));
 
         // Top Resources
         require_once(__DIR__ . '/widgets/TopResources.php');
-        $widgets->add(new TopResourcesWidget($user, $this->_language, $this->_resource_language, $smarty, $cache));
-        
+        $widgets->add(new TopResourcesWidget($this->_language, $this->_resource_language, $template->getEngine()));
+
         if(defined('BACK_END')){
             // Check if upload dir is writable
             if(!is_writable(ROOT_PATH . '/uploads/resources')){

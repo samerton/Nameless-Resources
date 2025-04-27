@@ -11,31 +11,17 @@
 class TopResourcesWidget extends WidgetBase {
 
     private $_language,
-            $_cache,
-            $_user;
+            $_resources_language;
 
-    public function __construct($user, $language, $resources_language, $smarty, $cache) {
-
-        $this->_user = $user;
+    public function __construct($language, $resources_language, $engine) {
         $this->_language = $language;
         $this->_resources_language = $resources_language;
-        $this->_smarty = $smarty;
-        $this->_cache = $cache;
-
-        $widget_query = self::getData('Top Resources');
-
-        parent::__construct(self::parsePages($widget_query));
-        
-        // Get widget
-        $widget_query = DB::getInstance()->query('SELECT `location`, `order` FROM nl2_widgets WHERE `name` = ?', ['Top Resources'])->first();
+        $this->_engine = $engine;
 
         // Set widget variables
         $this->_module = 'Resources';
         $this->_name = 'Top Resources';
-        $this->_location = isset($widget_query->location) ? $widget_query->location : null;
         $this->_description = 'Displays top resources';
-        $this->_order = isset($widget_query->order) ? $widget_query->order : null;
-
     }
 
     public function initialise(): void {
@@ -93,12 +79,12 @@ class TopResourcesWidget extends WidgetBase {
             }
         }
 
-        $this->_smarty->assign([
+        $this->_engine->addVariables([
             'TOP_RESOURCES_TITLE' => $this->_resources_language->get('resources', 'top_resources'),
             'TOP_RESOURCES' => $topResourcesArr,
             'NO_TOP_RESOURCES' => $this->_resources_language->get('resources', 'no_top_resources'),
         ]);
 
-        $this->_content = $this->_smarty->fetch('widgets/resources/top_resources.tpl');
+        $this->_content = $this->_engine->fetch('widgets/resources/top_resources.tpl');
     }
 }
