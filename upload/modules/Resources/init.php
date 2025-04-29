@@ -17,4 +17,4 @@ require_once ROOT_PATH . '/modules/Resources/hooks/CloneGroupResourcesHook.php';
 require_once ROOT_PATH . '/modules/Resources/hooks/DeleteUserResourcesHook.php';
 
 require_once ROOT_PATH . '/modules/Resources/module.php';
-$module = new Resources_Module($pages, $language, $resource_language);
+$module = new Resources_Module($pages, $language, $resource_language, $endpoints);
